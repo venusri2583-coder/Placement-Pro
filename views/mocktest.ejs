@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Mock Test | Professional Exam Mode</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- GLOBAL STYLES --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Roboto', sans-serif; background-color: #f2f2f2; height: 100vh; display: flex; flex-direction: column; overflow: hidden; user-select: none; }
+
+        /* --- HEADER --- */
+        header { background: #333; color: white; padding: 0 20px; height: 60px; display: flex; align-items: center; justify-content: space-between; border-bottom: 4px solid #007bff; }
+        .logo { font-size: 20px; font-weight: bold; color: #fff; }
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .user-img { width: 35px; height: 35px; border-radius: 50%; background: #ddd; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #333; }
+        
+        /* --- EXAM CONTAINER --- */
+        .exam-container { display: flex; flex: 1; height: calc(100vh - 60px); }
+
+        /* --- LEFT: QUESTION AREA --- */
+        .question-section { flex: 3; background: #fff; display: flex; flex-direction: column; border-right: 1px solid #ccc; }
+        .q-header { padding: 10px 20px; background: #eee; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
+        .timer-badge { background: #333; color: #fff; padding: 5px 15px; border-radius: 4px; font-size: 16px; }
+        .q-content { flex: 1; padding: 30px; overflow-y: auto; font-size: 18px; line-height: 1.6; }
+        .q-text { margin-bottom: 20px; font-weight: 500; color: #222; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        
+        /* Options */
+        .options-list { list-style: none; }
+        .option-item { margin-bottom: 12px; }
+        .option-label { display: flex; align-items: center; cursor: pointer; padding: 10px; border: 1px solid #e0e0e0; border-radius: 5px; transition: 0.2s; }
+        .option-label:hover { background: #f9f9f9; }
+        .option-label input { margin-right: 15px; transform: scale(1.3); accent-color: #007bff; }
+        
+        /* Footer */
+        .q-footer { padding: 15px 20px; background: #f8f9fa; border-top: 1px solid #ddd; display: flex; justify-content: space-between; }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; color: white; }
+        .btn-clear { background: #fff; border: 1px solid #ccc; color: #333; }
+        .btn-review { background: #6f42c1; }
+        .btn-next { background: #28a745; }
+
+        /* --- RIGHT: PALETTE --- */
+        .palette-section { flex: 1; background: #eef3f7; display: flex; flex-direction: column; min-width: 280px; max-width: 320px; }
+        .student-details { padding: 15px; background: #fff; border-bottom: 1px solid #ddd; display: flex; align-items: center; gap: 10px; }
+        .legend { padding: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; background: #fff; border-bottom: 1px solid #ddd; }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .dot { width: 20px; height: 20px; display: inline-block; text-align: center; color: white; line-height: 20px; font-size: 10px; }
+        
+        .dot.answered { background: #28a745; clip-path: polygon(0% 0%, 100% 0%, 100% 75%, 50% 100%, 0% 75%); }
+        .dot.not-answered { background: #dc3545; clip-path: polygon(0% 0%, 100% 0%, 100% 75%, 50% 100%, 0% 75%); }
+        .dot.review { background: #6f42c1; border-radius: 50%; }
+        .dot.not-visited { background: #fff; border: 1px solid #ccc; color: #333; border-radius: 3px; }
+
+        .palette-grid-container { flex: 1; padding: 15px; overflow-y: auto; }
+        .palette-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .p-btn { width: 40px; height: 35px; background: #fff; border: 1px solid #ccc; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 3px; }
+        
+        .p-btn.active-q { border: 2px solid #000; }
+        .p-btn.answered { background: #28a745; color: white; border: none; clip-path: polygon(0% 0%, 100% 0%, 100% 85%, 50% 100%, 0% 85%); }
+        .p-btn.not-answered { background: #dc3545; color: white; border: none; clip-path: polygon(0% 0%, 100% 0%, 100% 85%, 50% 100%, 0% 85%); }
+        .p-btn.review { background: #6f42c1; color: white; border-radius: 50%; }
+
+        .submit-section { padding: 15px; background: #fff; border-top: 1px solid #ddd; }
+        .btn-submit { width: 100%; background: #007bff; color: white; padding: 12px; border: none; font-size: 16px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">ELITE MOCK TEST</div>
+        <div class="user-info">
+            <span><%= (typeof user !== 'undefined' && user) ? user.username : 'Guest Candidate' %></span>
+            <div class="user-img"><%= (typeof user !== 'undefined' && user) ? user.username.charAt(0).toUpperCase() : 'G' %></div>
+        </div>
+    </header>
+
+    <div class="exam-container">
+        <div class="question-section">
+            <div class="q-header">
+                <span><%= (typeof topic !== 'undefined') ? topic : 'General Aptitude Test' %></span>
+                <span class="timer-badge">Time Left: <span id="timer">20:00</span></span>
+            </div>
+            <div class="q-content" id="questionContainer"></div>
+            <div class="q-footer">
+                <div>
+                    <button class="btn btn-clear" onclick="clearResponse()">Clear Response</button>
+                    <button class="btn btn-review" onclick="markForReview()">Mark for Review</button>
+                </div>
+                <button class="btn btn-next" onclick="saveAndNext()">Save & Next</button>
+            </div>
+        </div>
+
+        <div class="palette-section">
+            <div class="student-details">
+                <div class="user-img" style="width:50px; height:50px;"><%= (typeof user !== 'undefined' && user) ? user.username.charAt(0).toUpperCase() : 'G' %></div>
+                <div style="margin-left: 10px; font-size: 14px;">
+                    <strong><%= (typeof user !== 'undefined' && user) ? user.username : 'Guest' %></strong><br>
+                    <span style="color:green; font-size:12px;">● Online</span>
+                </div>
+            </div>
+
+            <div class="legend">
+                <div class="legend-item"><div class="dot answered">1</div> Answered</div>
+                <div class="legend-item"><div class="dot not-answered">2</div> Not Answered</div>
+                <div class="legend-item"><div class="dot not-visited">3</div> Not Visited</div>
+                <div class="legend-item"><div class="dot review">4</div> Review</div>
+            </div>
+
+            <div class="palette-grid-container">
+                <div style="background:#007bff; color:white; padding:5px; text-align:center; margin-bottom:10px;">Question Palette</div>
+                <div class="palette-grid" id="paletteGrid"></div>
+            </div>
+
+            <div class="submit-section">
+                <button class="btn-submit" onclick="submitTest()">SUBMIT TEST</button>
+            </div>
+        </div>
+    </div>
+
+    <form id="quizForm" action="/submit-quiz" method="POST" style="display:none;"></form>
+
+    <script>
+        // --- SAFE DATA LOADING ---
+        const questions = <%- (typeof questions !== 'undefined' && questions) ? JSON.stringify(questions) : '[]' %>;
+        
+        // 🔥 This variable holds the Topic Name from the Server
+        const topicName = "<%= (typeof topic !== 'undefined') ? topic : 'General Test' %>";
+
+        if (questions.length === 0) {
+            alert("No questions found! Please check your database connection.");
+        }
+
+        let currentQIndex = 0;
+        let qStatus = new Array(questions.length).fill(0); 
+        let userAnswers = new Array(questions.length).fill(null);
+
+        // --- TIMER ---
+// --- TIMER UPDATED TO 30 MINUTES FOR MOCK TEST ---
+let timeInSeconds = 30 * 60; 
+const timerDisplay = document.getElementById('timer');
+const timerInterval = setInterval(() => {
+    let m = Math.floor(timeInSeconds / 60);
+    let s = timeInSeconds % 60;
+    if (s < 10) s = '0' + s;
+    timerDisplay.innerText = `${m}:${s}`;
+    if (timeInSeconds <= 0) { 
+        clearInterval(timerInterval); 
+        submitTest(); 
+    }
+    timeInSeconds--;
+}, 1000);
+        // --- RENDER ---
+        function loadQuestion(index) {
+            if(questions.length === 0) return;
+            currentQIndex = index;
+            const q = questions[index];
+            
+            if (qStatus[index] === 0) qStatus[index] = 1; // Mark as Not Answered (Red) when visited
+
+            const container = document.getElementById('questionContainer');
+            container.innerHTML = `
+                <div class="q-text">Q${index + 1}: ${q.question}</div>
+                <ul class="options-list">
+                    ${['a', 'b', 'c', 'd'].map(opt => `
+                        <li class="option-item">
+                            <label class="option-label">
+                                <input type="radio" name="temp_q" value="${q['option_' + opt]}" 
+                                ${userAnswers[index] === q['option_' + opt] ? 'checked' : ''}>
+                                <span style="margin-left:10px;">${opt.toUpperCase()}) ${q['option_' + opt]}</span>
+                            </label>
+                        </li>
+                    `).join('')}
+                </ul>
+            `;
+            updatePalette();
+        }
+
+        function updatePalette() {
+            const grid = document.getElementById('paletteGrid');
+            grid.innerHTML = '';
+            questions.forEach((q, i) => {
+                let btnClass = 'p-btn';
+                if (i === currentQIndex) btnClass += ' active-q';
+                if (qStatus[i] === 2) btnClass += ' answered';
+                else if (qStatus[i] === 1) btnClass += ' not-answered';
+                else if (qStatus[i] === 3) btnClass += ' review';
+                
+                grid.innerHTML += `<div class="${btnClass}" onclick="loadQuestion(${i})">${i + 1}</div>`;
+            });
+        }
+
+        // --- ACTIONS ---
+        function saveAndNext() {
+            const selected = document.querySelector('input[name="temp_q"]:checked');
+            if (selected) {
+                userAnswers[currentQIndex] = selected.value;
+                qStatus[currentQIndex] = 2; // Green
+            } else {
+                qStatus[currentQIndex] = 1; // Red
+            }
+            if (currentQIndex < questions.length - 1) loadQuestion(currentQIndex + 1);
+            else updatePalette();
+        }
+
+        function clearResponse() {
+            const selected = document.querySelector('input[name="temp_q"]:checked');
+            if (selected) selected.checked = false;
+            userAnswers[currentQIndex] = null;
+            qStatus[currentQIndex] = 1;
+            updatePalette();
+        }
+
+        function markForReview() {
+            qStatus[currentQIndex] = 3; // Violet
+            if (currentQIndex < questions.length - 1) loadQuestion(currentQIndex + 1);
+            else updatePalette();
+        }
+
+        function submitTest() {
+            const form = document.getElementById('quizForm');
+            form.innerHTML = ''; // Clear previous inputs
+            
+            // 🔥 IMPORTANT: Add the Topic Name Input 🔥
+            const topicInput = document.createElement('input');
+            topicInput.type = 'hidden';
+            topicInput.name = 'topic_name';
+            topicInput.value = topicName;
+            form.appendChild(topicInput);
+
+            // Add all answers
+            questions.forEach((q, i) => {
+                if (userAnswers[i]) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'q' + q.id;
+                    input.value = userAnswers[i];
+                    form.appendChild(input);
+                }
+            });
+            form.submit();
+        }
+
+        // --- INIT ---
+        window.onload = function() { loadQuestion(0); };
+        document.addEventListener('contextmenu', event => event.preventDefault());
+    </script>
+</body>
+</html>

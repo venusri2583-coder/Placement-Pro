@@ -1,0 +1,54 @@
+<%- include('partials/header') %>
+
+<div class="py-5 text-white mb-5 shadow-lg" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-bottom: 5px solid #38a169; border-radius: 0 0 50px 50px;">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold">Technical <span style="color: #38a169;">MCQs</span> 💻</h1>
+        <p class="lead opacity-75 fw-bold">Master Technical Rounds with Large Professional Modules.</p>
+    </div>
+</div>
+
+<div class="container mb-5 pb-5">
+    <div class="row g-4 justify-content-center">
+        <% 
+            const technicalTopics = [
+                { name: 'C Programming', icon: 'https://cdn-icons-png.flaticon.com/512/3588/3588613.png', color: '#0984e3' },
+                { name: 'Data Structures', icon: 'https://cdn-icons-png.flaticon.com/512/2103/2103633.png', color: '#6c5ce7' },
+                { name: 'Algorithms', icon: 'https://cdn-icons-png.flaticon.com/512/8637/8637272.png', color: '#d63031' },
+                { name: 'DBMS', icon: 'https://cdn-icons-png.flaticon.com/512/2784/2784065.png', color: '#00b894' },
+                { name: 'SQL Queries', icon: 'https://cdn-icons-png.flaticon.com/512/4248/4248443.png', color: '#00cec9' },
+                { name: 'Java Programming', icon: 'https://cdn-icons-png.flaticon.com/512/226/226773.png', color: '#e17055' },
+                { name: 'OOPs Concepts', icon: 'https://cdn-icons-png.flaticon.com/512/1157/1157109.png', color: '#fd79a8' }
+            ];
+        %>
+
+        <% technicalTopics.forEach(t => { %>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="card coding-3d-card" style="border-top: 5px solid <%= t.color %> !important;">
+                    <div class="icon-wrapper mb-3">
+                        <img src="<%= t.icon %>" width="55" class="floating-icon" alt="<%= t.name %>">
+                    </div>
+                    <h6 class="fw-bold text-dark mb-3" style="font-size: 0.85rem; height: 35px;"><%= t.name %></h6>
+                    <form action="/coding/practice" method="POST" class="mt-auto w-100">
+                        <input type="hidden" name="topic" value="<%= t.name %>">
+                        <button type="submit" class="btn btn-sm btn-practice w-100 rounded-pill fw-bold">Practice</button>
+                    </form>
+                </div>
+            </div>
+        <% }) %>
+    </div>
+</div>
+
+<style>
+    .coding-3d-card {
+        background: #ffffff; border-radius: 20px !important; padding: 25px 15px;
+        text-align: center; transition: 0.4s; box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+        height: 100%; border: none; display: flex; flex-direction: column; align-items: center; 
+        min-height: 220px; /* Grand topic cards */
+    }
+    .coding-3d-card:hover { transform: translateY(-12px) rotateX(8deg); box-shadow: 0 20px 40px rgba(0,0,0,0.12) !important; }
+    .floating-icon { animation: float 3s ease-in-out infinite; }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    .btn-practice { background: #38a169; color: white; border: none; padding: 8px 0; font-size: 0.75rem; transition: 0.3s; }
+    @media (min-width: 1200px) { .col-lg-2 { flex: 0 0 auto; width: 14.28%; } }
+</style>
+<%- include('partials/footer') %>

@@ -1,0 +1,112 @@
+<%- include('partials/header') %>
+
+<div class="container py-5">
+    
+    <div class="text-center mb-5 animate__animated animate__fadeInDown">
+        <h1 class="fw-bold display-4" style="color: #2d3748;">🏆 Elite Leaderboard</h1>
+        <p class="text-muted">Compare your progress with the best and analyze your own growth.</p>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6 mb-4 animate__animated animate__fadeInLeft">
+            <div class="card shadow-lg border-0" style="border-radius: 20px; overflow: hidden;">
+                <div class="card-header bg-primary text-white p-4 text-center">
+                    <h3 class="m-0 fw-bold"><i class="fas fa-crown text-warning me-2"></i>Top Rankers</h3>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover m-0 align-middle">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="py-3 ps-4">Rank</th>
+                                <th class="py-3">Student</th>
+                                <th class="py-3 text-center">Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (rankings.length === 0) { %>
+                                <tr><td colspan="3" class="text-center py-4">No data available yet.</td></tr>
+                            <% } else { %>
+                                <% rankings.forEach((rank, index) => { %>
+                                    <tr>
+                                        <td class="ps-4">
+                                            <% if(index == 0) { %> 🥇 
+                                            <% } else if(index == 1) { %> 🥈 
+                                            <% } else if(index == 2) { %> 🥉 
+                                            <% } else { %> #<%= index + 1 %> <% } %>
+                                        </td>
+                                        <td class="fw-bold"><%= rank.username %></td>
+                                        <td class="text-center">
+                                            <span class="badge bg-success rounded-pill px-3"><%= rank.high_score %> / <%= rank.total %></span>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4 animate__animated animate__fadeInRight">
+            <div class="card shadow-lg border-0" style="border-radius: 20px; overflow: hidden;">
+                <div class="card-header bg-dark text-white p-4 text-center">
+                    <h3 class="m-0 fw-bold"><i class="fas fa-chart-pie text-info me-2"></i>My Performance Analysis</h3>
+                </div>
+                <div class="card-body p-4" style="background: #f7fafc; max-height: 500px; overflow-y: auto;">
+                    
+                    <% if (!myScores || myScores.length === 0) { %>
+                        <div class="text-center py-5">
+                            <img src="https://cdn-icons-png.flaticon.com/512/7486/7486744.png" width="80" class="mb-3 opacity-50">
+                            <p class="text-muted">You haven't taken any tests yet.</p>
+                            <a href="/mock-test" class="btn btn-sm btn-primary rounded-pill">Take a Test</a>
+                        </div>
+                    <% } else { %>
+                        <p class="small text-muted text-center mb-4">Here is a breakdown of your recent attempts and areas to improve.</p>
+
+                        <% myScores.forEach(score => { %>
+                            <% 
+                                let percentage = (score.score / score.total) * 100;
+                                let status = "";
+                                let statusColor = "";
+                                let feedback = "";
+
+                                if (percentage < 50) {
+                                    status = "WEAK";
+                                    statusColor = "danger";
+                                    feedback = "Focus on basics.";
+                                } else if (percentage < 80) {
+                                    status = "AVERAGE";
+                                    statusColor = "warning";
+                                    feedback = "Practice more.";
+                                } else {
+                                    status = "STRONG";
+                                    statusColor = "success";
+                                    feedback = "Excellent!";
+                                }
+                            %>
+
+                            <div class="bg-white p-3 mb-3 shadow-sm rounded border-start border-5 border-<%= statusColor %> d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="fw-bold mb-1 text-dark"><%= score.topic || 'General Mock Test' %></h6>
+                                    <p class="m-0 small text-muted">
+                                        <i class="far fa-calendar-alt me-1"></i> <%= new Date(score.test_date).toLocaleDateString() %>
+                                    </p>
+                                </div>
+                                <div class="text-end">
+                                    <span class="d-block fw-bold text-<%= statusColor %>" style="font-size: 1.2rem;">
+                                        <%= Math.round(percentage) %>%
+                                    </span>
+                                    <span class="badge bg-<%= statusColor %> text-white" style="font-size: 0.7rem;"><%= status %></span>
+                                    <div class="small text-muted mt-1" style="font-size: 0.7rem;"><%= feedback %></div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    <% } %>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

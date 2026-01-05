@@ -1,0 +1,66 @@
+<%- include('partials/header') %>
+
+<div style="background-color: #1a1a1a; padding: 60px 0; border-bottom-left-radius: 60px; border-bottom-right-radius: 60px;" class="text-center text-white mb-5 border-bottom border-warning shadow-lg">
+    <div class="container">
+        <div class="d-inline-block bg-white text-primary px-4 py-1 rounded-pill fw-bold mb-3 shadow-sm" style="font-size: 0.85rem;">
+            Placement Readiness 2025 🚀
+        </div>
+        <h1 class="display-4 fw-bold">Interview <span style="color: #ecc94b;">Blueprint</span> 🏆</h1>
+        <p class="lead opacity-75">30 HR Mastery & 180+ Technical Expert Questions for MNC Placements.</p>
+        <h5 class="fw-bold mt-4 mb-3">Dream Big. <span style="color: #ecc94b;">Work Hard.</span> ✨</h5>
+        <div class="mx-auto p-3 shadow-lg" style="max-width: 650px; background-color: #2d3748; border-left: 6px solid #ecc94b; border-radius: 12px;">
+            <p class="m-0 fst-italic text-white small">"The best way to predict your future is to create it." — Abraham Lincoln</p>
+        </div>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <ul class="nav nav-pills justify-content-center mb-5 shadow p-2 bg-light rounded-pill mx-auto" style="max-width: 550px;" id="mainTab" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active rounded-pill px-4 fw-bold" id="hr-tab" data-bs-toggle="tab" data-bs-target="#hr-content" type="button" role="tab">Top 30 HR Questions</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link rounded-pill px-4 fw-bold" id="tech-tab" data-bs-toggle="tab" data-bs-target="#tech-content" type="button" role="tab">Technical Mastery</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="mainTabContent">
+        <div class="tab-pane fade show active" id="hr-content" role="tabpanel">
+             <%- include('partials/hr_questions') %>
+        </div>
+
+        <div class="tab-pane fade" id="tech-content" role="tabpanel">
+            <div class="row">
+                <div class="col-md-3 mb-4">
+                    <div class="list-group shadow-sm border-0 rounded-4 overflow-hidden" id="v-pills-tab" role="tablist">
+                        <button class="list-group-item list-group-item-action active border-0 py-3 fw-bold" data-bs-toggle="pill" data-bs-target="#tech-sql"><i class="fas fa-database me-2"></i> SQL & DBMS</button>
+                        <button class="list-group-item list-group-item-action border-0 py-3 fw-bold" data-bs-toggle="pill" data-bs-target="#tech-ds"><i class="fas fa-sitemap me-2"></i> Data Structures</button>
+                        <button class="list-group-item list-group-item-action border-0 py-3 fw-bold" data-bs-toggle="pill" data-bs-target="#tech-python"><i class="fab fa-python me-2"></i> Python</button>
+                        <button class="list-group-item list-group-item-action border-0 py-3 fw-bold" data-bs-toggle="pill" data-bs-target="#tech-java"><i class="fab fa-java me-2"></i> Java</button>
+                        <button class="list-group-item list-group-item-action border-0 py-3 fw-bold" data-bs-toggle="pill" data-bs-target="#tech-c"><i class="fas fa-code me-2"></i> C / C++</button>
+                        <button class="list-group-item list-group-item-action border-0 py-3 fw-bold" data-bs-toggle="pill" data-bs-target="#tech-web"><i class="fas fa-globe me-2"></i> Web Development</button>
+                    </div>
+                </div>
+
+                <div class="col-md-9">
+                    <div class="tab-content bg-white shadow-sm rounded-4 p-4 border" id="v-pills-tabContent" style="min-height: 600px;">
+                        <div class="tab-pane fade show active" id="tech-sql"><%- include('partials/sql_questions') %></div>
+                        <div class="tab-pane fade" id="tech-ds"><%- include('partials/ds_questions') %></div>
+                        <div class="tab-pane fade" id="tech-python"><%- include('partials/python_questions') %></div>
+                        <div class="tab-pane fade" id="tech-java"><%- include('partials/java_questions') %></div>
+                        <div class="tab-pane fade" id="tech-c"><%- include('partials/c_questions') %></div>
+                        <div class="tab-pane fade" id="tech-web"><%- include('partials/web_questions') %></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .list-group-item.active { background-color: #1a1a1a; color: #ecc94b; }
+    .list-group-item:hover:not(.active) { background-color: #f8fafc; color: #1a1a1a; }
+    .nav-pills .nav-link.active { background-color: #1a1a1a; color: #ecc94b; border: 1px solid #ecc94b; }
+</style>
+
+<%- include('partials/footer') %>

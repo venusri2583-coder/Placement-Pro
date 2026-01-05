@@ -1,0 +1,158 @@
+<%- include('partials/header') %>
+
+<div class="py-2 text-white mb-4 shadow-sm sticky-top" style="background: #1a1a1a; border-bottom: 3px solid #3182ce; border-radius: 0 0 20px 20px; z-index: 1000;">
+    <div class="container d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 fw-bold ps-2"><%= topicName %> - Practice Mode</h6>
+        <div class="d-flex align-items-center gap-3">
+            <span class="badge bg-danger px-3 py-2 rounded-pill shadow-sm" style="font-size: 0.85rem;">
+                <i class="fas fa-clock me-1"></i> Time Left: <span id="timer">15:00</span>
+            </span>
+            <span class="badge bg-primary px-3 py-2 rounded-pill" style="font-size: 0.7rem;">Items: <%= questions.length %></span>
+        </div>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-11 col-md-11">
+            <% if (questions.length > 0) { %>
+                <% questions.forEach((q, index) => { %>
+                    <div class="card mb-3 border-0 shadow-sm rounded-3 question-card overflow-hidden" 
+                         style="background: #ffffff; border: 1px solid #cbd5e1 !important;">
+                        
+                        <div class="px-3 py-1 border-bottom bg-light d-flex justify-content-between align-items-center">
+                            <span class="fw-bold text-dark ps-1" style="font-size: 0.8rem;">Question <%= index + 1 %></span>
+                            <span class="text-muted" style="font-size: 0.6rem;">Elite Exam Portal</span>
+                        </div>
+
+                        <div class="card-body p-3">
+                            <div style="display: block !important; width: 100% !important; text-align: left !important; padding: 0 !important; margin: 0 0 15px 0 !important; clear: both !important;">
+                                <h6 class="text-dark fw-bold" 
+                                    style="line-height: 1.4; white-space: pre-wrap; font-size: 1.05rem; font-family: 'Inter', sans-serif; text-align: left !important; margin: 0 !important; padding: 0 !important; display: block !important; width: 100%;">
+                                    <%= q.question || q.question_text %>
+                                </h6>
+                            </div>
+                            
+                            <div class="row g-2" style="width: 100% !important; margin: 0 !important; clear: both !important;">
+                                <% const opts = { 'A': q.option_a, 'B': q.option_b, 'C': q.option_c, 'D': q.option_d }; %>
+                                <% Object.keys(opts).forEach(key => { %>
+                                    <div class="col-md-6">
+                                        <div class="option-row p-2 border rounded-2 bg-white d-flex align-items-center" 
+                                             style="cursor: pointer; transition: 0.2s; border: 1px solid #cbd5e1; font-size: 0.9rem;"
+                                             onclick="checkChoice(this, '<%= key %>', '<%= q.correct_option %>', '<%= q.id %>')">
+                                            <div class="me-2 fw-bold text-primary"><%= key %>)</div>
+                                            <div class="text-dark"><%= opts[key] %></div>
+                                            <span class="choice-tag d-none badge bg-dark rounded-pill ms-auto" style="font-size: 0.5rem;">Selected</span>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center border-top pt-2 mt-3">
+                                <div id="feedback-<%= q.id %>" class="small fw-bold h6 mb-0"></div>
+                                <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 shadow-none" 
+                                        style="font-size: 0.65rem;"
+                                        id="unlock-btn-<%= q.id %>" 
+                                        onclick="document.getElementById('sol-<%= q.id %>').classList.toggle('d-none')" 
+                                        disabled>
+                                    <i class="fas fa-lock me-1"></i> Unlock Solution
+                                </button>
+                            </div>
+
+                            <div class="mt-2 d-none p-3 rounded-2 shadow-sm animate__animated animate__fadeIn" 
+                                 style="background: #f0f9ff; border-left: 5px solid #3182ce;" id="sol-<%= q.id %>">
+                                <p class="mb-1 text-primary fw-bold" style="font-size: 0.85rem;">Correct Answer: <%= q.correct_option %></p>
+                                <p class="text-muted mb-0" style="font-size: 0.85rem;"><%- q.explanation || q.shortcut_solution %></p>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+
+                <div class="text-center mt-5 mb-5 pb-5">
+                    <button class="btn btn-dark rounded-pill px-5 py-2 shadow-lg fw-bold" onclick="finishPractice()">
+                        Submit Practice Session
+                    </button>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="scoreModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header bg-dark text-white border-0 py-3 text-center">
+                <h6 class="modal-title fw-bold w-100">Practice Report</h6>
+            </div>
+            <div class="modal-body text-center p-4">
+                <div class="display-4 fw-bold text-primary mb-2" id="scoreValue">0/0</div>
+                <div class="d-flex justify-content-around mb-3 small">
+                    <div class="text-success fw-bold">Correct: <span id="cCount">0</span></div>
+                    <div class="text-danger fw-bold">Wrong: <span id="wCount">0</span></div>
+                </div>
+                <a href="/" class="btn btn-primary rounded-pill w-100 btn-sm fw-bold shadow-sm">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// --- TIMER SET TO 15 MINUTES ---
+let timeInSeconds = 15 * 60; 
+let isFinished = false; // Flag to prevent multiple auto-submissions
+const timerDisplay = document.getElementById('timer');
+
+const timerInterval = setInterval(() => {
+    if (isFinished) {
+        clearInterval(timerInterval);
+        return;
+    }
+
+    let m = Math.floor(timeInSeconds / 60);
+    let s = timeInSeconds % 60;
+    if (s < 10) s = '0' + s;
+    timerDisplay.innerText = `${m}:${s}`;
+
+    if (timeInSeconds <= 0) { 
+        clearInterval(timerInterval); 
+        finishPractice(); // Auto-submit when time is up
+    }
+    timeInSeconds--;
+}, 1000);
+
+let correct = 0, total = Number("<%= questions.length %>") || 0;
+
+function checkChoice(el, selected, ans, qId) {
+    const parent = el.closest('.row');
+    parent.querySelectorAll('.option-row').forEach(b => b.style.pointerEvents = 'none');
+    el.querySelector('.choice-tag').classList.remove('d-none');
+    
+    const feedback = document.getElementById('feedback-' + qId);
+    if (selected === ans) {
+        correct++; el.style.backgroundColor = '#d1e7dd'; el.style.borderColor = '#198754';
+        feedback.innerHTML = '<span class="text-success"><i class="fas fa-check-circle me-1"></i> Correct Answer!</span>';
+    } else {
+        el.style.backgroundColor = '#f8d7da'; el.style.borderColor = '#dc3545';
+        feedback.innerHTML = '<span class="text-danger"><i class="fas fa-times-circle me-1"></i> Incorrect Choice</span>';
+    }
+    document.getElementById('unlock-btn-' + qId).disabled = false;
+    document.getElementById('unlock-btn-' + qId).classList.replace('btn-outline-secondary', 'btn-primary');
+}
+
+function finishPractice() {
+    isFinished = true; // Stop timer flag
+    document.getElementById('scoreValue').innerText = correct + " / " + total;
+    document.getElementById('cCount').innerText = correct;
+    document.getElementById('wCount').innerText = (total - correct);
+    new bootstrap.Modal(document.getElementById('scoreModal')).show();
+}
+</script>
+
+<style>
+    .option-row:hover { border-color: #3182ce !important; background: #f8fafc !important; }
+    body { background-color: #f7fafc; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+    .question-card { transition: 0.3s; }
+    .sticky-top { position: sticky; top: 0; } /* Keeps the timer visible while scrolling */
+</style>
+
+<%- include('partials/footer') %>

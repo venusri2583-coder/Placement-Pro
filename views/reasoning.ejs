@@ -1,0 +1,110 @@
+<%- include('partials/header') %>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="d-flex justify-content-between align-items-center mb-5">
+                <div>
+                    <h2 class="fw-800 text-warning mb-0">Reasoning Challenge 🧩</h2>
+                    <p class="text-muted mb-0">Topic: <span class="badge bg-warning text-dark px-3"><%= topicName %></span></p>
+                </div>
+                <div class="glass-card p-3 shadow-sm border-danger border-2">
+                    <h6 class="small fw-bold text-uppercase text-center text-muted mb-1">Time Left</h6>
+                    <h4 id="timer" class="mb-0 text-danger fw-bold">05:00</h4>
+                </div>
+            </div>
+
+            <form action="/submit-reasoning" method="POST" id="quizForm">
+                <% if(questions && questions.length > 0) { %>
+                    <% questions.forEach((q, i) => { %>
+                        <div class="glass-card mb-4 p-4 border-0 shadow-sm">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h5 class="fw-bold">Q<%= i+1 %>. <%= q.question_text %></h5>
+                                <span class="badge bg-light text-dark border rounded-pill">Reasoning</span>
+                            </div>
+                            
+                            <div class="d-flex flex-column gap-3">
+                                <label class="btn btn-outline-light text-dark text-start border p-3 rounded-4 shadow-sm option-label">
+                                    <input type="radio" name="q<%= q.id %>" value="A" class="me-2" required> 
+                                    <strong>A)</strong> <%= q.option_a %>
+                                </label>
+                                <label class="btn btn-outline-light text-dark text-start border p-3 rounded-4 shadow-sm option-label">
+                                    <input type="radio" name="q<%= q.id %>" value="B" class="me-2"> 
+                                    <strong>B)</strong> <%= q.option_b %>
+                                </label>
+                                <label class="btn btn-outline-light text-dark text-start border p-3 rounded-4 shadow-sm option-label">
+                                    <input type="radio" name="q<%= q.id %>" value="C" class="me-2"> 
+                                    <strong>C)</strong> <%= q.option_c %>
+                                </label>
+                                <label class="btn btn-outline-light text-dark text-start border p-3 rounded-4 shadow-sm option-label">
+                                    <input type="radio" name="q<%= q.id %>" value="D" class="me-2"> 
+                                    <strong>D)</strong> <%= q.option_d %>
+                                </label>
+                            </div>
+                        </div>
+                    <% }) %>
+
+                    <div class="text-center mt-5">
+                        <button type="submit" class="btn btn-wow w-100 py-3 shadow-lg">
+                            Submit Reasoning Answers 🚀
+                        </button>
+                    </div>
+
+                <% } else { %>
+                    <div class="glass-card p-5 text-center">
+                        <div class="display-1 mb-3">⚠️</div>
+                        <h3 class="fw-bold">No Questions Found for this Topic!</h3>
+                        <p class="text-muted">Ensure you have added questions with the topic <b>"<%= topicName %>"</b> in your <code>reasoning_questions</code> table.</p>
+                        <a href="/" class="btn btn-warning rounded-pill px-4 mt-3">Try Another Topic</a>
+                    </div>
+                <% } %>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .option-label {
+        transition: all 0.3s ease;
+        background-color: #ffffff;
+        cursor: pointer;
+    }
+    .option-label:hover {
+        background-color: #fff9eb;
+        border-color: #ffc107 !important;
+        transform: translateX(8px);
+    }
+    .option-label:has(input:checked) {
+        background-color: #ffc107 !important;
+        color: black !important;
+        border-color: #ffc107 !important;
+        font-weight: bold;
+    }
+</style>
+
+<script>
+    let timeLeft = 300; // 5 Minutes
+    const timerDisplay = document.getElementById('timer');
+    
+    const interval = setInterval(() => {
+        let minutes = Math.floor(timeLeft / 60);
+        let seconds = timeLeft % 60;
+        
+        timerDisplay.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        
+        if (timeLeft <= 0) {
+            clearInterval(interval);
+            alert("Time's up! Submitting your reasoning test.");
+            document.getElementById('quizForm').submit();
+        } else {
+            timeLeft--;
+        }
+
+        // Change timer color to orange/red when low
+        if (timeLeft < 60) {
+            timerDisplay.className = "mb-0 text-warning fw-bold animate-pulse";
+        }
+    }, 1000);
+</script>
+
+<%- include('partials/footer') %>

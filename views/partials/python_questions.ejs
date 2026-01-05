@@ -1,0 +1,184 @@
+<h4 class="fw-bold text-warning mb-4 border-bottom pb-3"><i class="fab fa-python me-2"></i> Python Expert Mastery</h4>
+<div class="accordion accordion-flush" id="pythonAccordion">
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#py1">1. How is Memory Managed in Python?</button></h2>
+        <div id="py1" class="accordion-collapse collapse" data-bs-parent="#pythonAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Python uses a <strong>Private Heap Space</strong> for memory management. The **Python Garbage Collector** automatically reclaims memory by using **Reference Counting** and a cyclic garbage collector to delete objects that are no longer in use.</div>
+        </div>
+    </div>
+    
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#py2">2. What is the Global Interpreter Lock (GIL)?</button></h2>
+        <div id="py2" class="accordion-collapse collapse" data-bs-parent="#pythonAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> GIL is a mutex (lock) that allows only one thread to hold the control of the Python interpreter at a time. This means even on multi-core systems, only one thread executes at once, affecting CPU-bound multi-threaded programs.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#py3">3. Difference between List and Tuple?</button></h2>
+        <div id="py3" class="accordion-collapse collapse" data-bs-parent="#pythonAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Lists are <strong>Mutable</strong> (can be changed) and use <code>[]</code>. Tuples are <strong>Immutable</strong> (cannot be changed), use <code>()</code>, and are faster than lists.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#py4">4. What are Python Decorators?</button></h2>
+        <div id="py4" class="accordion-collapse collapse" data-bs-parent="#pythonAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Decorators allow you to modify the behavior of a function or class. They wrap another function to extend its behavior without permanently modifying it, using the <code>@decorator</code> syntax.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#py5">5. Explain List Comprehension.</button></h2>
+        <div id="py5" class="accordion-collapse collapse" data-bs-parent="#pythonAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> It provides a concise way to create lists. Syntax: <code>[expression for item in iterable if condition]</code>. It is generally faster than using a <code>for</code> loop.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#py6">6. What is the difference between 'is' and '=='?</button></h2>
+        <div id="py6" class="accordion-collapse collapse" data-bs-parent="#pythonAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> <code>==</code> checks for **equality** (if values are the same). <code>is</code> checks for **identity** (if both variables point to the same object in memory).</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#py7">7. What are Generators and 'yield' keyword?</button></h2>
+        <div id="py7" class="accordion-collapse collapse" data-bs-parent="#pythonAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Generators are functions that return an iterator object. They use <code>yield</code> to produce values one by one, saving memory as they don't store the entire list in memory.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#py8">8. What is PEP 8?</button></h2>
+        <div id="py8" class="accordion-collapse collapse" data-bs-parent="#pythonAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Python Enhancement Proposal 8 is the official style guide for Python code, providing rules on how to write readable and consistent code.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#py9">9. How do you handle exceptions in Python?</button></h2>
+        <div id="py9" class="accordion-collapse collapse" data-bs-parent="#pythonAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Using <code>try</code>, <code>except</code>, <code>finally</code>, and <code>else</code> blocks to catch and manage runtime errors without crashing the program.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#py10">10. What are Lambda functions?</button></h2>
+        <div id="py10" class="accordion-collapse collapse" data-bs-parent="#pythonAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Anonymous, one-line functions defined using the <code>lambda</code> keyword. They can take any number of arguments but only have one expression.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#py11">11. What is __init__ in Python classes?</button></h2>
+        <div id="py11" class="accordion-collapse collapse" data-bs-parent="#pythonAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> It is the **constructor** method. It is automatically called when a new object of a class is created to initialize the attributes.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#py12">12. Explain 'self' in Python.</button></h2>
+        <div id="py12" class="accordion-collapse collapse" data-bs-parent="#pythonAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> 'self' represents the instance of the class. It allows you to access the attributes and methods of the class in Python.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#py13">13. Break, Continue, and Pass?</button></h2>
+        <div id="py13" class="accordion-collapse collapse" data-bs-parent="#pythonAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> <code>break</code> exits the loop; <code>continue</code> skips the current iteration; <code>pass</code> is a null statement used as a placeholder.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#py14">14. What is slicing in Python?</button></h2>
+        <div id="py14" class="accordion-collapse collapse" data-bs-parent="#pythonAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A technique to extract a range of elements from a sequence (like list or string) using <code>[start:stop:step]</code>.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#py15">15. What are Python Dictionaries?</button></h2>
+        <div id="py15" class="accordion-collapse collapse" data-bs-parent="#pythonAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Unordered collections of data in <strong>key-value</strong> pairs, enclosed in <code>{}</code>. Keys must be unique and immutable.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#py16">16. Does Python support Multiple Inheritance?</button></h2>
+        <div id="py16" class="accordion-collapse collapse" data-bs-parent="#pythonAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Yes, a class can be derived from more than one base class. It uses Method Resolution Order (MRO) to handle it.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#py17">17. Multithreading vs Multiprocessing?</button></h2>
+        <div id="py17" class="accordion-collapse collapse" data-bs-parent="#pythonAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Multithreading shares the same memory space (limited by GIL). Multiprocessing uses separate memory spaces and bypasses GIL, better for CPU-intensive tasks.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#py18">18. What are Iterators?</button></h2>
+        <div id="py18" class="accordion-collapse collapse" data-bs-parent="#pythonAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Objects that can be iterated upon. They implement <code>__iter__()</code> and <code>__next__()</code> methods.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#py19">19. Local vs Global Scope?</button></h2>
+        <div id="py19" class="accordion-collapse collapse" data-bs-parent="#pythonAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Local variables are defined inside a function. Global variables are defined outside and can be accessed throughout the file.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#py20">20. Shallow copy vs Deep copy?</button></h2>
+        <div id="py20" class="accordion-collapse collapse" data-bs-parent="#pythonAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Shallow copy creates a new object but references the nested objects. Deep copy creates a new object and recursively copies all nested objects.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#py21">21. What is 'pip'?</button></h2>
+        <div id="py21" class="accordion-collapse collapse" data-bs-parent="#pythonAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> The standard package manager for Python used to install and manage additional libraries that are not part of the standard library.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#py22">22. What is Dynamic Typing?</button></h2>
+        <div id="py22" class="accordion-collapse collapse" data-bs-parent="#pythonAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> You don't need to declare the type of a variable. The type is determined at runtime based on the value assigned.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#py23">23. What are Docstrings?</button></h2>
+        <div id="py23" class="accordion-collapse collapse" data-bs-parent="#pythonAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Documentation strings used to explain what a function or class does, enclosed in triple quotes <code>""" """</code>.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#py24">24. What are map and filter functions?</button></h2>
+        <div id="py24" class="accordion-collapse collapse" data-bs-parent="#pythonAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> <code>map()</code> applies a function to all items in an input list. <code>filter()</code> creates a list of elements for which a function returns true.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#py25">25. What is a Namespace?</button></h2>
+        <div id="py25" class="accordion-collapse collapse" data-bs-parent="#pythonAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A system that ensures names are unique and can be used without any conflict by categorizing variables into different naming spaces.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#py26">26. How to open a file in Python?</button></h2>
+        <div id="py26" class="accordion-collapse collapse" data-bs-parent="#pythonAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Using the <code>open()</code> function. Example: <code>with open('file.txt', 'r') as f:</code> is the best practice as it handles closing automatically.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#py27">27. What is 'range' function?</button></h2>
+        <div id="py27" class="accordion-collapse collapse" data-bs-parent="#pythonAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Generates a sequence of numbers. <code>range(5)</code> gives 0, 1, 2, 3, 4. In Python 3, it is a generator-like object.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#py28">28. What are Python Packages?</button></h2>
+        <div id="py28" class="accordion-collapse collapse" data-bs-parent="#pythonAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A folder containing multiple Python modules and a special <code>__init__.py</code> file.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#py29">29. Difference between 'append' and 'extend'?</button></h2>
+        <div id="py29" class="accordion-collapse collapse" data-bs-parent="#pythonAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> <code>append()</code> adds its argument as a single element to the end of a list. <code>extend()</code> iterates over its argument and adds each element to the list.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#py30">30. What is a Module?</button></h2>
+        <div id="py30" class="accordion-collapse collapse" data-bs-parent="#pythonAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A file containing Python definitions and statements. It helps in breaking down large programs into small manageable and reusable files.</div>
+        </div>
+    </div>
+</div>

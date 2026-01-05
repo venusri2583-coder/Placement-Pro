@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * { box-sizing: border-box; -webkit-print-color-adjust: exact; }
+        body { font-family: 'Inter', sans-serif; color: #2d3748; margin: 0; padding: 0; background: white; }
+        .wrapper { display: flex; min-height: 100vh; }
+        .sidebar { width: 35%; background: #2d3748; color: white; padding: 40px 25px; }
+        .content { width: 65%; padding: 40px 35px; }
+        .name { font-size: 24pt; font-weight: 800; color: #f56565; line-height: 1; margin-bottom: 5px; }
+        .section-h { font-size: 13pt; font-weight: bold; border-bottom: 2px solid #f56565; margin-bottom: 10px; margin-top: 25px; color: #1a1a1a; text-transform: uppercase; }
+        .side-h { font-size: 11pt; font-weight: bold; border-bottom: 1px solid #f56565; margin-bottom: 10px; margin-top: 25px; text-transform: uppercase; }
+        .text { font-size: 10pt; color: #4a5568; margin-bottom: 10px; }
+        .side-text { font-size: 9pt; opacity: 0.9; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="sidebar">
+            <h1 class="name" style="color: white;"><%= data.full_name %></h1>
+            <p style="font-size: 10pt; opacity: 0.8;"><%= data.persona_type %> Profile</p>
+            
+            <h3 class="side-h">Contact</h3>
+            <p class="side-text">📞 <%= data.phone_number %></p>
+            <p class="side-text">📧 <%= data.email %></p>
+            <% if(data.linkedin_link){ %><p class="side-text">🔗 LinkedIn</p><% } %>
+            <% if(data.github_link){ %><p class="side-text">💻 GitHub</p><% } %>
+
+            <h3 class="side-h">Expertise</h3>
+            <p class="side-text"><%= data.technical_skills %></p>
+
+            <h3 class="side-h">Certifications</h3>
+            <p class="side-text"><%= data.certifications %></p>
+
+            <h3 class="side-h">Languages</h3>
+            <p class="side-text"><%= data.languages_known %></p>
+        </div>
+        <div class="content">
+            <h2 class="section-h" style="margin-top: 0;">Executive Summary</h2>
+            <p class="text"><%= data.career_objective %></p>
+
+            <h2 class="section-h">Technical Projects</h2>
+            <% if(data.projects) { data.projects.forEach(p => { %>
+                <div style="margin-bottom: 15px;">
+                    <strong style="font-size: 11pt;"><%= p.title %></strong>
+                    <p class="text"><%= p.desc %></p>
+                </div>
+            <% }) } %>
+
+            <h2 class="section-h">Academic Journey</h2>
+            <div style="margin-bottom: 15px;">
+                <strong><%= data.high_qual_name %></strong> | <%= data.high_qual_score %><br>
+                <span class="text"><%= data.high_qual_college %> | <%= data.high_qual_loc %></span>
+            </div>
+            <div>
+                <strong>SSC (10th Standard)</strong> | <%= data.score_10th %><br>
+                <span class="text"><%= data.school_name_10th %> | <%= data.school_10th_loc %></span>
+            </div>
+
+            <h2 class="section-h">Core Strengths</h2>
+            <p class="text"><%= data.strengths %></p>
+        </div>
+    </div>
+</body>
+</html>

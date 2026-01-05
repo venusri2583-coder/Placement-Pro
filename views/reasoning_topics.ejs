@@ -1,0 +1,164 @@
+<%- include('partials/header') %>
+
+<div class="py-5 text-white mb-5 shadow-lg" style="background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%); border-bottom: 5px solid #ffc107; border-radius: 0 0 50px 50px;">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold">Logical <span class="text-warning">Reasoning</span> 🧠</h1>
+        <p class="lead opacity-75 font-weight-bold">Master the Art of Logical Thinking with Placement Challenges.</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <h3 class="fw-bold mb-4 border-bottom pb-2 text-dark"><i class="fas fa-brain text-warning me-2"></i> Reasoning Modules</h3>
+    
+    <div class="row g-4 reasoning-grid">
+        
+        <div class="col-6 col-md-4 col-lg-2-4">
+            <div class="card reasoning-3d-card border-top-red">
+                <div class="icon-3d">🌳</div>
+                <h6 class="fw-bold">Blood Relations</h6>
+                <a href="/reasoning/Blood Relations" class="btn btn-sm btn-outline-warning rounded-pill px-3 mt-2">Practice</a>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2-4">
+            <div class="card reasoning-3d-card border-top-blue">
+                <div class="icon-3d">📉</div>
+                <h6 class="fw-bold">Number Series</h6>
+                <a href="/reasoning/Number Series" class="btn btn-sm btn-outline-warning rounded-pill px-3 mt-2">Practice</a>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2-4">
+            <div class="card reasoning-3d-card border-top-purple">
+                <div class="icon-3d">🔐</div>
+                <h6 class="fw-bold">Coding-Decoding</h6>
+                <a href="/reasoning/Coding-Decoding" class="btn btn-sm btn-outline-warning rounded-pill px-3 mt-2">Practice</a>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2-4">
+            <div class="card reasoning-3d-card border-top-orange">
+                <div class="icon-3d">🧬</div>
+                <h6 class="fw-bold">Syllogism</h6>
+                <a href="/reasoning/Syllogism" class="btn btn-sm btn-outline-warning rounded-pill px-3 mt-2">Practice</a>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2-4">
+            <div class="card reasoning-3d-card border-top-green">
+                <div class="icon-3d">🪑</div>
+                <h6 class="fw-bold">Seating Arrangement</h6>
+                <a href="/reasoning/Seating Arrangement" class="btn btn-sm btn-outline-warning rounded-pill px-3 mt-2">Practice</a>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2-4">
+            <div class="card reasoning-3d-card border-top-yellow">
+                <div class="icon-3d">🧭</div>
+                <h6 class="fw-bold">Direction Sense</h6>
+                <a href="/reasoning/Direction Sense" class="btn btn-sm btn-outline-warning rounded-pill px-3 mt-2">Practice</a>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2-4">
+            <div class="card reasoning-3d-card border-top-pink">
+                <div class="icon-3d">⏰</div>
+                <h6 class="fw-bold">Clocks & Calendars</h6>
+                <a href="/reasoning/Clocks Calendars" class="btn btn-sm btn-outline-warning rounded-pill px-3 mt-2">Practice</a>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2-4">
+            <div class="card reasoning-3d-card border-top-cyan">
+                <div class="icon-3d">🎭</div>
+                <h6 class="fw-bold">Analogy</h6>
+                <a href="/reasoning/Analogy" class="btn btn-sm btn-outline-warning rounded-pill px-3 mt-2">Practice</a>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2-4">
+            <div class="card reasoning-3d-card border-top-indigo">
+                <div class="icon-3d">📂</div>
+                <h6 class="fw-bold">Data Sufficiency</h6>
+                <a href="/reasoning/Data Sufficiency" class="btn btn-sm btn-outline-warning rounded-pill px-3 mt-2">Practice</a>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2-4">
+            <div class="card reasoning-3d-card border-top-brown">
+                <div class="icon-3d">🕵️</div>
+                <h6 class="fw-bold">Logic Puzzles</h6>
+                <a href="/reasoning/Puzzles" class="btn btn-sm btn-outline-warning rounded-pill px-3 mt-2">Practice</a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .reasoning-grid {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    /* Custom column for 5 items in a row on large screens */
+    @media (min-width: 992px) {
+        .col-lg-2-4 {
+            flex: 0 0 auto;
+            width: 20%;
+        }
+    }
+
+    .reasoning-3d-card {
+        background: #ffffff;
+        border-radius: 20px !important;
+        padding: 25px 15px;
+        text-align: center;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        cursor: pointer;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        height: 100%;
+        border: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* 3D Hover & Tilt Effect */
+    .reasoning-3d-card:hover {
+        transform: translateY(-12px) rotateX(8deg);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.12) !important;
+        background: #fffdf5;
+    }
+
+    .icon-3d {
+        font-size: 40px;
+        margin-bottom: 15px;
+        filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.1));
+        transition: transform 0.3s ease;
+    }
+
+    .reasoning-3d-card:hover .icon-3d {
+        transform: scale(1.2) rotate(5deg);
+    }
+
+    /* Top Accent Colors */
+    .border-top-red { border-top: 5px solid #ff7675; }
+    .border-top-blue { border-top: 5px solid #74b9ff; }
+    .border-top-purple { border-top: 5px solid #a29bfe; }
+    .border-top-orange { border-top: 5px solid #fab1a0; }
+    .border-top-green { border-top: 5px solid #55efc4; }
+    .border-top-yellow { border-top: 5px solid #fdcb6e; }
+    .border-top-pink { border-top: 5px solid #fd79a8; }
+    .border-top-cyan { border-top: 5px solid #00cec9; }
+    .border-top-indigo { border-top: 5px solid #6c5ce7; }
+    .border-top-brown { border-top: 5px solid #e17055; }
+
+    .btn-outline-warning:hover {
+        background-color: #ffc107 !important;
+        color: white !important;
+    }
+</style>
+
+<%- include('partials/footer') %>

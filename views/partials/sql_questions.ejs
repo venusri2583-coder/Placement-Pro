@@ -1,0 +1,188 @@
+<h4 class="fw-bold text-info mb-4 border-bottom pb-3"><i class="fas fa-database me-2"></i> SQL & Database Mastery</h4>
+<div class="accordion accordion-flush" id="sqlAccordion">
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold py-3" data-bs-toggle="collapse" data-bs-target="#sql1">1. What are ACID properties?</button></h2>
+        <div id="sql1" class="accordion-collapse collapse" data-bs-parent="#sqlAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> ACID stands for Atomicity, Consistency, Isolation, and Durability. These ensure that database transactions are processed reliably and data integrity is maintained.</div>
+        </div>
+    </div>
+    
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold py-3" data-bs-toggle="collapse" data-bs-target="#sql2">2. How to add a new column to a table?</button></h2>
+        <div id="sql2" class="accordion-collapse collapse" data-bs-parent="#sqlAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Use: <code>ALTER TABLE table_name ADD column_name datatype;</code>.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold py-3" data-bs-toggle="collapse" data-bs-target="#sql3">3. How to remove an existing column?</button></h2>
+        <div id="sql3" class="accordion-collapse collapse" data-bs-parent="#sqlAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Use: <code>ALTER TABLE table_name DROP COLUMN column_name;</code>.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold py-3" data-bs-toggle="collapse" data-bs-target="#sql4">4. Difference between DELETE and TRUNCATE?</button></h2>
+        <div id="sql4" class="accordion-collapse collapse" data-bs-parent="#sqlAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> DELETE is a DML command used to remove specific rows with a WHERE clause. TRUNCATE is a DDL command that removes all rows, resets identity columns, and is faster than DELETE.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold py-3" data-bs-toggle="collapse" data-bs-target="#sql5">5. What are the different types of SQL Joins?</button></h2>
+        <div id="sql5" class="accordion-collapse collapse" data-bs-parent="#sqlAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Inner Join (matching values), Left Join (all left + matches), Right Join (all right + matches), and Full Join (all records from both tables).</div>
+        </div>
+    </div>
+    
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold py-3" data-bs-toggle="collapse" data-bs-target="#sql6">6. Primary Key vs Unique Key?</button></h2>
+        <div id="sql6" class="accordion-collapse collapse" data-bs-parent="#sqlAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A Primary Key uniquely identifies a record and cannot be NULL. A Unique Key also ensures uniqueness but can accept exactly one NULL value.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold py-3" data-bs-toggle="collapse" data-bs-target="#sql7">7. What is a Foreign Key?</button></h2>
+        <div id="sql7" class="accordion-collapse collapse" data-bs-parent="#sqlAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A column that creates a relationship between two tables by referencing the Primary Key of another table.</div>
+        </div>
+    </div>
+    
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold py-3" data-bs-toggle="collapse" data-bs-target="#sql8">8. What is Normalization?</button></h2>
+        <div id="sql8" class="accordion-collapse collapse" data-bs-parent="#sqlAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> The process of organizing data in a database to reduce redundancy and improve data integrity (1NF, 2NF, 3NF).</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold py-3" data-bs-toggle="collapse" data-bs-target="#sql9">9. DDL vs DML vs DCL?</button></h2>
+        <div id="sql9" class="accordion-collapse collapse" data-bs-parent="#sqlAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> DDL (Data Definition Language: Create, Alter), DML (Data Manipulation: Insert, Select), and DCL (Data Control: Grant, Revoke).</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold py-3" data-bs-toggle="collapse" data-bs-target="#sql10">10. What is a View in SQL?</button></h2>
+        <div id="sql10" class="accordion-collapse collapse" data-bs-parent="#sqlAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A virtual table based on the result-set of an SQL statement. It does not store data physically.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold py-3" data-bs-toggle="collapse" data-bs-target="#sql11">11. Difference between WHERE and HAVING?</button></h2>
+        <div id="sql11" class="accordion-collapse collapse" data-bs-parent="#sqlAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> WHERE filters rows before grouping; HAVING filters groups after the GROUP BY clause is applied.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold py-3" data-bs-toggle="collapse" data-bs-target="#sql12">12. What is an Index?</button></h2>
+        <div id="sql12" class="accordion-collapse collapse" data-bs-parent="#sqlAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A performance optimization tool that helps the database find data faster without scanning every row in a table.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold py-3" data-bs-toggle="collapse" data-bs-target="#sql13">13. SQL vs NoSQL?</button></h2>
+        <div id="sql13" class="accordion-collapse collapse" data-bs-parent="#sqlAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> SQL databases are relational and structured; NoSQL databases are non-relational, flexible, and handle unstructured data.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold py-3" data-bs-toggle="collapse" data-bs-target="#sql14">14. What is a Subquery?</button></h2>
+        <div id="sql14" class="accordion-collapse collapse" data-bs-parent="#sqlAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A query nested inside another query (Select, Insert, or Update).</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold py-3" data-bs-toggle="collapse" data-bs-target="#sql15">15. UNION vs UNION ALL?</button></h2>
+        <div id="sql15" class="accordion-collapse collapse" data-bs-parent="#sqlAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> UNION removes duplicate rows; UNION ALL keeps all rows, including duplicates.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold py-3" data-bs-toggle="collapse" data-bs-target="#sql16">16. What is a Stored Procedure?</button></h2>
+        <div id="sql16" class="accordion-collapse collapse" data-bs-parent="#sqlAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A prepared SQL code that you can save and reuse multiple times.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold py-3" data-bs-toggle="collapse" data-bs-target="#sql17">17. What are SQL Constraints?</button></h2>
+        <div id="sql17" class="accordion-collapse collapse" data-bs-parent="#sqlAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Rules applied to columns (NOT NULL, UNIQUE, CHECK, DEFAULT) to maintain data accuracy.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold py-3" data-bs-toggle="collapse" data-bs-target="#sql18">18. Self Join vs Cross Join?</button></h2>
+        <div id="sql18" class="accordion-collapse collapse" data-bs-parent="#sqlAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Self Join joins a table to itself; Cross Join produces a Cartesian product of two tables.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold py-3" data-bs-toggle="collapse" data-bs-target="#sql19">19. Aggregate Functions in SQL?</button></h2>
+        <div id="sql19" class="accordion-collapse collapse" data-bs-parent="#sqlAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Functions like SUM(), AVG(), COUNT(), MIN(), and MAX() that perform calculations on multiple values.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold py-3" data-bs-toggle="collapse" data-bs-target="#sql20">20. What is a Trigger?</button></h2>
+        <div id="sql20" class="accordion-collapse collapse" data-bs-parent="#sqlAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A stored program that automatically executes in response to certain events (Insert, Update, or Delete) on a table.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold py-3" data-bs-toggle="collapse" data-bs-target="#sql21">21. Char vs Varchar?</button></h2>
+        <div id="sql21" class="accordion-collapse collapse" data-bs-parent="#sqlAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Char is fixed-length; Varchar is variable-length and saves space.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold py-3" data-bs-toggle="collapse" data-bs-target="#sql22">22. What is a Candidate Key?</button></h2>
+        <div id="sql22" class="accordion-collapse collapse" data-bs-parent="#sqlAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Any column or set of columns that can uniquely identify a record; one is chosen as the Primary Key.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold py-3" data-bs-toggle="collapse" data-bs-target="#sql23">23. Like operator in SQL?</button></h2>
+        <div id="sql23" class="accordion-collapse collapse" data-bs-parent="#sqlAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Used with WHERE to search for a specified pattern (using % and _ wildcards).</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold py-3" data-bs-toggle="collapse" data-bs-target="#sql24">24. What is a Database Transaction?</button></h2>
+        <div id="sql24" class="accordion-collapse collapse" data-bs-parent="#sqlAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A logical unit of work that contains one or more SQL statements (using Commit/Rollback).</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold py-3" data-bs-toggle="collapse" data-bs-target="#sql25">25. Data Integrity Types?</button></h2>
+        <div id="sql25" class="accordion-collapse collapse" data-bs-parent="#sqlAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Entity integrity (Primary Key), Domain integrity (Data types), and Referential integrity (Foreign Key).</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold py-3" data-bs-toggle="collapse" data-bs-target="#sql26">26. Group By vs Order By?</button></h2>
+        <div id="sql26" class="accordion-collapse collapse" data-bs-parent="#sqlAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Group By organizes data into groups for aggregate functions; Order By sorts the final result-set.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold py-3" data-bs-toggle="collapse" data-bs-target="#sql27">27. What is an Entity Relationship Diagram (ERD)?</button></h2>
+        <div id="sql27" class="accordion-collapse collapse" data-bs-parent="#sqlAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A visual representation of database entities and the relationships between them.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold py-3" data-bs-toggle="collapse" data-bs-target="#sql28">28. Between vs In operator?</button></h2>
+        <div id="sql28" class="accordion-collapse collapse" data-bs-parent="#sqlAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> BETWEEN filters a range of values; IN filters based on a specified list of values.</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold py-3" data-bs-toggle="collapse" data-bs-target="#sql29">29. What is Data Redundancy?</button></h2>
+        <div id="sql29" class="accordion-collapse collapse" data-bs-parent="#sqlAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Storing the same data in multiple places, which can lead to inconsistency (solved by Normalization).</div>
+        </div>
+    </div>
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold py-3" data-bs-toggle="collapse" data-bs-target="#sql30">30. Is MySQL Case Sensitive?</button></h2>
+        <div id="sql30" class="accordion-collapse collapse" data-bs-parent="#sqlAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Generally, SQL keywords are not case-sensitive, but table and database names' sensitivity depends on the operating system.</div>
+        </div>
+    </div>
+</div>

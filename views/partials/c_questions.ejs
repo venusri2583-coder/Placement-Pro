@@ -1,0 +1,219 @@
+<h4 class="fw-bold text-success mb-4 border-bottom pb-3"><i class="fas fa-code me-2"></i> C / C++ Core Mastery (Top 30)</h4>
+<div class="accordion accordion-flush" id="cAccordion">
+    
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#c1">1. What are Pointers? Explain with memory representation.</button></h2>
+        <div id="c1" class="accordion-collapse collapse" data-bs-parent="#cAccordion">
+            <div class="accordion-body text-secondary small">
+                <strong>Answer:</strong> Pointers are variables that store the <strong>memory address</strong> of another variable. 
+                
+                <br>Example: <code>int a = 10; int *p = &a;</code>. Here 'p' points to the address of 'a'.
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#c2">2. Difference between malloc() and calloc()?</button></h2>
+        <div id="c2" class="accordion-collapse collapse" data-bs-parent="#cAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> <code>malloc()</code> allocates a single block of memory and doesn't initialize it (garbage values). <code>calloc()</code> allocates multiple blocks and initializes them all to zero.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#c3">3. What is a Dangling Pointer?</button></h2>
+        <div id="c3" class="accordion-collapse collapse" data-bs-parent="#cAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A pointer that points to a memory location that has been deallocated (freed). Using it causes unexpected crashes.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#c4">4. What is a Virtual Function in C++?</button></h2>
+        <div id="c4" class="accordion-collapse collapse" data-bs-parent="#cAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A function in a base class that is redefined in a derived class to achieve <strong>Runtime Polymorphism</strong>.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#c5">5. Difference between Struct and Class in C++?</button></h2>
+        <div id="c5" class="accordion-collapse collapse" data-bs-parent="#cAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> In a <code>struct</code>, members are <strong>public</strong> by default. In a <code>class</code>, members are <strong>private</strong> by default.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#c6">6. What is a Destructor?</button></h2>
+        <div id="c6" class="accordion-collapse collapse" data-bs-parent="#cAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A special function that is automatically called when an object goes out of scope to release allocated memory.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#c7">7. What is an Inline Function?</button></h2>
+        <div id="c7" class="accordion-collapse collapse" data-bs-parent="#cAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A function that the compiler expands in-line at the point of call to reduce function call overhead.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#c8">8. What is the 'this' pointer?</button></h2>
+        <div id="c8" class="accordion-collapse collapse" data-bs-parent="#cAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> An implicit pointer available in member functions that points to the object that invoked the function.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#c9">9. What is a Friend Function?</button></h2>
+        <div id="c9" class="accordion-collapse collapse" data-bs-parent="#cAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A non-member function that has permission to access the <strong>private and protected</strong> members of a class.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#c10">10. Pointer vs Reference in C++?</button></h2>
+        <div id="c10" class="accordion-collapse collapse" data-bs-parent="#cAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Pointers can be NULL and reassigned; References must be initialized and cannot be changed to refer to another variable.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#c11">11. What is a static variable in C?</button></h2>
+        <div id="c11" class="accordion-collapse collapse" data-bs-parent="#cAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A variable that retains its value even after its scope ends, living until the program terminates.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#c12">12. What is Recursion?</button></h2>
+        <div id="c12" class="accordion-collapse collapse" data-bs-parent="#cAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A process where a function calls itself to solve smaller sub-problems.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#c13">13. What is a Macro?</button></h2>
+        <div id="c13" class="accordion-collapse collapse" data-bs-parent="#cAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A fragment of code given a name, which is replaced by its value during preprocessing (e.g., <code>#define MAX 100</code>).</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#c14">14. List Access Modifiers in C++.</button></h2>
+        <div id="c14" class="accordion-collapse collapse" data-bs-parent="#cAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Public (accessible everywhere), Private (only in class), and Protected (class and subclasses).</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#c15">15. What is a Constructor?</button></h2>
+        <div id="c15" class="accordion-collapse collapse" data-bs-parent="#cAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A special member function that initializes an object. It has the same name as the class.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#c16">16. What is Function Overloading?</button></h2>
+        <div id="c16" class="accordion-collapse collapse" data-bs-parent="#cAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Having multiple functions with the same name but different parameters (Compile-time Polymorphism).</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#c17">17. What is an Abstract Class?</button></h2>
+        <div id="c17" class="accordion-collapse collapse" data-bs-parent="#cAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A class with at least one <strong>Pure Virtual Function</strong>. It cannot be instantiated.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#c18">18. What is a Pure Virtual Function?</button></h2>
+        <div id="c18" class="accordion-collapse collapse" data-bs-parent="#cAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A virtual function assigned to zero: <code>virtual void show() = 0;</code>. It must be overridden in derived classes.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#c19">19. Difference between Stack and Heap memory?</button></h2>
+        <div id="c19" class="accordion-collapse collapse" data-bs-parent="#cAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Stack is automatic and small. Heap is manual (dynamic) and much larger.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#c20">20. What is an Enum?</button></h2>
+        <div id="c20" class="accordion-collapse collapse" data-bs-parent="#cAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A user-defined type consisting of a set of named integer constants (e.g., Days of the week).</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#c21">21. Use of 'const' keyword?</button></h2>
+        <div id="c21" class="accordion-collapse collapse" data-bs-parent="#cAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> It makes a variable's value unchangeable after initialization.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#c22">22. Does C++ support Multiple Inheritance?</button></h2>
+        <div id="c22" class="accordion-collapse collapse" data-bs-parent="#cAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Yes, a class can inherit from more than one base class. (Note: Java doesn't support this directly).</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#c23">23. What is the Diamond Problem?</button></h2>
+        <div id="c23" class="accordion-collapse collapse" data-bs-parent="#cAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Ambiguity when a class inherits from two classes that have a common parent. Solved using <strong>Virtual Inheritance</strong>.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#c24">24. What is the Scope Resolution Operator (::)?</button></h2>
+        <div id="c24" class="accordion-collapse collapse" data-bs-parent="#cAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Used to access global variables when a local one has the same name, or to define class methods outside the class body.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#c25">25. What is STL in C++?</button></h2>
+        <div id="c25" class="accordion-collapse collapse" data-bs-parent="#cAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Standard Template Library. It provides containers (vector, list), algorithms (sort, search), and iterators.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#c26">26. What are Templates?</button></h2>
+        <div id="c26" class="accordion-collapse collapse" data-bs-parent="#cAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A feature that allows writing generic code for any data type (Generic Programming).</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#c27">27. Use of sizeof operator?</button></h2>
+        <div id="c27" class="accordion-collapse collapse" data-bs-parent="#cAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> It returns the size of a data type or variable in bytes.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#c28">28. What is a NULL Pointer?</button></h2>
+        <div id="c28" class="accordion-collapse collapse" data-bs-parent="#cAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A pointer that points to nothing (address 0). Safely used to initialize pointers.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#c29">29. What is a Namespace?</button></h2>
+        <div id="c29" class="accordion-collapse collapse" data-bs-parent="#cAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A container used to group related classes/functions to prevent name conflicts (e.g., <code>using namespace std;</code>).</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#c30">30. How to handle File I/O in C++?</button></h2>
+        <div id="c30" class="accordion-collapse collapse" data-bs-parent="#cAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Using classes like <code>ifstream</code> (read) and <code>ofstream</code> (write) from the <code>&lt;fstream&gt;</code> library.</div>
+        </div>
+    </div>
+
+</div>
+<div class="p-3 bg-light text-center text-muted small fw-bold mt-2">C / C++ Mastery - 30 Core Questions Completed ✅</div>

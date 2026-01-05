@@ -1,0 +1,112 @@
+<%- include('partials/header') %>
+
+<div class="elite-wrapper">
+    <div class="cinematic-bg" style="background-image: linear-gradient(rgba(10, 15, 30, 0.85), rgba(10, 15, 30, 0.98)), url('https://images.unsplash.com/photo-1497294815431-9365093b7331?q=80&w=2070');"></div>
+
+    <div class="portal-container animate__animated animate__zoomIn">
+        <div class="split-glass-box">
+            
+            <div class="brand-panel">
+                <div class="brand-content">
+                    <div class="status-indicator animate__animated animate__fadeIn">STUDENT ACCESS</div>
+                    
+                    <h1 class="master-heading animated-title">
+                        Placement <br><span>Preparation Portal</span>
+                    </h1>
+                    
+                    <p class="tagline animate__animated animate__fadeIn animate__delay-1s">
+                        Continue your journey towards excellence. Access your personalized dashboard and track your progress.
+                    </p>
+                    
+                    <div class="feature-badges animate__animated animate__fadeIn animate__delay-2s">
+                        <span><i class="fas fa-lock"></i> Secure Login</span>
+                        <span><i class="fas fa-bolt"></i> Fast Access</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-panel">
+                <div class="auth-box">
+                    <h2 class="fw-bold text-dark mb-1">Student Login</h2>
+                    <p class="text-muted small mb-4">Sign in to your account</p>
+
+                    <% if (msg) { %> 
+                        <div class="alert alert-success pro-alert py-2 small animate__animated animate__fadeIn">
+                            <i class="fas fa-check-circle me-2"></i><%= msg %>
+                        </div> 
+                    <% } %>
+
+                    <% if (error) { %> 
+                        <div class="alert alert-danger pro-alert py-2 small animate__animated animate__shakeX">
+                            <i class="fas fa-exclamation-circle me-2"></i><%= error %>
+                        </div> 
+                    <% } %>
+
+                    <form action="/login" method="POST">
+                        
+                        <div class="modern-field mb-3">
+                            <label><i class="fas fa-envelope me-2"></i>College Email</label>
+                            <input type="email" name="email" placeholder="name@college.edu" required>
+                        </div>
+                        
+                        <div class="modern-field mb-4">
+                            <label><i class="fas fa-key me-2"></i>Password</label>
+                            <input type="password" name="password" placeholder="••••••••" required>
+                        </div>
+                        
+                        <button type="submit" class="btn-elite-action" style="background: #2563eb;">
+                            Access Portal <i class="fas fa-arrow-right ms-2"></i>
+                        </button>
+                    </form>
+                    
+                    <div class="text-center mt-4">
+                        <span class="small text-muted">New Student? <a href="/register" class="fw-bold text-indigo" style="text-decoration: none;">Join the Elite</a></span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    /* 🎨 CUSTOM ANIMATION FOR THE MOVING HEADING */
+    @keyframes slideInMoving {
+        0% { opacity: 0; transform: translateX(-80px) skewX(-10deg); }
+        100% { opacity: 1; transform: translateX(0) skewX(0deg); }
+    }
+
+    .animated-title {
+        animation: slideInMoving 1.2s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+        text-shadow: 0 15px 40px rgba(0,0,0,0.4);
+    }
+
+    /* Base Styling Consistency */
+    .elite-wrapper { height: 100vh; width: 100vw; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; background: #020617; }
+    .cinematic-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; z-index: -1; animation: subtleZoom 20s infinite alternate; }
+    @keyframes subtleZoom { from { transform: scale(1); } to { transform: scale(1.1); } }
+
+    .split-glass-box { display: flex; width: 90%; max-width: 1100px; min-height: 650px; background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(25px); border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); overflow: hidden; box-shadow: 0 50px 100px rgba(0,0,0,0.6); }
+    
+    .brand-panel { flex: 1.2; padding: 70px; display: flex; align-items: center; color: white; border-right: 1px solid rgba(255,255,255,0.05); }
+    .master-heading { font-family: 'Outfit', sans-serif; font-size: 3.8rem; font-weight: 800; line-height: 0.9; letter-spacing: -2px; }
+    .master-heading span { color: #3b82f6; text-shadow: 0 0 35px rgba(59, 130, 246, 0.5); }
+    
+    .status-indicator { display: inline-block; padding: 5px 15px; background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 100px; font-size: 0.7rem; font-weight: 700; margin-bottom: 20px; letter-spacing: 2px; }
+    .tagline { margin-top: 25px; font-size: 1.1rem; color: rgba(255,255,255,0.7); line-height: 1.6; }
+    .feature-badges { display: flex; gap: 15px; margin-top: 35px; }
+    .feature-badges span { background: rgba(255,255,255,0.05); padding: 10px 20px; border-radius: 12px; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.1); }
+
+    .form-panel { flex: 1; background: white; padding: 60px; display: flex; align-items: center; justify-content: center; }
+    .auth-box { width: 100%; max-width: 360px; }
+    .modern-field label { display: block; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: #64748b; margin-bottom: 8px; }
+    .modern-field input { width: 100%; padding: 16px; border-radius: 15px; border: 1.5px solid #e2e8f0; background: #f8fafc; outline: none; transition: 0.3s; font-size: 0.95rem; }
+    .modern-field input:focus { border-color: #2563eb; background: white; box-shadow: 0 10px 20px rgba(37, 99, 235, 0.1); }
+
+    .btn-elite-action { width: 100%; padding: 18px; border-radius: 18px; color: white; border: none; font-weight: 700; transition: 0.3s; }
+    .btn-elite-action:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(37, 99, 235, 0.4); filter: brightness(1.1); }
+    
+    @media (max-width: 992px) { .brand-panel { display: none; } .split-glass-box { max-width: 500px; } }
+</style>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,133 @@
+<%- include('partials/header') %>
+
+<div style="background-color: #1a1a1a; padding-bottom: 120px; border-bottom-left-radius: 80px; border-bottom-right-radius: 80px; margin-bottom: -110px; position: relative; z-index: 1; border-bottom: 4px solid #3182ce;">
+    
+    <nav class="container d-flex justify-content-between align-items-center py-4">
+        <div class="text-white fw-bold h4 m-0">
+            <i class="fas fa-rocket text-primary me-2"></i>PLACEMENT PRO
+        </div>
+        <div class="d-flex align-items-center">
+            <% if (user) { %>
+                <span class="text-white me-3 opacity-75">Welcome, <strong class="text-white"><%= user.username %></strong>! 👋</span>
+                <a href="/logout" class="btn btn-outline-light rounded-pill px-4 py-2 fw-bold btn-sm">Logout</a>
+            <% } else { %>
+                <a href="/login" class="text-white me-4 text-decoration-none fw-bold">Login</a>
+                <a href="/register" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow">Get Started</a>
+            <% } %>
+        </div>
+    </nav>
+
+    <div class="container text-center mt-4 text-white">
+        <div class="d-inline-block bg-white text-primary px-4 py-2 rounded-pill fw-bold mb-4 shadow-sm" style="font-size: 0.9rem;">
+            Welcome back, <%= user ? user.username : 'Guest' %>! ✨
+        </div>
+
+        <h1 class="display-3 fw-bold mb-2">Dream Big. <span style="color: #ecc94b;">Work Hard.</span> ✨</h1>
+        <p class="lead mb-4 opacity-75">Master Aptitude, Coding, and Interviews in one Elite Portal. 🚀</p>
+
+        <div class="mx-auto p-3 shadow-lg quote-box" style="max-width: 650px; background-color: #2d3748; border-left: 6px solid #ecc94b; border-radius: 12px;">
+            <p class="m-0 fst-italic text-white">"The best way to predict your future is to create it." — Abraham Lincoln</p>
+        </div>
+    </div>
+</div>
+
+<div class="container" style="position: relative; z-index: 2; padding-top: 60px;">
+    <div class="row g-4 justify-content-center">
+        
+        <div class="col-md-4">
+            <div class="card h-100 shadow border-0 text-center p-5 hover-card">
+                <img src="https://cdn-icons-png.flaticon.com/512/3401/3401591.png" width="70" class="mx-auto mb-4 floating" alt="Aptitude">
+                <h3 class="fw-bold">Aptitude Zone</h3>
+                <p class="text-muted small">Master Arithmetic, Time & Work, and Logic topics.</p>
+                <a href="/aptitude-topics" class="btn btn-outline-primary rounded-pill mt-auto">View Topics</a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow border-0 text-center p-5 hover-card">
+                <img src="https://cdn-icons-png.flaticon.com/512/8637/8637272.png" width="70" class="mx-auto mb-4 floating" alt="Reasoning">
+                <h3 class="fw-bold">Reasoning Zone</h3>
+                <p class="text-muted small">Improve logical thinking with chapter-wise practice.</p>
+                <a href="/reasoning-topics" class="btn btn-outline-primary rounded-pill mt-auto">View Topics</a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow border-0 text-center p-5 hover-card" style="border-top: 5px solid #4299e1 !important;">
+                <img src="https://cdn-icons-png.flaticon.com/512/3898/3898150.png" width="70" class="mx-auto mb-4 floating" alt="English">
+                <h3 class="fw-bold">English Zone</h3>
+                <p class="text-muted small">Master Verbal Ability, Grammar, and Vocabulary skills.</p>
+                <a href="/english-topics" class="btn btn-outline-info rounded-pill mt-auto fw-bold" style="color:#2b6cb0; border-color:#2b6cb0;">View Topics</a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow border-0 text-center p-5 hover-card" style="border-top: 5px solid #2f855a !important;">
+                <img src="https://cdn-icons-png.flaticon.com/512/1157/1157109.png" width="75" class="mx-auto mb-4 floating" alt="Coding">
+                <h3 class="fw-bold">Coding Hub</h3>
+                <p class="text-muted small">Solve DSA challenges and enhance your logic skills.</p>
+                <button class="btn btn-outline-success rounded-pill mt-auto disabled fw-bold">Coming Soon</button>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow border-0 text-center p-5 hover-card" style="border-top: 5px solid #ecc94b !important;">
+                <img src="https://cdn-icons-png.flaticon.com/512/3112/3112946.png" width="75" class="mx-auto mb-4 floating" alt="Leaderboard">
+                <h3 class="fw-bold">Leaderboard</h3>
+                <p class="text-muted small">See where you stand among your peers in mock tests.</p>
+                <a href="/leaderboard" class="btn btn-outline-warning rounded-pill mt-auto fw-bold" style="color:#d69e2e; border-color:#d69e2e;">View Rankings</a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow border-0 text-center p-5 hover-card">
+                <img src="https://cdn-icons-png.flaticon.com/512/9983/9983339.png" width="80" class="mx-auto mb-4 floating" alt="Interview Prep">
+                <h3 class="fw-bold">Interview Prep</h3>
+                <p class="text-muted small">Crack HR and Technical interview rounds with ease.</p>
+                <a href="/interview-prep" class="btn btn-outline-warning rounded-pill mt-auto fw-bold" style="color:#d69e2e; border-color:#d69e2e;">Get Tips</a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow border-0 text-center p-5 hover-card">
+                <img src="https://cdn-icons-png.flaticon.com/512/2875/2875437.png" width="70" class="mx-auto mb-4 floating" alt="Resume">
+                <h3 class="fw-bold">Resume Upload</h3>
+                <p class="text-muted small">Upload your resume for AI-driven professional feedback.</p>
+                <a href="/resume-upload" class="btn btn-outline-danger rounded-pill mt-auto fw-bold">Upload Now</a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow border-0 text-center p-5 hover-card text-white" style="border-radius: 30px; background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);">
+                <img src="https://cdn-icons-png.flaticon.com/512/9406/9406364.png" width="70" class="mx-auto mb-4 floating" alt="Mock Test">
+                <h3 class="fw-bold text-white">Mock Test</h3>
+                <p class="opacity-75 small">Full-length exam simulation to test your speed.</p>
+                <a href="/mock-test" class="btn btn-light rounded-pill mt-auto text-primary fw-bold">Start Mega Test</a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .hover-card { 
+        border-radius: 30px; 
+        transition: transform 0.4s ease, box-shadow 0.4s ease; 
+        background-color: white;
+    }
+    .hover-card:hover { 
+        transform: translateY(-12px); 
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15) !important; 
+    }
+    
+    .floating { animation: float 3s ease-in-out infinite; }
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .quote-box { animation: slideUp 1.2s ease; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<%- include('partials/footer') %>

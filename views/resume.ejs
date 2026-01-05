@@ -1,0 +1,239 @@
+<%- include('partials/header') %>
+
+<div style="background: #1a1a1a; padding: 40px 0; border-bottom-left-radius: 40px; border-bottom-right-radius: 40px;" class="text-center text-white mb-4 shadow-sm">
+    <h2 class="fw-bold animate__animated animate__fadeIn">Resume <span style="color: #f56565;">Master Hub</span> 📄</h2>
+    <p class="opacity-75 small">Build professional ATS profiles with real-time dynamic modules.</p>
+</div>
+
+<div class="container" style="max-width: 1000px;">
+    
+    <% if (typeof msg !== 'undefined' && msg) { %>
+        <div class="alert alert-success alert-dismissible fade show rounded-pill shadow-sm border-0 mb-4 px-4 py-2 small fw-bold" role="alert">
+            <i class="fas fa-check-circle me-2"></i> <%- msg %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <% } %>
+
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="card shadow-lg border-0" style="border-radius: 25px; background: #ffffff;">
+                <div class="card-header bg-white border-0 pt-4 px-4 d-flex align-items-center">
+                    <div class="bg-primary text-white rounded-circle p-2 me-3 shadow-sm">
+                        <i class="fas fa-magic small"></i>
+                    </div>
+                    <h5 class="fw-bold m-0">Build Professional ATS Profile</h5>
+                </div>
+                
+                <div class="card-body p-4">
+                    <form id="resumeForm" action="/resume/generate" method="POST">
+                        
+                        <h6 class="text-primary fw-bold mb-3 border-bottom pb-2">1. Personal & Social Details</h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Full Name</label>
+                                <input type="text" name="full_name" class="form-control form-control-sm rounded-pill px-3" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Phone Number</label>
+                                <input type="text" name="phone_number" class="form-control form-control-sm rounded-pill px-3" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Persona Type</label>
+                                <select name="persona_type" class="form-select form-select-sm rounded-pill">
+                                    <option value="Fresher">Fresher</option>
+                                    <option value="Experienced">Experienced</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">LinkedIn URL</label>
+                                <input type="url" name="linkedin_link" class="form-control form-control-sm rounded-pill px-3">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">GitHub URL</label>
+                                <input type="url" name="github_link" class="form-control form-control-sm rounded-pill px-3">
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label small fw-bold">Email Address</label>
+                                <input type="email" name="email" class="form-control form-control-sm rounded-pill bg-light px-3" value="<%= user.email %>" readonly>
+                            </div>
+                        </div>
+
+                        <h6 class="text-primary fw-bold mb-3 border-bottom pb-2">2. Career Objective</h6>
+                        <div class="mb-4">
+                            <textarea name="career_objective" class="form-control form-control-sm" rows="2" style="border-radius: 12px;" placeholder="Briefly state your career goals..."></textarea>
+                        </div>
+
+                        <h6 class="text-primary fw-bold mb-3 border-bottom pb-2">3. Technical Projects (Click + to add more)</h6>
+                        <div id="project-container" class="mb-4">
+                            <div class="project-entry border rounded p-3 mb-2 bg-light shadow-sm">
+                                <div class="row g-3">
+                                    <div class="col-md-11">
+                                        <input type="text" name="p_titles[]" class="form-control form-control-sm rounded-pill px-3 mb-2" placeholder="Project Title (e.g. E-Commerce Web App)">
+                                        <textarea name="p_descs[]" class="form-control form-control-sm" rows="2" style="border-radius: 12px;" placeholder="Describe features, tech stack used, and your role..."></textarea>
+                                    </div>
+                                    <div class="col-md-1 d-flex align-items-center">
+                                        <button type="button" class="btn btn-primary btn-sm rounded-circle" onclick="addProject()"><i class="fas fa-plus"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h6 class="text-primary fw-bold mb-3 border-bottom pb-2">4. Educational Background</h6>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-3"><input type="text" name="high_qual_name" class="form-control form-control-sm rounded-pill px-3" placeholder="Degree (e.g. B.Tech)"></div>
+                            <div class="col-md-3"><input type="text" name="high_qual_college" class="form-control form-control-sm rounded-pill px-3" placeholder="College Name"></div>
+                            <div class="col-md-3"><input type="text" name="high_qual_loc" class="form-control form-control-sm rounded-pill px-3" placeholder="Location (City)"></div>
+                            <div class="col-md-3"><input type="text" name="high_qual_score" class="form-control form-control-sm rounded-pill px-3" placeholder="CGPA"></div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-3"><input type="text" name="inter_qual_name" class="form-control form-control-sm rounded-pill px-3" placeholder="Inter/Diploma"></div>
+                            <div class="col-md-3"><input type="text" name="inter_college" class="form-control form-control-sm rounded-pill px-3" placeholder="College Name"></div>
+                            <div class="col-md-3"><input type="text" name="inter_college_loc" class="form-control form-control-sm rounded-pill px-3" placeholder="Location (City)"></div>
+                            <div class="col-md-3"><input type="text" name="inter_score" class="form-control form-control-sm rounded-pill px-3" placeholder="Marks%"></div>
+                        </div>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-3"><span class="form-control-sm border-0 small fw-bold">10th Standard</span></div>
+                            <div class="col-md-3"><input type="text" name="school_name_10th" class="form-control form-control-sm rounded-pill px-3" placeholder="School Name"></div>
+                            <div class="col-md-3"><input type="text" name="school_10th_loc" class="form-control form-control-sm rounded-pill px-3" placeholder="Location (City)"></div>
+                            <div class="col-md-3"><input type="text" name="score_10th" class="form-control form-control-sm rounded-pill px-3" placeholder="GPA/Marks"></div>
+                        </div>
+
+                        <h6 class="text-primary fw-bold mb-3 border-bottom pb-2">5. Expertise & Achievements</h6>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Technical Skills (Comma separated)</label>
+                                <textarea name="tech_skills" class="form-control form-control-sm" rows="2" style="border-radius: 12px;" placeholder="Java, Python, React..."></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Core Strengths</label>
+                                <textarea name="strengths" class="form-control form-control-sm" rows="2" style="border-radius: 12px;" placeholder="Communication, Teamwork..."></textarea>
+                            </div>
+                        </div>
+
+                        <div id="cert-container" class="mb-4">
+                            <label class="form-label small fw-bold">Certifications & Awards</label>
+                            <div class="input-group input-group-sm mb-2">
+                                <input type="text" name="cert_list[]" class="form-control px-3" style="border-top-left-radius: 50px; border-bottom-left-radius: 50px;" placeholder="Certification Name">
+                                <button type="button" class="btn btn-outline-primary" style="border-top-right-radius: 50px; border-bottom-right-radius: 50px;" onclick="addCert()"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Languages Known</label>
+                                <input type="text" name="languages_known" class="form-control form-control-sm rounded-pill px-3">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Personal Hobbies</label>
+                                <input type="text" name="hobbies" class="form-control form-control-sm rounded-pill px-3">
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <button type="button" onclick="handlePreview()" class="btn btn-outline-dark rounded-pill w-100 py-2 fw-bold shadow-sm transition-hover">
+                                    <i class="fas fa-eye me-2"></i> Download Preview
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <button type="submit" class="btn btn-primary rounded-pill w-100 py-2 fw-bold shadow-sm transition-hover">
+                                    <i class="fas fa-save me-2"></i> Save & Generate Final
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <div class="card shadow border-0 p-3 h-100" style="border-radius: 20px; background: #fff5f5;">
+                <h6 class="fw-bold mb-3 text-danger"><i class="fas fa-barcode"></i> Resume Scanner</h6>
+                <form action="/upload-resume" method="POST" enctype="multipart/form-data">
+                    <input type="file" name="resume" class="form-control form-control-sm rounded-pill mb-2 border-0 shadow-sm" required>
+                    <button type="submit" class="btn btn-danger btn-sm rounded-pill w-100 fw-bold">Analyze Existing PDF</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-md-7">
+            <div class="card shadow border-0 p-3 h-100" style="border-radius: 20px; background: #ffffff;">
+                <h6 class="fw-bold mb-3"><i class="fas fa-folder"></i> My Build History</h6>
+                <div class="table-responsive" style="max-height: 400px;">
+                    <table class="table table-sm table-hover align-middle">
+                        <tbody>
+                            <% if (typeof history !== 'undefined' && history && history.length > 0) { %>
+                                <% history.forEach(item => { %>
+                                    <tr>
+                                        <td>
+                                            <div class="small fw-bold text-dark"><%= item.full_name %></div>
+                                            <span class="badge rounded-pill bg-light text-primary border" style="font-size: 0.65rem;">
+                                                ATS Score: <%= item.ats_score || 0 %>%
+                                            </span>
+                                        </td>
+                                        <td class="text-end">
+                                            <a href="/resume/download/<%= item.id %>" class="btn btn-link btn-sm text-success p-1" title="Download"><i class="fas fa-download"></i></a>
+                                            <a href="/resume/delete/<%= item.id %>" class="btn btn-link btn-sm text-danger p-1" onclick="return confirm('Delete permanently?')" title="Delete"><i class="fas fa-trash-alt"></i></a>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            <% } else { %>
+                                <tr><td class="text-center text-muted small py-3">No history found. Create your first resume above!</td></tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function addProject() {
+        const container = document.getElementById('project-container');
+        const div = document.createElement('div');
+        div.className = "project-entry border rounded p-3 mb-2 bg-light shadow-sm animate__animated animate__fadeIn";
+        div.innerHTML = `
+            <div class="row g-3">
+                <div class="col-md-11">
+                    <input type="text" name="p_titles[]" class="form-control form-control-sm rounded-pill px-3 mb-2" placeholder="Another Project Title">
+                    <textarea name="p_descs[]" class="form-control form-control-sm" rows="2" style="border-radius: 12px;" placeholder="Detailed Description..."></textarea>
+                </div>
+                <div class="col-md-1 d-flex align-items-center">
+                    <button type="button" class="btn btn-outline-danger btn-sm rounded-circle" onclick="this.closest('.project-entry').remove()"><i class="fas fa-minus"></i></button>
+                </div>
+            </div>`;
+        container.appendChild(div);
+    }
+
+    function addCert() {
+        const container = document.getElementById('cert-container');
+        const div = document.createElement('div');
+        div.className = "input-group input-group-sm mb-2 animate__animated animate__fadeIn";
+        div.innerHTML = `
+            <input type="text" name="cert_list[]" class="form-control px-3" style="border-top-left-radius: 50px; border-bottom-left-radius: 50px;" placeholder="Another Certification">
+            <button type="button" class="btn btn-outline-danger" style="border-top-right-radius: 50px; border-bottom-right-radius: 50px;" onclick="this.parentElement.remove()"><i class="fas fa-minus"></i></button>
+        `;
+        container.appendChild(div);
+    }
+
+    function handlePreview() {
+        const form = document.getElementById('resumeForm');
+        const originalAction = form.action;
+        form.action = '/resume/preview'; // Temporarily change target
+        form.target = '_blank';
+        form.submit();
+        form.action = originalAction; // Reset for regular save
+        form.target = '_self';
+    }
+</script>
+
+<style>
+    body { background-color: #f4f7f6; font-family: 'Inter', sans-serif; }
+    .transition-hover:hover { transform: translateY(-3px); transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
+    .form-control-sm, .form-select-sm { border-color: #e2e8f0; font-size: 0.85rem; }
+    .form-control-sm:focus { border-color: #f56565; box-shadow: none; outline: 0; }
+    h6.border-bottom { font-size: 0.9rem; letter-spacing: 0.5px; }
+</style>
+
+<%- include('partials/footer') %>

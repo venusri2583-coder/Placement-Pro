@@ -1,0 +1,189 @@
+<%- include('partials/header') %>
+
+<div class="py-5 text-white mb-5 shadow-lg" style="background: linear-gradient(135deg, #1e272e 0%, #2f3640 100%); border-bottom: 5px solid #00b894; border-radius: 0 0 50px 50px;">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold">Aptitude <span style="color: #00b894;">Box</span> 📦</h1>
+        <p class="lead opacity-75 fw-bold">Master Quantitative Logic with Compact 3D Professional Modules.</p>
+    </div>
+</div>
+
+<div class="container mb-5 pb-5">
+    <h3 class="fw-bold mb-4 border-bottom pb-2 text-dark">
+        <i class="fas fa-calculator text-success me-2"></i> Quantitative Topics
+    </h3>
+    
+    <div class="row g-4 aptitude-grid">
+        
+        <div class="col-6 col-md-4 col-lg-2-4">
+            <div class="card aptitude-3d-card border-top-blue">
+                <div class="icon-3d">%</div>
+                <h6 class="fw-bold">Percentages</h6>
+                <a href="/aptitude/Percentages" class="btn btn-sm btn-practice mt-auto">Practice</a>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2-4">
+            <div class="card aptitude-3d-card border-top-red">
+                <div class="icon-3d">💰</div>
+                <h6 class="fw-bold">Profit & Loss</h6>
+                <a href="/aptitude/Profit and Loss" class="btn btn-sm btn-practice mt-auto">Practice</a>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2-4">
+            <div class="card aptitude-3d-card border-top-purple">
+                <div class="icon-3d">⏳</div>
+                <h6 class="fw-bold">Time & Work</h6>
+                <a href="/aptitude/Time and Work" class="btn btn-sm btn-practice mt-auto">Practice</a>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2-4">
+            <div class="card aptitude-3d-card border-top-yellow">
+                <div class="icon-3d">🎲</div>
+                <h6 class="fw-bold">Probability</h6>
+                <a href="/aptitude/Probability" class="btn btn-sm btn-practice mt-auto">Practice</a>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2-4">
+            <div class="card aptitude-3d-card border-top-green">
+                <div class="icon-3d">📊</div>
+                <h6 class="fw-bold">Averages</h6>
+                <a href="/aptitude/Averages" class="btn btn-sm btn-practice mt-auto">Practice</a>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2-4">
+            <div class="card aptitude-3d-card border-top-orange">
+                <div class="icon-3d">🔢</div>
+                <h6 class="fw-bold">HCF & LCM</h6>
+                <a href="/aptitude/HCF & LCM" class="btn btn-sm btn-practice mt-auto">Practice</a>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2-4">
+            <div class="card aptitude-3d-card border-top-dark">
+                <div class="icon-3d">🚄</div>
+                <h6 class="fw-bold">Trains</h6>
+                <a href="/aptitude/Problems on Trains" class="btn btn-sm btn-practice mt-auto">Practice</a>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2-4">
+            <div class="card aptitude-3d-card border-top-cyan">
+                <div class="icon-3d">⛵</div>
+                <h6 class="fw-bold">Boats & Streams</h6>
+                <a href="/aptitude/Boats and Streams" class="btn btn-sm btn-practice mt-auto">Practice</a>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2-4">
+            <div class="card aptitude-3d-card border-top-pink">
+                <div class="icon-3d">🏦</div>
+                <h6 class="fw-bold">Simple Interest</h6>
+                <a href="/aptitude/Simple Interest" class="btn btn-sm btn-practice mt-auto">Practice</a>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2-4">
+            <div class="card aptitude-3d-card border-top-magenta">
+                <div class="icon-3d">⚖️</div>
+                <h6 class="fw-bold">Ratio & Proportion</h6>
+                <a href="/aptitude/Ratio & Proportion" class="btn btn-sm btn-practice mt-auto">Practice</a>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2-4">
+            <div class="card aptitude-3d-card border-top-indigo">
+                <div class="icon-3d">🎂</div>
+                <h6 class="fw-bold">Ages</h6>
+                <a href="/aptitude/Ages" class="btn btn-sm btn-practice mt-auto">Practice</a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    /* 🛠️ CORE LAYOUT: Standardizes the grid to be horizontal */
+    .aptitude-grid {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-start; /* Aligns items to the left horizontally */
+    }
+
+    /* Logic for 5 items per row on large screens */
+    @media (min-width: 992px) {
+        .col-lg-2-4 {
+            flex: 0 0 auto;
+            width: 20%;
+        }
+    }
+
+    .aptitude-3d-card {
+        background: #ffffff;
+        border-radius: 20px !important;
+        padding: 25px 15px;
+        text-align: center;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        cursor: pointer;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        height: 100%;
+        border: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 200px; /* Uniform height for clean rows */
+    }
+
+    .aptitude-3d-card:hover {
+        transform: translateY(-12px) rotateX(10deg);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
+        background: #fdfdfd;
+    }
+
+    .icon-3d {
+        font-size: 38px;
+        margin-bottom: 12px;
+        filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.1));
+        transition: transform 0.3s ease;
+    }
+
+    .aptitude-3d-card:hover .icon-3d {
+        transform: scale(1.15) rotate(5deg);
+    }
+
+    .btn-practice {
+        background: #00b894;
+        color: white;
+        border-radius: 20px;
+        font-weight: bold;
+        border: none;
+        padding: 6px 18px;
+        font-size: 0.85rem;
+        transition: 0.3s;
+    }
+
+    .btn-practice:hover {
+        background: #009475;
+        color: white;
+        transform: scale(1.05);
+        box-shadow: 0 4px 10px rgba(0, 184, 148, 0.3);
+    }
+
+    /* Domain Colors preserved */
+    .border-top-blue { border-top: 5px solid #0984e3; }
+    .border-top-red { border-top: 5px solid #d63031; }
+    .border-top-purple { border-top: 5px solid #6c5ce7; }
+    .border-top-yellow { border-top: 5px solid #fdcb6e; }
+    .border-top-green { border-top: 5px solid #00b894; }
+    .border-top-orange { border-top: 5px solid #e17055; }
+    .border-top-dark { border-top: 5px solid #2d3436; }
+    .border-top-cyan { border-top: 5px solid #00cec9; }
+    .border-top-pink { border-top: 5px solid #fab1a0; }
+    .border-top-magenta { border-top: 5px solid #fd79a8; }
+    .border-top-indigo { border-top: 5px solid #a29bfe; }
+</style>
+
+<%- include('partials/footer') %>

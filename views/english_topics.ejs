@@ -1,0 +1,61 @@
+<%- include('partials/header') %>
+
+<div class="container py-5 mt-5">
+    <div class="text-center mb-5 animate__animated animate__fadeInDown">
+        <h1 class="display-5 fw-bold stylish-heading">English <span class="text-primary">Verbal Zone</span></h1>
+        <p class="text-muted">Specialized modules with strictly unique training tools.</p>
+        <div class="mx-auto mt-2" style="width: 80px; height: 5px; background: #3182ce; border-radius: 10px;"></div>
+    </div>
+
+    <div class="row g-3 justify-content-center">
+        <% if (typeof topics !== 'undefined' && topics.length > 0) { %>
+            <% topics.forEach((t, index) => { %>
+                <div class="col-6 col-md-3 col-lg-2 mb-3">
+                    <div class="card h-100 shadow-sm border-0 text-center p-3 hover-card animate__animated animate__zoomIn" style="animation-delay: <%= index * 0.05 %>s;">
+                        
+                        <div class="mb-2">
+                            <% 
+                                // Keep the same icons exactly as you provided
+                                let icon = "https://cdn-icons-png.flaticon.com/512/3401/3401591.png"; 
+                                let tn = t.topic.toLowerCase();
+                                
+                                if(tn.includes('parts of speech')) icon = "https://cdn-icons-png.flaticon.com/512/3401/3401591.png"; 
+                                if(tn.includes('tenses')) icon = "https://cdn-icons-png.flaticon.com/512/2082/2082630.png"; 
+                                if(tn.includes('voice')) icon = "https://cdn-icons-png.flaticon.com/512/5606/5606215.png"; 
+                                if(tn.includes('speech')) icon = "https://cdn-icons-png.flaticon.com/512/3075/3075908.png"; 
+                                if(tn.includes('agreement')) icon = "https://cdn-icons-png.flaticon.com/512/1581/1581906.png"; 
+                                if(tn.includes('error')) icon = "https://cdn-icons-png.flaticon.com/512/1250/1250615.png"; 
+                                if(tn.includes('synonyms')) icon = "https://cdn-icons-png.flaticon.com/512/3898/3898150.png"; 
+                                if(tn.includes('idioms')) icon = "https://cdn-icons-png.flaticon.com/512/5266/5266624.png"; 
+                                if(tn.includes('substitution')) icon = "https://cdn-icons-png.flaticon.com/512/3898/3898144.png"; 
+                                if(tn.includes('spelling')) icon = "https://cdn-icons-png.flaticon.com/512/2232/2232688.png"; 
+                                if(tn.includes('fill')) icon = "https://cdn-icons-png.flaticon.com/512/456/456212.png"; 
+                                if(tn.includes('phrasal')) icon = "https://cdn-icons-png.flaticon.com/512/2111/2111432.png"; 
+                                if(tn.includes('comprehension')) icon = "https://cdn-icons-png.flaticon.com/512/2965/2965879.png"; 
+                                if(tn.includes('cloze')) icon = "https://cdn-icons-png.flaticon.com/512/3401/3401591.png"; 
+                                if(tn.includes('rearrangement')) icon = "https://cdn-icons-png.flaticon.com/512/8637/8637272.png"; 
+                            %>
+                            <img src="<%= icon %>" width="50" class="floating" alt="<%= t.topic %>">
+                        </div>
+
+                        <h6 class="fw-bold mb-2 text-dark" style="font-size: 0.8rem; height: 35px; overflow: hidden;"><%= t.topic %></h6>
+                        
+                        <a href="/english/<%= encodeURIComponent(t.topic) %>" class="btn btn-sm btn-success rounded-pill px-3 py-1 fw-bold mt-auto" style="font-size: 0.7rem;">
+                            Practice
+                        </a>
+                    </div>
+                </div>
+            <% }) %>
+        <% } %>
+    </div>
+</div>
+
+<style>
+    .hover-card { border-radius: 15px; background: #f8fafc; transition: all 0.3s ease; border: 1px solid rgba(0,0,0,0.03) !important; }
+    .hover-card:hover { transform: translateY(-8px); box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important; background: #ffffff; border-color: #3b82f6 !important; }
+    .floating { animation: float 3s ease-in-out infinite; }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+    .btn-success { background-color: #38a169; border: none; }
+</style>
+
+<%- include('partials/footer') %>

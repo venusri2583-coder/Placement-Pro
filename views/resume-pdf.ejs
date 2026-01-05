@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Resume - <%= data.full_name %></title>
+    <style>
+        /* 🛡️ ELITE ATS PRINT OPTIMIZATION */
+        * { box-sizing: border-box; -webkit-print-color-adjust: exact; }
+        
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            line-height: 1.4;
+            color: #1a202c;
+            margin: 0;
+            padding: 40px 50px; /* Standard margins for ATS and printing */
+            background-color: white;
+            font-size: 10pt;
+        }
+
+        /* Header Section */
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #f56565; /* Matches your portal branding */
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .name {
+            font-size: 26pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #000;
+            margin: 0;
+        }
+        .contact-info {
+            font-size: 10.5pt;
+            color: #2d3748;
+            margin-top: 5px;
+        }
+        .persona-tag {
+            font-size: 9pt;
+            font-weight: bold;
+            color: #f56565;
+            text-transform: uppercase;
+            margin-top: 5px;
+            display: block;
+        }
+
+        /* Section Titles */
+        .section-title {
+            font-size: 13pt;
+            font-weight: bold;
+            color: #f56565;
+            text-transform: uppercase;
+            border-bottom: 1px solid #e2e8f0;
+            margin-top: 22px;
+            margin-bottom: 10px;
+            padding-bottom: 3px;
+        }
+
+        /* Content Blocks */
+        .content-block { margin-bottom: 15px; }
+        
+        .flex-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            font-weight: bold;
+            color: #1a202c;
+        }
+        
+        .sub-text {
+            font-size: 9.5pt;
+            color: #718096;
+            font-style: italic;
+            margin-bottom: 4px;
+        }
+
+        .desc-text {
+            text-align: justify;
+            color: #4a5568;
+            margin-top: 4px;
+        }
+
+        /* Footer Info */
+        .ats-footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 8pt;
+            color: #a0aec0;
+            border-top: 1px solid #edf2f7;
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1 class="name"><%= data.full_name %></h1>
+        <div class="contact-info">
+            <%= data.phone_number %> | <%= data.email %>
+            <br>
+            <% if (data.linkedin_link) { %> LinkedIn: <%= data.linkedin_link %> <% } %>
+            <% if (data.github_link) { %> | GitHub: <%= data.github_link %> <% } %>
+        </div>
+        <span class="persona-tag"><%= data.persona_type %> Profile</span>
+    </div>
+
+    <% if (data.career_objective) { %>
+    <div class="section-title">Career Objective</div>
+    <p class="desc-text"><%= data.career_objective %></p>
+    <% } %>
+
+    <div class="section-title">Education</div>
+    
+    <% if (data.high_qual_name) { %>
+    <div class="content-block">
+        <div class="flex-row">
+            <span><%= data.high_qual_name %></span>
+            <span><%= data.high_qual_score %></span>
+        </div>
+        <div class="sub-text"><%= data.high_qual_college %> | <%= data.high_qual_loc %></div>
+    </div>
+    <% } %>
+
+    <% if (data.inter_qual_name) { %>
+    <div class="content-block">
+        <div class="flex-row">
+            <span><%= data.inter_qual_name %></span>
+            <span><%= data.inter_score %></span>
+        </div>
+        <div class="sub-text"><%= data.inter_college %> | <%= data.inter_college_loc %></div>
+    </div>
+    <% } %>
+
+    <% if (data.school_name_10th) { %>
+    <div class="content-block">
+        <div class="flex-row">
+            <span>Secondary Education (10th Standard)</span>
+            <span><%= data.score_10th %></span>
+        </div>
+        <div class="sub-text"><%= data.school_name_10th %> | <%= data.school_10th_loc %></div>
+    </div>
+    <% } %>
+
+    <% if (data.projects && data.projects.length > 0) { %>
+    <div class="section-title">Major Projects</div>
+    <% data.projects.forEach(project => { %>
+        <div class="content-block">
+            <div class="flex-row" style="font-size: 11pt;"><%= project.title %></div>
+            <p class="desc-text"><%= project.desc %></p>
+        </div>
+    <% }) %>
+    <% } %>
+
+    <div class="section-title">Technical Expertise</div>
+    <div class="content-block">
+        <% if (data.technical_skills) { %><p class="desc-text"><strong>Core Skills:</strong> <%= data.technical_skills %></p><% } %>
+        <% if (data.certifications) { %><p class="desc-text"><strong>Certifications:</strong> <%= data.certifications %></p><% } %>
+    </div>
+
+    <div class="section-title">Additional Attributes</div>
+    <div class="content-block">
+        <% if (data.strengths) { %><p class="desc-text"><strong>Strengths:</strong> <%= data.strengths %></p><% } %>
+        <% if (data.languages_known) { %><p class="desc-text"><strong>Languages Known:</strong> <%= data.languages_known %></p><% } %>
+        <% if (data.hobbies) { %><p class="desc-text"><strong>Interests & Hobbies:</strong> <%= data.hobbies %></p><% } %>
+    </div>
+
+    <div class="ats-footer">
+        Verified ATS Compliant Portfolio | Profile Strength: <%= data.ats_score || 85 %>% | Generated via Elite Placement Portal
+    </div>
+
+</body>
+</html>

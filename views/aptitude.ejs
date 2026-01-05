@@ -1,0 +1,105 @@
+<%- include('partials/header') %>
+
+<div style="background-color: #1a1a1a; padding: 50px 0; border-bottom-left-radius: 60px; border-bottom-right-radius: 60px;" class="text-center text-white mb-5">
+    <div class="container">
+        <h2 class="display-5 fw-bold">Practice: <span style="color: #ecc94b;"><%= topicName %></span></h2>
+        <p class="lead opacity-75">Click an option to select it, then click "Show Correct Answer" to check.</p>
+        <a href="/aptitude-topics" class="btn btn-outline-light rounded-pill mt-3 px-4 shadow-sm">
+            <i class="fas fa-arrow-left me-2"></i> Back to Topics
+        </a>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <% if (questions.length > 0) { %>
+        <% questions.forEach((q, index) => { %>
+            <div class="card shadow border-0 mb-5" style="border-radius: 25px; overflow: hidden;" id="card-<%= q.id %>">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2 border border-primary-subtle">
+                        Question <%= index + 1 %>
+                    </span>
+                </div>
+
+                <div class="card-body p-4">
+                    <p class="fs-5 mb-4 fw-bold text-dark"><%= q.question_text %></p>
+                    
+                    <div class="row g-3">
+                        <% ['a', 'b', 'c', 'd'].forEach(letter => { %>
+                            <div class="col-md-6">
+                                <div class="option-box selectable-option p-3 border rounded-pill px-4 bg-light cursor-pointer" 
+                                     onclick="markSelected('<%= q.id %>', this)">
+                                    <span class="fw-bold me-2 text-primary"><%= letter.toUpperCase() %>)</span> 
+                                    <%= q['option_' + letter] %>
+                                </div>
+                            </div>
+                        <% }) %>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top d-flex align-items-center gap-3">
+                        <button class="btn btn-success rounded-pill px-4 py-2 fw-bold shadow-sm" 
+                                onclick="revealAnswer('<%= q.id %>')">
+                            Show Correct Answer <i class="fas fa-check-circle ms-2"></i>
+                        </button>
+                        
+                        <div id="ans-box-<%= q.id %>" class="d-none animate-fade-in p-2 px-4 bg-success-subtle text-success fw-bold rounded-pill border border-success">
+                            Correct Answer: <%= q.correct_option %> ✅
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <% }) %>
+    <% } else { %>
+        <div class="text-center py-5">
+            <h3 class="text-muted">No questions found for this topic yet.</h3>
+        </div>
+    <% } %>
+</div>
+
+
+
+<script>
+    // This function handles the highlighting
+    function markSelected(qId, element) {
+        // Find the specific card for this question
+        const container = document.getElementById('card-' + qId);
+        
+        // Remove 'active-selection' class from all options in this card only
+        const options = container.querySelectorAll('.selectable-option');
+        options.forEach(opt => {
+            opt.classList.remove('active-selection');
+        });
+
+        // Add 'active-selection' class to the clicked option
+        element.classList.add('active-selection');
+    }
+
+    // This function handles showing the answer
+    function revealAnswer(qId) {
+        const box = document.getElementById('ans-box-' + qId);
+        box.classList.toggle('d-none');
+    }
+</script>
+
+<style>
+    .cursor-pointer { cursor: pointer; transition: 0.3s ease; }
+    
+    /* Default hover effect */
+    .option-box:hover { 
+        background-color: #e9ecef !important; 
+        border-color: #adb5bd !important;
+    }
+
+    /* THE FIX: This class handles the blue highlight when clicked */
+    .active-selection {
+        background-color: #cfe2ff !important; /* Light blue background */
+        border-color: #0d6efd !important;     /* Strong blue border */
+        color: #084298 !important;            /* Dark blue text */
+        font-weight: bold;
+        transform: scale(1.02);               /* Slight pop-out effect */
+    }
+
+    .animate-fade-in { animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<%- include('partials/footer') %>

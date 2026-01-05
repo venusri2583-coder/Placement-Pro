@@ -1,0 +1,227 @@
+<h4 class="fw-bold text-danger mb-4 border-bottom pb-3"><i class="fab fa-java me-2"></i> Java Enterprise Mastery (Top 30)</h4>
+<div class="accordion accordion-flush" id="javaAccordion">
+    
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#java1">1. Why is Java called a Platform Independent language?</button></h2>
+        <div id="java1" class="accordion-collapse collapse" data-bs-parent="#javaAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Java uses <strong>Bytecode</strong>. When you compile Java code, it produces bytecode (.class file), which can run on any operating system as long as it has a <strong>JVM (Java Virtual Machine)</strong>. This follows the "Write Once, Run Anywhere" (WORA) principle.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#java2">2. Explain the JVM Architecture in detail.</button></h2>
+        <div id="java2" class="accordion-collapse collapse" data-bs-parent="#javaAccordion">
+            <div class="accordion-body text-secondary small">
+                <strong>Answer:</strong> JVM is the engine that executes bytecode. It consists of: 
+                1. <strong>Class Loader</strong> (loads files), 2. <strong>JVM Memory</strong> (Heap, Stack, Method Area), and 3. <strong>Execution Engine</strong> (JIT Compiler, Garbage Collector).
+                
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#java3">3. Difference between JDK, JRE, and JVM?</button></h2>
+        <div id="java3" class="accordion-collapse collapse" data-bs-parent="#javaAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> JVM is the runtime engine. JRE (Java Runtime Environment) contains JVM + libraries to run apps. JDK (Java Development Kit) contains JRE + development tools like <code>javac</code> to create apps.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#java4">4. What are the four main pillars of OOPS in Java?</button></h2>
+        <div id="java4" class="accordion-collapse collapse" data-bs-parent="#javaAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> 
+                1. <strong>Encapsulation:</strong> Wrapping data and methods into a single unit (Class).
+                2. <strong>Abstraction:</strong> Hiding internal details and showing only functionality.
+                3. <strong>Inheritance:</strong> Acquiring properties of a parent class.
+                4. <strong>Polymorphism:</strong> Performing a single action in different ways (Overloading/Overriding).
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#java5">5. What is the 'static' keyword?</button></h2>
+        <div id="java5" class="accordion-collapse collapse" data-bs-parent="#javaAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Static members belong to the <strong>class</strong> itself rather than an object. It is used for memory management as it is loaded only once when the class is loaded.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#java6">6. Difference between Abstract Class and Interface?</button></h2>
+        <div id="java6" class="accordion-collapse collapse" data-bs-parent="#javaAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Abstract classes can have both abstract and concrete methods, and variables can be of any type. Interfaces only have abstract methods (until Java 8) and variables are implicitly <code>public static final</code>.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#java7">7. Why is String immutable in Java?</button></h2>
+        <div id="java7" class="accordion-collapse collapse" data-bs-parent="#javaAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> For security, synchronization, and memory efficiency (String Constant Pool). If strings were mutable, changing one reference would affect all other variables pointing to the same pool location.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#java8">8. Difference between Method Overloading and Method Overriding?</button></h2>
+        <div id="java8" class="accordion-collapse collapse" data-bs-parent="#javaAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Overloading (Compile-time) is same method name with different parameters in the same class. Overriding (Runtime) is redefining a parent class method in the child class with the same signature.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#java9">9. Difference between Final, Finally, and Finalize?</button></h2>
+        <div id="java9" class="accordion-collapse collapse" data-bs-parent="#javaAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> <strong>Final</strong> is a modifier (constant value). <strong>Finally</strong> is a block used in exception handling for cleanup code. <strong>Finalize</strong> is a method called by Garbage Collector before destroying an object.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#java10">10. Explain the Exception Handling hierarchy in Java.</button></h2>
+        <div id="java10" class="accordion-collapse collapse" data-bs-parent="#javaAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> All exception classes are subtypes of <code>java.lang.Throwable</code>. Main branches are <strong>Error</strong> (irrecoverable) and <strong>Exception</strong> (recoverable). Exceptions are further divided into Checked and Unchecked.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#java11">11. How does Garbage Collection work?</button></h2>
+        <div id="java11" class="accordion-collapse collapse" data-bs-parent="#javaAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> GC is an automatic process that identifies and deletes objects that are no longer reachable in memory to reclaim heap space. It uses the <code>System.gc()</code> method to suggest execution.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#java12">12. What is the Collections Framework?</button></h2>
+        <div id="java12" class="accordion-collapse collapse" data-bs-parent="#javaAccordion">
+            <div class="accordion-body text-secondary small">
+                <strong>Answer:</strong> It provides a set of classes and interfaces (List, Set, Queue, Map) to store and manipulate a group of objects.
+                
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#java13">13. Difference between ArrayList and LinkedList?</button></h2>
+        <div id="java13" class="accordion-collapse collapse" data-bs-parent="#javaAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> ArrayList uses a dynamic array (faster for access). LinkedList uses a doubly linked list (faster for insertion/deletion).</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#java14">14. Difference between HashMap and Hashtable?</button></h2>
+        <div id="java14" class="accordion-collapse collapse" data-bs-parent="#javaAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> HashMap is non-synchronized and allows one null key. Hashtable is synchronized (thread-safe) and does not allow any null keys or values.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#java15">15. What is the use of 'this' and 'super' keywords?</button></h2>
+        <div id="java15" class="accordion-collapse collapse" data-bs-parent="#javaAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> <code>this</code> refers to the current class instance. <code>super</code> refers to the immediate parent class instance.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#java16">16. What is Multithreading?</button></h2>
+        <div id="java16" class="accordion-collapse collapse" data-bs-parent="#javaAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A process of executing multiple threads simultaneously to maximize CPU utilization. In Java, threads can be created by extending <code>Thread</code> class or implementing <code>Runnable</code> interface.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#java17">17. What is Synchronization?</button></h2>
+        <div id="java17" class="accordion-collapse collapse" data-bs-parent="#javaAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A capability to control the access of multiple threads to any shared resource. It prevents thread interference and consistency errors.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#java18">18. Checked vs Unchecked Exceptions?</button></h2>
+        <div id="java18" class="accordion-collapse collapse" data-bs-parent="#javaAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Checked exceptions (e.g., <code>IOException</code>) are checked at compile-time. Unchecked exceptions (e.g., <code>NullPointerException</code>) occur at runtime.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#java19">19. What is a Constructor? Can we inherit it?</button></h2>
+        <div id="java19" class="accordion-collapse collapse" data-bs-parent="#javaAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A special method used to initialize objects. Constructors cannot be inherited, but a child constructor can call the parent constructor using <code>super()</code>.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#java20">20. What are Wrapper Classes?</button></h2>
+        <div id="java20" class="accordion-collapse collapse" data-bs-parent="#javaAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Classes that allow primitive data types (int, char, etc.) to be accessed as objects. Example: <code>Integer</code> for <code>int</code>.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#java21">21. What is Autoboxing and Unboxing?</button></h2>
+        <div id="java21" class="accordion-collapse collapse" data-bs-parent="#javaAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Autoboxing is the automatic conversion of primitives to their wrapper objects. Unboxing is the reverse process.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#java22">22. Why doesn't Java support Multiple Inheritance?</button></h2>
+        <div id="java22" class="accordion-collapse collapse" data-bs-parent="#javaAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> To avoid the <strong>Diamond Problem</strong> (ambiguity). However, it can be achieved using Interfaces.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#java23">23. Difference between String, StringBuilder, and StringBuffer?</button></h2>
+        <div id="java23" class="accordion-collapse collapse" data-bs-parent="#javaAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> String is immutable. StringBuffer is mutable and synchronized (thread-safe). StringBuilder is mutable but non-synchronized (faster).</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#java24">24. What is the finalize() method?</button></h2>
+        <div id="java24" class="accordion-collapse collapse" data-bs-parent="#javaAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A method called by the Garbage Collector just before an object is destroyed to perform cleanup operations.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#java25">25. What is a Package in Java?</button></h2>
+        <div id="java25" class="accordion-collapse collapse" data-bs-parent="#javaAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A group of similar types of classes, interfaces, and sub-packages. It helps in avoiding name conflicts and controlling access.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#java26">26. Difference between throw and throws?</button></h2>
+        <div id="java26" class="accordion-collapse collapse" data-bs-parent="#javaAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> <code>throw</code> is used to explicitly throw an exception. <code>throws</code> is used in a method signature to declare that the method might throw certain exceptions.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#java27">27. What are Default methods in Interfaces (Java 8)?</button></h2>
+        <div id="java27" class="accordion-collapse collapse" data-bs-parent="#javaAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Methods in an interface that have a body. They allow adding new functionality to interfaces without breaking existing implementations.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#java28">28. What are Lambda Expressions?</button></h2>
+        <div id="java28" class="accordion-collapse collapse" data-bs-parent="#javaAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A feature introduced in Java 8 that provides a clear and concise way to represent one-method interfaces using an expression.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#java29">29. What is the Java 8 Stream API?</button></h2>
+        <div id="java29" class="accordion-collapse collapse" data-bs-parent="#javaAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> A new way to process collections of data in a functional and declarative way, supporting operations like <code>filter</code>, <code>map</code>, and <code>reduce</code>.</div>
+        </div>
+    </div>
+
+    <div class="accordion-item border-bottom">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#java30">30. What is Serialization and Deserialization?</button></h2>
+        <div id="java30" class="accordion-collapse collapse" data-bs-parent="#javaAccordion">
+            <div class="accordion-body text-secondary small"><strong>Answer:</strong> Serialization is the process of converting an object into a byte stream. Deserialization is the reverse process of recreating the object from the byte stream.</div>
+        </div>
+    </div>
+
+</div>
+<div class="p-3 bg-light text-center text-muted small fw-bold mt-2">Java Enterprise Mastery - 30 Core Questions Completed ✅</div>
