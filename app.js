@@ -428,6 +428,30 @@ app.get('/add-all-questions', async (req, res) => {
     }
 });
 
+// --- 🩺 DOCTOR CHECK (DEBUGGING) ---
+app.get('/debug', async (req, res) => {
+    try {
+        // 1. Check Total Questions
+        const [rows] = await db.query("SELECT COUNT(*) as count FROM aptitude_questions");
+        const count = rows[0].count;
+
+        // 2. Check Categories
+        const [categories] = await db.query("SELECT DISTINCT category FROM aptitude_questions");
+        
+        // 3. Show Result
+        res.send(`
+            <h1>🩺 Diagnosis Report</h1>
+            <h2>Total Questions in DB: <span style="color:red">${count}</span></h2>
+            <h3>Categories Found:</h3>
+            <pre>${JSON.stringify(categories, null, 2)}</pre>
+            <hr>
+            <p>If Count is 0 -> Insert Failed. Run /add-all-questions again.</p>
+            <p>If Count is > 0 -> DB is Good. The issue is with your Buttons/HTML.</p>
+        `);
+    } catch (err) {
+        res.send("<h1>❌ Database Error: " + err.message + "</h1>");
+    }
+});
 
 // --- SERVER START LOGIC ---
 const PORT = process.env.PORT || 5000;
