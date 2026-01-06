@@ -398,6 +398,36 @@ app.get('/add-questions', async (req, res) => {
     }
 });
 
+// --- ⚡ ONE-CLICK FIX FOR ALL BUTTONS ⚡ ---
+app.get('/add-all-questions', async (req, res) => {
+    // This SQL adds questions for Aptitude, Reasoning, English, and Coding
+    const sql = `INSERT INTO aptitude_questions (category, topic, question, option_a, option_b, option_c, option_d, correct_option, explanation) VALUES
+    -- Aptitude (Quantitative)
+    ('Quantitative', 'Time and Work', 'A can do a work in 4 days, B in 12 days. Together?', '2 days', '3 days', '4 days', '6 days', 'B', 'Formula: AB/(A+B)'),
+    ('Quantitative', 'Percentages', '20% of a number is 50. What is the number?', '200', '250', '300', '150', 'B', 'x/5 = 50 => x=250'),
+    ('Quantitative', 'Profit and Loss', 'Cost price is 100, Selling price is 120. Profit %?', '10%', '20%', '15%', '25%', 'B', 'Profit=20, so 20%'),
+    
+    -- Reasoning (Logical)
+    ('Logical', 'Series', '2, 4, 8, 16, ?', '30', '32', '24', '18', 'B', 'Double previous number'),
+    ('Logical', 'Blood Relations', 'Point to a man, woman said "His mother is the only daughter of my mother".', 'Mother', 'Sister', 'Aunt', 'Grandmother', 'A', 'She is the mother'),
+    
+    -- English (Verbal)
+    ('Verbal', 'Synonyms', 'Synonym of HAPPY', 'Sad', 'Joyful', 'Angry', 'Bored', 'B', 'Joyful means happy'),
+    ('Verbal', 'Antonyms', 'Antonym of GOOD', 'Bad', 'Nice', 'Fine', 'Well', 'A', 'Opposite of Good is Bad'),
+    
+    -- Coding
+    ('Coding', 'C Programming', 'Father of C language?', 'Stroustrup', 'Gosling', 'Ritchie', 'Guido', 'C', 'Dennis Ritchie'),
+    ('Coding', 'Java', 'Number of primitive data types in Java?', '6', '7', '8', '9', 'C', 'byte, short, int, long, float, double, boolean, char'),
+    ('Coding', 'Python', 'Which keyword is used for function in Python?', 'func', 'def', 'function', 'define', 'B', 'def is used')`;
+
+    try {
+        await db.query(sql);
+        res.send("<h1>✅ SUCCESS! All Topics & Questions Added! <br> <a href='/'>Go to Dashboard</a></h1>");
+    } catch (err) {
+        res.send("<h1>❌ Error: " + err.message + "</h1>");
+    }
+});
+
 
 // --- SERVER START LOGIC ---
 const PORT = process.env.PORT || 5000;
