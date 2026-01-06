@@ -381,6 +381,23 @@ app.get('/magic-setup', async (req, res) => {
     }
 });
 
+// --- QUESTIONS ADDING ROUTE ---
+app.get('/add-questions', async (req, res) => {
+    const sql = `INSERT INTO aptitude_questions (category, topic, question, option_a, option_b, option_c, option_d, correct_option, explanation) VALUES
+    ('Quantitative', 'Time and Work', 'A can do a piece of work in 4 days. B can do it in 12 days. In how many days will they finish the work together?', '2 days', '3 days', '4 days', '6 days', 'B', 'Formula: (A*B)/(A+B) = 48/16 = 3 days.'),
+    ('Quantitative', 'Percentages', 'If 20% of a number is 50, what is the number?', '200', '250', '300', '150', 'B', '20% = 1/5. So, x/5 = 50 => x = 250.'),
+    ('Logical', 'Series', 'Find the missing number: 2, 4, 8, 16, ?', '30', '32', '24', '18', 'B', 'Each number is multiplied by 2.'),
+    ('Verbal', 'Synonyms', 'Select the synonym of: HAPPY', 'Sad', 'Joyful', 'Angry', 'Bored', 'B', 'Joyful means happy.'),
+    ('Technical', 'C Programming', 'Who is the father of C language?', 'Bjarne Stroustrup', 'James Gosling', 'Dennis Ritchie', 'Guido van Rossum', 'C', 'Dennis Ritchie developed C at Bell Labs.')`;
+
+    try {
+        await db.query(sql);
+        res.send("<h1>✅ Questions Added Successfully! <br> <a href='/mock-test'>Go to Mock Test Now</a></h1>");
+    } catch (err) {
+        res.send("<h1>❌ Error: " + err.message + "</h1>");
+    }
+});
+
 
 // --- SERVER START LOGIC ---
 const PORT = process.env.PORT || 5000;
