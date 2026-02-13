@@ -4,7 +4,7 @@ const mysql = require('mysql2/promise');
 const dbConfig = {
     host: 'mysql-35bb86-venusri2583-7956.l.aivencloud.com', // I copied this from your error image
     user: 'avnadmin',
-    password: 'AVNS_dx-Vmix3iagEc9TR9Nl',     // ⚠️ PASTE YOUR AIVEN PASSWORD HERE
+   password: process.env.DB_PASSWORD,  // ⚠️ PASTE YOUR AIVEN PASSWORD HERE
     database: 'defaultdb',
     port: 15926,                              // I copied this from your error image
     ssl: { rejectUnauthorized: false },       // ✅ This fixes the SSL error
