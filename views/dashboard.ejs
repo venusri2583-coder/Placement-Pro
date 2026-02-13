@@ -2,7 +2,7 @@
 
 <div style="background-color: #1a1a1a; padding-bottom: 60px; border-bottom: 4px solid #3182ce; position: relative; z-index: 1;">
     <nav class="container d-flex justify-content-between align-items-center py-3">
-        <div class="text-white fw-bold h5 m-0"><i class="fas fa-rocket text-primary me-2"></i>PLACEMENT PRO</div>
+        <div class="text-white fw-bold h5 m-0"><i class="fas fa-rocket text-primary me-2"></i>PLACEMENT PRO 🚀</div>
         <div class="d-flex align-items-center">
             <% if (user) { %>
                 <div class="bg-white text-primary px-3 py-1 rounded-pill fw-bold me-3 shadow-sm" style="font-size: 0.85rem;">
@@ -28,15 +28,16 @@
     <div class="row g-4 justify-content-center">
         
         <% 
+        // ప్రతి కార్డ్ కి ఒక ప్రత్యేకమైన ఎమోజీ (emoji) యాడ్ చేశాను
         const items = [
-            { t: 'Aptitude Zone', i: '3401591', l: '/aptitude-topics', c: 'primary', e: 'Maths & Logic Topics', em: '💡' },
-            { t: 'Reasoning Zone', i: '8637272', l: '/reasoning-topics', c: 'primary', e: 'Logical Thinking', em: '🧠' },
-            { t: 'English Zone', i: '3898150', l: '/english-topics', c: 'info', e: 'Verbal Ability', em: '🗣️' },
-            { t: 'Technical MCQs', i: '1157109', l: '/coding', c: 'success', e: 'DSA & Coding Logic', em: '💻' },
-            { t: 'Leaderboard', i: '3112946', l: '/leaderboard', c: 'warning', e: 'View Peer Rankings', em: '🏆' },
-            { t: 'Interview Prep', i: '9983339', l: '/interview-prep', c: 'info', e: 'Crack HR & Tech Rounds', em: '🤝' },
-            { t: 'Resume Upload', i: '2875437', l: '/resume-upload', c: 'danger', e: 'AI Feedback on Resume', em: '📄' },
-            { t: 'Mock Test', i: '9406364', l: '/mock-test', c: 'dark', e: 'Full Exam Simulation', em: '🎯' }
+            { t: 'Aptitude Zone 💡', i: '3401591', l: '/aptitude-topics', c: 'primary', e: 'Maths & Logic Topics', btn: 'Start Practice' },
+            { t: 'Reasoning Zone 🧠', i: '8637272', l: '/reasoning-topics', c: 'primary', e: 'Improve Thinking', btn: 'Start Practice' },
+            { t: 'English Zone 🗣️', i: '3898150', l: '/english-topics', c: 'info', e: 'Verbal & Vocab', btn: 'Start Practice' },
+            { t: 'Technical MCQs 💻', i: '1157109', l: '/coding', c: 'success', e: 'DSA & Coding Logic', btn: 'View Topics' },
+            { t: 'Leaderboard 🏆', i: '3112946', l: '/leaderboard', c: 'warning', e: 'See your rankings', btn: 'View Rankings' },
+            { t: 'Interview Prep 🤝', i: '9983339', l: '/interview-prep', c: 'info', e: 'HR & Tech Rounds', btn: 'Get Tips' },
+            { t: 'Resume Upload 📄', i: '2875437', l: '/resume-upload', c: 'danger', e: 'AI-driven feedback', btn: 'Upload Now' },
+            { t: 'Mock Test 🎯', i: '9406364', l: '/mock-test', c: 'dark', e: 'Full Exam Simulation', btn: 'Start Mega Test' }
         ];
         %>
 
@@ -45,8 +46,8 @@
             <div class="card h-100 shadow border-0 text-center p-4 hover-card">
                 <img src="https://cdn-icons-png.flaticon.com/512/<%= item.i.substring(0,4) %>/<%= item.i %>.png" width="50" class="mx-auto mb-3 floating" alt="<%= item.t %>">
                 <h6 class="fw-bold mb-1"><%= item.t %></h6>
-                <p class="text-muted mb-2" style="font-size: 0.75rem;"><%= item.e %> <%= item.em %></p>
-                <a href="<%= item.l %>" class="btn btn-sm btn-outline-<%= item.c %> rounded-pill fw-bold w-100 py-2">Start Practice</a>
+                <p class="text-muted mb-3" style="font-size: 0.75rem;"><%= item.e %></p>
+                <a href="<%= item.l %>" class="btn btn-sm btn-outline-<%= item.c %> rounded-pill fw-bold w-100 py-2 shadow-sm"><%= item.btn %></a>
             </div>
         </div>
         <% }) %>
