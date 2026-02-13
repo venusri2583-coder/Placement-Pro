@@ -1,109 +1,57 @@
 <%- include('partials/header') %>
 
-<div style="background-color: #1a1a1a; padding-bottom: 120px; border-bottom-left-radius: 80px; border-bottom-right-radius: 80px; position: relative; z-index: 1;">
-    <nav class="container d-flex justify-content-between align-items-center py-4">
-        <div class="text-white fw-bold h4 m-0"><i class="fas fa-rocket text-primary me-2"></i>PLACEMENT PRO</div>
-        <div class="d-flex align-items-center">
+<div style="background-color: #1a1a1a; padding-bottom: 20px; border-bottom: 3px solid #3182ce; position: relative; z-index: 1;">
+    <nav class="container d-flex justify-content-between align-items-center py-2">
+        <div class="text-white fw-bold h6 m-0">🚀 PLACEMENT PRO</div>
+        <div class="d-flex align-items-center text-white">
             <% if (user) { %>
-                <span class="text-white me-3 opacity-75">Welcome back, <strong class="text-white"><%= user.username %></strong>! 👋</span>
-                <a href="/logout" class="btn btn-outline-light rounded-pill px-4 py-2 fw-bold btn-sm shadow-none">Logout</a>
+                <span class="me-2 opacity-75" style="font-size: 0.75rem;">Hi, <%= user.username %>! ✨</span>
+                <a href="/logout" class="btn btn-outline-light rounded-pill px-2 py-0 fw-bold shadow-none" style="font-size: 0.65rem;">Logout</a>
             <% } %>
         </div>
     </nav>
-    <div class="container text-center mt-4 text-white">
-        <div class="d-inline-block bg-white text-primary px-4 py-2 rounded-pill fw-bold mb-4 shadow-sm" style="font-size: 0.9rem;">Welcome back, <%= user ? user.username : 'Guest' %>! ✨</div>
-        <h1 class="display-3 fw-bold mb-2">Dream Big. <span style="color: #ecc94b;">Work Hard.</span> 🚀</h1>
+
+    <div class="container text-center mt-1 text-white">
+        <h5 class="fw-bold mb-1">Dream Big. <span style="color: #ecc94b;">Work Hard.</span> ✨</h5>
         
-        <div class="mx-auto mt-4 p-3 shadow-lg" style="max-width: 650px; background: #2d2d2d; border-left: 5px solid #ecc94b; border-radius: 12px;">
-            <p class="fst-italic mb-1" style="font-size: 1.1rem; color: #fff;">"The best way to predict your future is to create it."</p>
-            <p class="mb-0 text-white-50" style="font-size: 0.9rem;">— Abraham Lincoln</p>
+        <div class="mx-auto p-1" style="max-width: 400px; background: rgba(255,255,255,0.05); border-left: 2px solid #ecc94b; border-radius: 4px;">
+            <p class="fst-italic mb-0" style="font-size: 0.8rem; line-height: 1.2;">"The best way to predict your future is to create it."</p>
+            <small class="opacity-50" style="font-size: 0.65rem;">— Abraham Lincoln</small>
         </div>
-        <p class="lead mt-4 opacity-75">Master Aptitude, Coding, and Interviews in one Elite Portal. 🚀</p>
     </div>
 </div>
 
-<div class="container" style="position: relative; z-index: 9999; margin-top: -100px; padding-bottom: 60px;">
-    <div class="row g-4 justify-content-center">
+<div class="container" style="margin-top: 30px; padding-bottom: 40px;">
+    <div class="row g-2 justify-content-center">
         
-        <div class="col-md-4">
-            <div class="card h-100 shadow border-0 text-center p-5 hover-card">
-                <img src="https://cdn-icons-png.flaticon.com/512/3401/3401591.png" width="70" class="mx-auto mb-4 floating" alt="Aptitude">
-                <h3 class="fw-bold">Aptitude Zone</h3>
-                <p class="text-muted small">Master Arithmetic, Time & Work, and Logic topics. 💡</p>
-                <a href="/aptitude-topics" class="btn btn-outline-primary rounded-pill mt-auto fw-bold">View Topics</a>
-            </div>
-        </div>
+        <% 
+        const items = [
+            { t: 'Aptitude', i: '3401591', l: '/aptitude-topics', c: 'primary', e: '💡' },
+            { t: 'Reasoning', i: '8637272', l: '/reasoning-topics', c: 'primary', e: '🧠' },
+            { t: 'English', i: '3898150', l: '/english-topics', c: 'info', e: '🗣️' },
+            { t: 'Technical', i: '1157109', l: '/coding', c: 'success', e: '💻' },
+            { t: 'Rankings', i: '3112946', l: '/leaderboard', c: 'warning', e: '🏆' },
+            { t: 'Interview', i: '9983339', l: '/interview-prep', c: 'info', e: '🤝' },
+            { t: 'Resume', i: '2875437', l: '/resume-upload', c: 'danger', e: '📄' },
+            { t: 'Mock Test', i: '9406364', l: '/mock-test', c: 'dark', e: '🎯' }
+        ];
+        %>
 
-        <div class="col-md-4">
-            <div class="card h-100 shadow border-0 text-center p-5 hover-card">
-                <img src="https://cdn-icons-png.flaticon.com/512/8637/8637272.png" width="70" class="mx-auto mb-4 floating" alt="Reasoning">
-                <h3 class="fw-bold">Reasoning Zone</h3>
-                <p class="text-muted small">Improve logical thinking with practice. 🧠</p>
-                <a href="/reasoning-topics" class="btn btn-outline-primary rounded-pill mt-auto fw-bold">View Topics</a>
+        <% items.forEach(item => { %>
+        <div class="col-6 col-md-4 col-lg-3">
+            <div class="card h-100 shadow-sm border-0 text-center p-2 hover-card">
+                <img src="https://cdn-icons-png.flaticon.com/512/<%= item.i.substring(0,4) %>/<%= item.i %>.png" width="30" class="mx-auto mb-1" alt="<%= item.t %>">
+                <h6 class="fw-bold mb-0" style="font-size: 0.8rem;"><%= item.t %></h6>
+                <a href="<%= item.l %>" class="btn btn-sm btn-outline-<%= item.c %> rounded-pill py-0 mt-2 w-100" style="font-size: 0.65rem;">Go</a>
             </div>
         </div>
-
-        <div class="col-md-4">
-            <div class="card h-100 shadow border-0 text-center p-5 hover-card">
-                <img src="https://cdn-icons-png.flaticon.com/512/3898/3898150.png" width="70" class="mx-auto mb-4 floating" alt="English">
-                <h3 class="fw-bold">English Zone</h3>
-                <p class="text-muted small">Master Verbal Ability and Vocabulary skills. 🗣️</p>
-                <a href="/english-topics" class="btn btn-outline-primary rounded-pill mt-auto fw-bold">View Topics</a>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card h-100 shadow border-0 text-center p-5 hover-card">
-                <img src="https://cdn-icons-png.flaticon.com/512/1157/1157109.png" width="75" class="mx-auto mb-4 floating" alt="Coding">
-                <h3 class="fw-bold text-success">Technical MCQs</h3>
-                <p class="text-muted small">Solve DSA challenges and programming logic. 💻</p>
-                <a href="/coding" class="btn btn-outline-success rounded-pill mt-auto fw-bold">View Topics</a>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card h-100 shadow border-0 text-center p-5 hover-card">
-                <img src="https://cdn-icons-png.flaticon.com/512/3112/3112946.png" width="75" class="mx-auto mb-4 floating" alt="Leaderboard">
-                <h3 class="fw-bold text-warning">Leaderboard</h3>
-                <p class="text-muted small">See where you stand among your peers. 🏆</p>
-                <a href="/leaderboard" class="btn btn-outline-warning rounded-pill mt-auto fw-bold">View Rankings</a>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card h-100 shadow border-0 text-center p-5 hover-card">
-                <img src="https://cdn-icons-png.flaticon.com/512/9983/9983339.png" width="80" class="mx-auto mb-4 floating" alt="Interview Prep">
-                <h3 class="fw-bold">Interview Prep</h3>
-                <p class="text-muted small">Crack HR and Technical interview rounds. 🤝</p>
-                <a href="/interview-prep" class="btn btn-outline-info rounded-pill mt-auto fw-bold">Get Tips</a>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card h-100 shadow border-0 text-center p-5 hover-card">
-                <img src="https://cdn-icons-png.flaticon.com/512/2875/2875437.png" width="70" class="mx-auto mb-4 floating" alt="Resume">
-                <h3 class="fw-bold text-danger">Resume Upload</h3>
-                <p class="text-muted small">Upload your resume for AI-driven feedback. 📄</p>
-                <a href="/resume-upload" class="btn btn-outline-danger rounded-pill mt-auto fw-bold">Upload Now</a>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card h-100 shadow border-0 text-center p-5 hover-card text-white" style="border-radius: 30px; background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);">
-                <img src="https://cdn-icons-png.flaticon.com/512/9406/9406364.png" width="70" class="mx-auto mb-4 floating" alt="Mock Test">
-                <h3 class="fw-bold text-white">Mock Test</h3>
-                <p class="opacity-75 small">Full-length exam simulation for test speed. 🎯</p>
-                <a href="/mock-test" class="btn btn-light rounded-pill mt-auto text-primary fw-bold shadow-sm">Start Mega Test</a>
-            </div>
-        </div>
+        <% }) %>
 
     </div>
 </div>
 
 <style>
-    .hover-card { border-radius: 35px; transition: transform 0.4s ease, box-shadow 0.4s ease; background-color: white; border: 1px solid #edf2f7; }
-    .hover-card:hover { transform: translateY(-12px); box-shadow: 0 25px 50px rgba(0,0,0,0.12) !important; }
-    .floating { animation: float 3s ease-in-out infinite; }
-    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+    .hover-card { border-radius: 12px; transition: 0.2s; background: white; border: 1px solid #eee !important; }
+    .hover-card:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(0,0,0,0.05) !important; }
     body { background-color: #f8f9fa; font-family: 'Poppins', sans-serif; }
 </style>
