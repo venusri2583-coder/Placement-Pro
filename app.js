@@ -1045,46 +1045,70 @@ app.get('/add-mega-pack-3', async (req, res) => {
     }
 });
 // =============================================================
-//  MASTER ROUTE: UPLOAD ALL REASONING QUESTIONS
-//  (Paste this BEFORE 'app.listen')
+//  MASTER ROUTE: UPLOAD ALL REASONING QUESTIONS (FIXED VERSION)
+//  Paste this BEFORE 'app.listen'
 // =============================================================
 app.get('/add-full-reasoning', async (req, res) => {
     try {
-        // 1. పాత రీజనింగ్ ప్రశ్నలను డిలీట్ చేద్దాం (డూప్లికేట్స్ రాకుండా)
+        // 1. Clear old Reasoning questions to avoid duplicates
         await db.query("DELETE FROM aptitude_questions WHERE category = 'Logical'");
 
-        // 2. రీజనింగ్ ప్రశ్నలన్నింటినీ ఒకేసారి యాడ్ చేద్దాం
+        // 2. Insert ALL Reasoning Topics (Fixed single quotes with '')
         const sql = `INSERT INTO aptitude_questions (category, topic, question, option_a, option_b, option_c, option_d, correct_option, explanation) VALUES 
         
-        -- BLOOD RELATIONS
-        ('Logical', 'Blood Relations', 'Pointing to a photograph, a man said, "I have no brother or sister but that man’s father is my father’s son." Whose photograph was it?', 'His own', 'His Son', 'His Father', 'His Nephew', 'B', 'Since the narrator has no siblings, "my father` + "'" + `s son" is the narrator himself. So, the statement becomes "that man` + "'" + `s father is Me". Thus, the photo is of his son.'),
-        ('Logical', 'Blood Relations', 'A is the brother of B. B is the brother of C. C is the husband of D. E is the father of A. How is D related to E?', 'Daughter', 'Daughter-in-law', 'Sister-in-law', 'Wife', 'B', 'Daughter-in-law.'),
-        ('Logical', 'Blood Relations', 'Pointing to a gentleman, Deepak said, "His only brother is the father of my daughter` + "'" + `s father." How is the gentleman related to Deepak?', 'Grandfather', 'Father', 'Brother-in-law', 'Uncle', 'D', 'Uncle.'),
-        
-        -- DIRECTION SENSE
-        ('Logical', 'Direction Sense', 'A man walks 5 km toward South and then turns to the right. After walking 3 km he turns to the left and walks 5 km. Now in which direction is he from the starting place?', 'West', 'South', 'North-East', 'South-West', 'D', 'South-West.'),
-        ('Logical', 'Direction Sense', 'One morning Udai and Vishal were talking to each other face to face at a crossing. If Vishal’s shadow was exactly to the left of Udai, which direction was Udai facing?', 'East', 'West', 'North', 'South', 'C', 'North.'),
-        
-        -- CODING DECODING
-        ('Logical', 'Coding Decoding', 'If TAP is coded as SZO, then how is FREEZE coded?', 'EQDDYD', 'ESDDYD', 'EQDDZD', 'EQDDZE', 'A', '-1 shift per letter.'),
-        ('Logical', 'Coding Decoding', 'If MOUSE is coded as PRXVH, how is SHIFT coded?', 'VKIDW', 'VJIDW', 'VIKRD', 'RKIVD', 'A', '+3 shift per letter.'),
+        -- 🩸 BLOOD RELATIONS
+        ('Logical', 'Blood Relations', 'Pointing to a photograph, a man said, "I have no brother or sister but that man’s father is my father’s son." Whose photograph was it?', 'His own', 'His Son', 'His Father', 'His Nephew', 'B', 'Since the narrator has no siblings, "my father''s son" is the narrator himself. So, the statement becomes "that man''s father is Me". Thus, the photo is of his son.'),
+        ('Logical', 'Blood Relations', 'A is the brother of B. B is the brother of C. C is the husband of D. E is the father of A. How is D related to E?', 'Daughter', 'Daughter-in-law', 'Sister-in-law', 'Wife', 'B', 'D is the wife of C (son of E). So D is the Daughter-in-law.'),
+        ('Logical', 'Blood Relations', 'Pointing to a gentleman, Deepak said, "His only brother is the father of my daughter''s father." How is the gentleman related to Deepak?', 'Grandfather', 'Father', 'Brother-in-law', 'Uncle', 'D', 'My daughter''s father is Deepak. Father of Deepak is the brother of that gentleman. So the gentleman is Deepak''s Uncle.'),
+        ('Logical', 'Blood Relations', 'P is the mother of K; K is the sister of D; D is the father of J. How is P related to J?', 'Mother', 'Grandmother', 'Aunt', 'Data inadequate', 'B', 'P is the mother of D. D is the father of J. So P is the Grandmother of J.'),
+        ('Logical', 'Blood Relations', 'A girl introduced a boy as the son of the daughter of the father of her uncle. The boy is girl''s?', 'Brother', 'Son', 'Uncle', 'Son-in-law', 'A', 'Father of uncle is Grandfather. Daughter of Grandfather is Mother. Son of Mother is Brother.'),
 
-        -- SYLLOGISM
-        ('Logical', 'Syllogism', 'Statements: All Men are dogs. All dogs are cats. Conclusion: I. All Men are cats. II. All cats are men.', 'Only I follows', 'Only II follows', 'Either I or II', 'Both follow', 'A', 'All A is B, All B is C -> All A is C.'),
-        ('Logical', 'Syllogism', 'Statements: Some actors are singers. All the singers are dancers. Conclusion: I. Some actors are dancers. II. No singer is actor.', 'Only I follows', 'Only II follows', 'Either I or II', 'Neither follows', 'A', 'Intersection logic.'),
+        -- 🧭 DIRECTION SENSE
+        ('Logical', 'Direction Sense', 'A man walks 5 km toward South and then turns to the right. After walking 3 km he turns to the left and walks 5 km. Now in which direction is he from the starting place?', 'West', 'South', 'North-East', 'South-West', 'D', 'South + Right(West) + Left(South). He is South and West of the start. So, South-West.'),
+        ('Logical', 'Direction Sense', 'One morning Udai and Vishal were talking to each other face to face at a crossing. If Vishal’s shadow was exactly to the left of Udai, which direction was Udai facing?', 'East', 'West', 'North', 'South', 'C', 'Morning sun is East, shadow falls West. If shadow is to Udai''s left, and Left is West, then Udai is facing North.'),
+        ('Logical', 'Direction Sense', 'Y is in the East of X which is in the North of Z. If P is in the South of Z, then in which direction of Y, is P?', 'North', 'South', 'South-East', 'South-West', 'D', 'P is South of Z. Z is South of X. So P is South-West of Y.'),
+        ('Logical', 'Direction Sense', 'If South-East becomes North, North-East becomes West, what will West become?', 'North-East', 'North-West', 'South-East', 'South-West', 'C', 'Rotation of 135 degrees clockwise. West + 135 = South-East.'),
+        ('Logical', 'Direction Sense', 'A man leaves for his office from his house. He walks towards East. After 20m, he turns South (10m), then West (35m), then North (5m), then East (15m). Distance?', '0 m', '5 m', '10 m', 'Cannot be determined', 'B', 'Net East-West: 20-35+15 = 0. Net North-South: -10+5 = -5. Distance is 5 meters.'),
 
-        -- NUMBER SERIES
-        ('Logical', 'Number Series', '2, 1, (1/2), (1/4), ... What number should come next?', '(1/3)', '(1/8)', '(2/8)', '(1/16)', 'B', 'Divide by 2.'),
-        ('Logical', 'Number Series', '7, 10, 8, 11, 9, 12, ... What number should come next?', '7', '10', '12', '13', 'B', 'Alternating +1 pattern.'),
+        -- 🕵️ CODING DECODING
+        ('Logical', 'Coding Decoding', 'If TAP is coded as SZO, then how is FREEZE coded?', 'EQDDYD', 'ESDDYD', 'EQDDZD', 'EQDDZE', 'A', 'Each letter is moved -1 step. T-1=S, A-1=Z... F-1=E.'),
+        ('Logical', 'Coding Decoding', 'If MOUSE is coded as PRXVH, how is SHIFT coded?', 'VKIDW', 'VJIDW', 'VIKRD', 'RKIVD', 'A', 'Pattern is +3 shift per letter.'),
+        ('Logical', 'Coding Decoding', 'If BROTHER is coded as 2456784. SISTER is coded as 919684. What is the code for ROBBERS?', '4562684', '4522849', '4522848', '4562648', 'D', 'Direct letter mapping from given words.'),
+        ('Logical', 'Coding Decoding', 'In a code, "786" means "study very hard", "958" means "hard work pays" and "645" means "study and work". Code for "very"?', '8', '6', '7', '9', 'C', 'Comparing sentences, "very" corresponds to 7.'),
+        ('Logical', 'Coding Decoding', 'If Z = 52 and ACT = 48, then BAT = ?', '39', '41', '44', '46', 'D', 'A=1*2=2, Z=26*2=52. Sum of (Position x 2). BAT = 4+2+40 = 46.'),
 
-        -- SEATING ARRANGEMENT
-        ('Logical', 'Seating Arrangement', 'A, P, R, X, S, Z in a row. S and Z in centre. A, P at ends. R left of A. Right of P?', 'A', 'X', 'S', 'Z', 'B', 'Order: P-X-S-Z-R-A.'),
+        -- 🔢 NUMBER SERIES
+        ('Logical', 'Number Series', '2, 1, (1/2), (1/4), ... What number should come next?', '(1/3)', '(1/8)', '(2/8)', '(1/16)', 'B', 'Each number is divided by 2. Half of 1/4 is 1/8.'),
+        ('Logical', 'Number Series', '7, 10, 8, 11, 9, 12, ... What number should come next?', '7', '10', '12', '13', 'B', 'Alternating series: 7, 8, 9, 10... and 10, 11, 12...'),
+        ('Logical', 'Number Series', '36, 34, 30, 28, 24, ... What number should come next?', '20', '22', '23', '26', 'B', 'Pattern is -2, -4, -2, -4.'),
+        ('Logical', 'Number Series', '22, 21, 23, 22, 24, 23, ... What number should come next?', '22', '24', '25', '26', 'C', 'Pattern is -1, +2.'),
+        ('Logical', 'Number Series', '1.5, 2.3, 3.1, 3.9, ... What number should come next?', '4.2', '4.4', '4.7', '5.1', 'C', 'Add 0.8 to each number.'),
 
-        -- CLOCKS & CALENDARS
-        ('Logical', 'Clocks & Calendars', 'Angle between hands at 3:40?', '120', '130', '140', '150', 'B', '130 degrees.'),
+        -- 🧩 SYLLOGISM
+        ('Logical', 'Syllogism', 'Statements: All Men are dogs. All dogs are cats. Conclusion: I. All Men are cats. II. All cats are men.', 'Only I follows', 'Only II follows', 'Either I or II', 'Both follow', 'A', 'If A is inside B, and B is inside C, then A is inside C.'),
+        ('Logical', 'Syllogism', 'Statements: Some actors are singers. All the singers are dancers. Conclusion: I. Some actors are dancers. II. No singer is actor.', 'Only I follows', 'Only II follows', 'Either I or II', 'Neither follows', 'A', 'Actors intersect Singers. Singers are inside Dancers. So Actors must intersect Dancers.'),
+        ('Logical', 'Syllogism', 'Statements: All huts are bungalows. All bungalows are churches. Conclusion: I. Some churches are huts. II. Some churches are bungalows.', 'Only I follows', 'Only II follows', 'Both follow', 'Neither follows', 'C', 'Outer to Inner is always "Some".'),
+        ('Logical', 'Syllogism', 'Statements: Some cars are vehicles. No vehicle is a four-wheeler. Conclusion: I. No car is a four-wheeler. II. All four-wheelers are cars.', 'Only I follows', 'Only II follows', 'Both follow', 'Neither follows', 'D', 'No definite relation between Car and Four-wheeler.'),
 
-        -- ANALOGY
-        ('Logical', 'Analogy', 'Moon : Satellite :: Earth : ?', 'Sun', 'Planet', 'Solar System', 'Asteroid', 'B', 'Earth is a Planet.');
+        -- 🪑 SEATING ARRANGEMENT
+        ('Logical', 'Seating Arrangement', 'A, P, R, X, S, Z in a row. S and Z in centre. A, P at ends. R left of A. Right of P?', 'A', 'X', 'S', 'Z', 'B', 'Order: P-X-S-Z-R-A. Right of P is X.'),
+        ('Logical', 'Seating Arrangement', '5 girls on a bench. Seema left of Rani, right of Bindu. Mary right of Rani. Reeta between Rani, Mary. Immediate right of Reeta?', 'Bindu', 'Rani', 'Mary', 'Seema', 'C', 'Right of Reeta is Mary.'),
+        ('Logical', 'Seating Arrangement', 'Six friends in circle facing center. A facing B. B right of E. C left of D. F right of A. Who is left of E?', 'A', 'D', 'F', 'B', 'A', 'Circular logic: Left of E is A.'),
+
+        -- ⏰ CLOCKS & CALENDARS
+        ('Logical', 'Clocks & Calendars', 'What is the angle between the two hands of a clock at 3:40?', '120', '130', '140', '150', 'B', 'Formula |30H - 11/2M| gives 130 degrees.'),
+        ('Logical', 'Clocks & Calendars', 'How many times do the hands of a clock coincide in a day?', '20', '21', '22', '24', 'C', '22 times in 24 hours.'),
+        ('Logical', 'Clocks & Calendars', 'Today is Monday. After 61 days it will be:', 'Tuesday', 'Wednesday', 'Thursday', 'Saturday', 'D', '61/7 leaves remainder 5. Mon + 5 = Saturday.'),
+
+        -- 🔗 ANALOGY
+        ('Logical', 'Analogy', 'Moon : Satellite :: Earth : ?', 'Sun', 'Planet', 'Solar System', 'Asteroid', 'B', 'Earth is a Planet.'),
+        ('Logical', 'Analogy', 'Clock : Time :: Thermometer : ?', 'Heat', 'Radiation', 'Energy', 'Temperature', 'D', 'Measures Temperature.'),
+        ('Logical', 'Analogy', 'Melt : Liquid :: Freeze : ?', 'Ice', 'Condense', 'Solid', 'Crystal', 'C', 'Freezing turns substance to Solid.'),
+
+        -- 📊 DATA SUFFICIENCY
+        ('Logical', 'Data Sufficiency', 'Is X > Y? I. X + Y = 10. II. X - Y = 2.', 'I alone', 'II alone', 'Both needed', 'Neither', 'C', 'Solving both equations gives X=6, Y=4. Both needed.'),
+        ('Logical', 'Data Sufficiency', 'How many children does A have? I. B is only dau. II. A has 3 sons.', 'I alone', 'II alone', 'Both needed', 'Neither', 'C', 'Need both statements for total count.'),
+        ('Logical', 'Data Sufficiency', 'Is n odd? I. 3n is odd. II. 2n is even.', 'I alone', 'II alone', 'Both needed', 'Neither', 'A', 'If 3n is odd, n must be odd. I alone is sufficient.');
         `;
         
         await db.query(sql);
@@ -1094,7 +1118,6 @@ app.get('/add-full-reasoning', async (req, res) => {
         res.send("Error: " + err.message); 
     }
 });
-
 // 🔥 STEP 4: Start Server (MUST BE AT THE VERY BOTTOM)
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
