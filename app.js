@@ -36,7 +36,7 @@ const requireLogin = (req, res, next) => {
     if (req.session.user) { next(); } else { res.redirect('/login'); }
 };
 
-// --- FIX FOR "CANNOT GET" ERRORS ---
+// --- 🔥 FIX FOR "CANNOT GET" ERRORS ---
 app.get('/aptitude/:topic', requireLogin, (req, res) => res.redirect(`/practice/${encodeURIComponent(req.params.topic)}`));
 app.get('/reasoning/:topic', requireLogin, (req, res) => res.redirect(`/practice/${encodeURIComponent(req.params.topic)}`));
 
@@ -58,6 +58,7 @@ app.post('/login', async (req, res) => {
         } else { res.render('login', { error: 'Invalid details', msg: null }); }
     } catch (err) { res.render('login', { error: 'Server Error', msg: null }); }
 });
+app.get('/logout', (req, res) => { req.session.destroy(); res.redirect('/login'); });
 
 // PRACTICE ENGINE
 app.get('/practice/:topic', requireLogin, async (req, res) => {
@@ -96,9 +97,10 @@ app.get('/load-real-data', async (req, res) => {
     try {
         await db.query("TRUNCATE TABLE aptitude_questions");
         
+        // FIXED: Quotes escaped correctly with backslash
         const realData = [
             ['Quantitative', 'Percentages', 'If A is 20% more than B, then B is how much percent less than A?', '16.66%', '20%', '25%', '10%', 'A', '100+20=120. (20/120)*100 = 16.66%'],
-            ['Logical', 'Blood Relations', 'Pointing to a man, Neha said, "His only brother is father of my daughter''s father". Relation?', 'Uncle', 'Father', 'Brother', 'Grandfather', 'A', 'Daughter''s father is Neha''s husband. Husband''s father is Father-in-law. His brother is also Uncle-in-law.'],
+            ['Logical', 'Blood Relations', "Pointing to a man, Neha said, \"His only brother is father of my daughter's father\". Relation?", 'Uncle', 'Father', 'Brother', 'Grandfather', 'A', "Daughter's father is Neha's husband. Husband's father is Father-in-law. His brother is also Uncle-in-law."],
             ['Quantitative', 'Profit & Loss', 'CP = 500, SP = 600. Gain%?', '20%', '10%', '15%', '25%', 'A', '(100/500)*100 = 20%']
         ];
 
