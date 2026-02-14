@@ -10,6 +10,7 @@ const fs = require('fs');
 dotenv.config();
 const app = express();
 
+// 1. DATABASE CONNECTION
 const db = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
@@ -76,11 +77,10 @@ app.get('/reasoning-topics', requireLogin, async (req, res) => {
     res.render('reasoning_topics', { topics, user: req.session.user });
 });
 
-// 🔥 FIX FOR "CANNOT GET /aptitude/Topic" - Handles the URLs from your buttons
-app.get('/aptitude/:topic', (req, res) => res.redirect(`/practice/${encodeURIComponent(req.params.topic)}`));
-app.get('/reasoning/:topic', (req, res) => res.redirect(`/practice/${encodeURIComponent(req.params.topic)}`));
+app.get('/aptitude/:topic', requireLogin, (req, res) => res.redirect(`/practice/${encodeURIComponent(req.params.topic)}`));
+app.get('/reasoning/:topic', requireLogin, (req, res) => res.redirect(`/practice/${encodeURIComponent(req.params.topic)}`));
 
-// --- PRACTICE ENGINE ---
+// 🔥 PRACTICE ENGINE: LIMIT UPDATED TO 30
 app.get('/practice/:topic', requireLogin, async (req, res) => {
     const topicName = decodeURIComponent(req.params.topic);
     const userId = req.session.user.id;
@@ -90,18 +90,20 @@ app.get('/practice/:topic', requireLogin, async (req, res) => {
         let query, params;
         if (doneIds.length > 0) {
             const placeholders = doneIds.map(() => '?').join(',');
-            query = `SELECT * FROM aptitude_questions WHERE topic = ? AND id NOT IN (${placeholders}) ORDER BY RAND() LIMIT 15`;
+            // FIXED: CHANGED LIMIT TO 30
+            query = `SELECT * FROM aptitude_questions WHERE topic = ? AND id NOT IN (${placeholders}) ORDER BY RAND() LIMIT 30`;
             params = [topicName, ...doneIds];
         } else {
-            query = `SELECT * FROM aptitude_questions WHERE topic = ? ORDER BY RAND() LIMIT 15`;
+            // FIXED: CHANGED LIMIT TO 30
+            query = `SELECT * FROM aptitude_questions WHERE topic = ? ORDER BY RAND() LIMIT 30`;
             params = [topicName];
         }
         const [questions] = await db.execute(query, params);
         if (questions.length === 0) {
-            return res.send(`<h2>All questions completed or Topic Empty! <br> Please run <a href="/load-master-data">/load-master-data</a>.</h2>`);
+            return res.send(`<h2>All questions done! Run <a href="/load-master-data">/load-master-data</a>.</h2>`);
         }
         res.render('mocktest', { questions, user: req.session.user, topic: topicName });
-    } catch (err) { res.send(err.message); }
+    } catch (err) { res.send("Error: " + err.message); }
 });
 
 app.post('/submit-quiz', requireLogin, async (req, res) => {
@@ -125,7 +127,7 @@ app.post('/submit-quiz', requireLogin, async (req, res) => {
 });
 
 // =========================================================================
-// 🔥 THE MASTER LOADER: ADDS 30+ QUESTIONS TO ALL 21 TOPICS
+// 🔥 MASTER DATA LOADER: UPDATED TO LOAD 30+ QUESTIONS PER TOPIC
 // =========================================================================
 app.get('/load-master-data', async (req, res) => {
     try {
@@ -135,11 +137,12 @@ app.get('/load-master-data', async (req, res) => {
         const aptTopics = ['Percentages', 'Profit & Loss', 'Time & Work', 'Probability', 'Averages', 'HCF & LCM', 'Trains', 'Boats & Streams', 'Simple Interest', 'Ratio & Proportion', 'Ages'];
         const logicTopics = ['Blood Relations', 'Number Series', 'Coding-Decoding', 'Syllogism', 'Seating Arrangement', 'Direction Sense', 'Clocks & Calendars', 'Analogy', 'Data Sufficiency', 'Logic Puzzles'];
 
+        // INSERTING 35 QUESTIONS PER TOPIC TO ENSURE AT LEAST 30 SHOW UP
         for (let topic of aptTopics) {
             for (let i = 1; i <= 35; i++) {
                 await db.execute(`INSERT INTO aptitude_questions (category, topic, question, option_a, option_b, option_c, option_d, correct_option, explanation) 
                 VALUES ('Quantitative', ?, ?, ?, ?, ?, ?, ?, ?)`, 
-                [topic, `${topic} Question #${i}: Solve based on standard formulas.`, `Option A`, `Option B`, `Option C`, `Option D`, 'A', `Shortcut for ${topic}`]);
+                [topic, `${topic} Question #${i}: Solve using placement level logic.`, `Option A`, `Option B`, `Option C`, `Option D`, 'A', `Shortcut for ${topic} variant ${i}`]);
             }
         }
 
@@ -147,11 +150,11 @@ app.get('/load-master-data', async (req, res) => {
             for (let i = 1; i <= 35; i++) {
                 await db.execute(`INSERT INTO aptitude_questions (category, topic, question, option_a, option_b, option_c, option_d, correct_option, explanation) 
                 VALUES ('Logical', ?, ?, ?, ?, ?, ?, ?, ?)`, 
-                [topic, `${topic} Puzzle #${i}: Find the relation.`, `1`, `2`, `3`, `4`, 'B', `Logic for ${topic}`]);
+                [topic, `Logical ${topic} Puzzle #${i}: Determine the correct relation.`, `1`, `2`, `3`, `4`, 'B', `Logic for ${topic} version ${i}`]);
             }
         }
 
-        res.send("<h1>✅ CONFORMED: 700+ QUESTIONS LOADED!</h1><a href='/'>Go Home</a>");
+        res.send("<h1>✅ CONFORMED: 700+ QUESTIONS LOADED! (30+ Per Topic)</h1><a href='/'>Go Home</a>");
     } catch(err) { res.send("Error: " + err.message); }
 });
 
