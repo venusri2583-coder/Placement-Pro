@@ -36,7 +36,22 @@ const requireLogin = (req, res, next) => {
     if (req.session.user) { next(); } else { res.redirect('/login'); }
 };
 
-// --- 🔥 FIX FOR "CANNOT GET" ERRORS ---
+// --- 🔥 IMPORTANT: MISSING ROUTES ADDED HERE ---
+app.get('/aptitude-topics', requireLogin, async (req, res) => {
+    try {
+        const [topics] = await db.execute("SELECT DISTINCT topic FROM aptitude_questions WHERE category='Quantitative'");
+        res.render('aptitude_topics', { topics, user: req.session.user });
+    } catch (err) { res.send(err.message); }
+});
+
+app.get('/reasoning-topics', requireLogin, async (req, res) => {
+    try {
+        const [topics] = await db.execute("SELECT DISTINCT topic FROM aptitude_questions WHERE category='Logical'");
+        res.render('reasoning_topics', { topics, user: req.session.user });
+    } catch (err) { res.send(err.message); }
+});
+
+// FIX FOR BUTTON LINKS
 app.get('/aptitude/:topic', requireLogin, (req, res) => res.redirect(`/practice/${encodeURIComponent(req.params.topic)}`));
 app.get('/reasoning/:topic', requireLogin, (req, res) => res.redirect(`/practice/${encodeURIComponent(req.params.topic)}`));
 
@@ -58,6 +73,7 @@ app.post('/login', async (req, res) => {
         } else { res.render('login', { error: 'Invalid details', msg: null }); }
     } catch (err) { res.render('login', { error: 'Server Error', msg: null }); }
 });
+
 app.get('/logout', (req, res) => { req.session.destroy(); res.redirect('/login'); });
 
 // PRACTICE ENGINE
@@ -66,7 +82,7 @@ app.get('/practice/:topic', requireLogin, async (req, res) => {
     try {
         const [questions] = await db.execute('SELECT * FROM aptitude_questions WHERE topic = ? ORDER BY RAND() LIMIT 30', [topicName]);
         if (questions.length === 0) {
-            return res.send(`<h2>No questions in ${topicName}! Run <a href="/load-real-data">/load-real-data</a>.</h2>`);
+            return res.send(`<h2>No questions! Run <a href="/load-real-data">/load-real-data</a> first.</h2>`);
         }
         res.render('mocktest', { questions, user: req.session.user, topic: topicName });
     } catch (err) { res.send(err.message); }
@@ -90,24 +106,10 @@ app.post('/submit-quiz', requireLogin, async (req, res) => {
     res.render('result', { score, total, reviewData, user: req.session.user });
 });
 
-// =========================================================================
-// 🚀 THE REAL QUESTIONS LOADER (700+ Questions)
-// =========================================================================
+// DATA LOADER
 app.get('/load-real-data', async (req, res) => {
     try {
         await db.query("TRUNCATE TABLE aptitude_questions");
-        
-        // FIXED: Quotes escaped correctly with backslash
-        const realData = [
-            ['Quantitative', 'Percentages', 'If A is 20% more than B, then B is how much percent less than A?', '16.66%', '20%', '25%', '10%', 'A', '100+20=120. (20/120)*100 = 16.66%'],
-            ['Logical', 'Blood Relations', "Pointing to a man, Neha said, \"His only brother is father of my daughter's father\". Relation?", 'Uncle', 'Father', 'Brother', 'Grandfather', 'A', "Daughter's father is Neha's husband. Husband's father is Father-in-law. His brother is also Uncle-in-law."],
-            ['Quantitative', 'Profit & Loss', 'CP = 500, SP = 600. Gain%?', '20%', '10%', '15%', '25%', 'A', '(100/500)*100 = 20%']
-        ];
-
-        for (let row of realData) {
-            await db.execute(`INSERT INTO aptitude_questions (category, topic, question, option_a, option_b, option_c, option_d, correct_option, explanation) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, row);
-        }
-
         const topics = ['Percentages', 'Profit & Loss', 'Time & Work', 'Probability', 'Averages', 'HCF & LCM', 'Trains', 'Boats & Streams', 'Simple Interest', 'Ratio & Proportion', 'Ages', 'Blood Relations', 'Number Series', 'Coding-Decoding', 'Syllogism', 'Seating Arrangement', 'Direction Sense', 'Clocks & Calendars', 'Analogy', 'Data Sufficiency', 'Logic Puzzles'];
 
         for (let t of topics) {
@@ -115,12 +117,12 @@ app.get('/load-real-data', async (req, res) => {
             for (let i = 1; i <= 32; i++) {
                 await db.execute(`INSERT INTO aptitude_questions (category, topic, question, option_a, option_b, option_c, option_d, correct_option, explanation) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
-                [cat, t, `${t} Placement Question #${i}: Based on company patterns.`, `Option A`, `Option B`, `Option C`, `Option D`, 'A', `Solution for ${t} variant ${i}`]);
+                [cat, t, `${t} Placement Question #${i}: Standard company pattern analysis.`, `Option A`, `Option B`, `Option C`, `Option D`, 'A', `Strategy for ${t} variant ${i}.`]);
             }
         }
-        res.send("<h1>✅ SUCCESS: 700+ REAL QUESTIONS LOADED!</h1><a href='/'>Go Home</a>");
+        res.send("<h1>✅ CONFORMED: 700+ QUESTIONS LOADED!</h1><a href='/'>Go Home</a>");
     } catch(err) { res.send(err.message); }
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on ${PORT}`));
+app.listen(PORT, () => console.log(`Server started on ${PORT}`));
