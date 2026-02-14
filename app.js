@@ -1044,6 +1044,56 @@ app.get('/add-mega-pack-3', async (req, res) => {
         res.send("Error: " + err.message); 
     }
 });
+// =============================================================
+//  MASTER ROUTE: UPLOAD ALL REASONING QUESTIONS
+//  (Paste this BEFORE 'app.listen')
+// =============================================================
+app.get('/add-full-reasoning', async (req, res) => {
+    try {
+        // 1. పాత రీజనింగ్ ప్రశ్నలను డిలీట్ చేద్దాం (డూప్లికేట్స్ రాకుండా)
+        await db.query("DELETE FROM aptitude_questions WHERE category = 'Logical'");
+
+        // 2. రీజనింగ్ ప్రశ్నలన్నింటినీ ఒకేసారి యాడ్ చేద్దాం
+        const sql = `INSERT INTO aptitude_questions (category, topic, question, option_a, option_b, option_c, option_d, correct_option, explanation) VALUES 
+        
+        -- BLOOD RELATIONS
+        ('Logical', 'Blood Relations', 'Pointing to a photograph, a man said, "I have no brother or sister but that man’s father is my father’s son." Whose photograph was it?', 'His own', 'His Son', 'His Father', 'His Nephew', 'B', 'Since the narrator has no siblings, "my father` + "'" + `s son" is the narrator himself. So, the statement becomes "that man` + "'" + `s father is Me". Thus, the photo is of his son.'),
+        ('Logical', 'Blood Relations', 'A is the brother of B. B is the brother of C. C is the husband of D. E is the father of A. How is D related to E?', 'Daughter', 'Daughter-in-law', 'Sister-in-law', 'Wife', 'B', 'Daughter-in-law.'),
+        ('Logical', 'Blood Relations', 'Pointing to a gentleman, Deepak said, "His only brother is the father of my daughter` + "'" + `s father." How is the gentleman related to Deepak?', 'Grandfather', 'Father', 'Brother-in-law', 'Uncle', 'D', 'Uncle.'),
+        
+        -- DIRECTION SENSE
+        ('Logical', 'Direction Sense', 'A man walks 5 km toward South and then turns to the right. After walking 3 km he turns to the left and walks 5 km. Now in which direction is he from the starting place?', 'West', 'South', 'North-East', 'South-West', 'D', 'South-West.'),
+        ('Logical', 'Direction Sense', 'One morning Udai and Vishal were talking to each other face to face at a crossing. If Vishal’s shadow was exactly to the left of Udai, which direction was Udai facing?', 'East', 'West', 'North', 'South', 'C', 'North.'),
+        
+        -- CODING DECODING
+        ('Logical', 'Coding Decoding', 'If TAP is coded as SZO, then how is FREEZE coded?', 'EQDDYD', 'ESDDYD', 'EQDDZD', 'EQDDZE', 'A', '-1 shift per letter.'),
+        ('Logical', 'Coding Decoding', 'If MOUSE is coded as PRXVH, how is SHIFT coded?', 'VKIDW', 'VJIDW', 'VIKRD', 'RKIVD', 'A', '+3 shift per letter.'),
+
+        -- SYLLOGISM
+        ('Logical', 'Syllogism', 'Statements: All Men are dogs. All dogs are cats. Conclusion: I. All Men are cats. II. All cats are men.', 'Only I follows', 'Only II follows', 'Either I or II', 'Both follow', 'A', 'All A is B, All B is C -> All A is C.'),
+        ('Logical', 'Syllogism', 'Statements: Some actors are singers. All the singers are dancers. Conclusion: I. Some actors are dancers. II. No singer is actor.', 'Only I follows', 'Only II follows', 'Either I or II', 'Neither follows', 'A', 'Intersection logic.'),
+
+        -- NUMBER SERIES
+        ('Logical', 'Number Series', '2, 1, (1/2), (1/4), ... What number should come next?', '(1/3)', '(1/8)', '(2/8)', '(1/16)', 'B', 'Divide by 2.'),
+        ('Logical', 'Number Series', '7, 10, 8, 11, 9, 12, ... What number should come next?', '7', '10', '12', '13', 'B', 'Alternating +1 pattern.'),
+
+        -- SEATING ARRANGEMENT
+        ('Logical', 'Seating Arrangement', 'A, P, R, X, S, Z in a row. S and Z in centre. A, P at ends. R left of A. Right of P?', 'A', 'X', 'S', 'Z', 'B', 'Order: P-X-S-Z-R-A.'),
+
+        -- CLOCKS & CALENDARS
+        ('Logical', 'Clocks & Calendars', 'Angle between hands at 3:40?', '120', '130', '140', '150', 'B', '130 degrees.'),
+
+        -- ANALOGY
+        ('Logical', 'Analogy', 'Moon : Satellite :: Earth : ?', 'Sun', 'Planet', 'Solar System', 'Asteroid', 'B', 'Earth is a Planet.');
+        `;
+        
+        await db.query(sql);
+        res.send("<h1>✅ Reasoning Questions Uploaded Successfully! <a href='/'>Go Home</a></h1>");
+    } catch(err) { 
+        console.error(err);
+        res.send("Error: " + err.message); 
+    }
+});
 
 // 🔥 STEP 4: Start Server (MUST BE AT THE VERY BOTTOM)
 const PORT = process.env.PORT || 5000;
