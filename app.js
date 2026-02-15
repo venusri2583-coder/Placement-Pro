@@ -506,5 +506,122 @@ app.get('/fix-missing-reasoning', async (req, res) => {
 
     } catch(err) { res.send("Error: " + err.message); }
 });
+
+// =============================================================
+// 🔥 FIX CORE REASONING (Series, Blood Relations, Coding, etc.)
+// =============================================================
+app.get('/fix-core-reasoning', async (req, res) => {
+    try {
+        // 1. Target ONLY the empty topics
+        const coreTopics = [
+            'Blood Relations', 
+            'Number Series', 
+            'Coding-Decoding', 
+            'Syllogism', 
+            'Seating Arrangement', 
+            'Direction Sense'
+        ];
+
+        // 2. Clear ONLY these specific topics
+        for (let t of coreTopics) {
+            await db.execute("DELETE FROM aptitude_questions WHERE topic = ?", [t]);
+        }
+
+        const addQ = async (cat, topic, q, a, b, c, d, corr, exp) => {
+            await db.execute(`INSERT INTO aptitude_questions 
+            (category, topic, question, option_a, option_b, option_c, option_d, correct_option, explanation) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, [cat, topic, q, a, b, c, d, corr, exp]);
+        };
+
+        // Helper to shuffle options
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        for (let t of coreTopics) {
+            for (let i = 1; i <= 20; i++) {
+                
+                let qText="", ansVal="", w1="", w2="", w3="", explanation="";
+                let n = i + 5;
+
+                // --- 1. NUMBER SERIES ---
+                if (t === 'Number Series') {
+                    if (i % 3 === 0) { // Arithmetic
+                        qText = `Find next: ${n}, ${n+5}, ${n+10}, ${n+15}, ?`;
+                        ansVal = `${n+20}`; w1=`${n+18}`; w2=`${n+25}`; w3=`${n+10}`;
+                        explanation = `Add 5 to previous number.`;
+                    } else if (i % 3 === 1) { // Geometric
+                        qText = `Find next: 2, 6, 18, 54, ?`;
+                        ansVal = `162`; w1=`100`; w2=`120`; w3=`200`;
+                        explanation = `Multiply by 3.`;
+                    } else { // Squares
+                        qText = `Find next: 4, 9, 16, 25, ?`;
+                        ansVal = `36`; w1=`49`; w2=`30`; w3=`32`;
+                        explanation = `Squares of natural numbers.`;
+                    }
+                }
+
+                // --- 2. CODING DECODING ---
+                else if (t === 'Coding-Decoding') {
+                    qText = `If A=1, B=2, what is BAD?`;
+                    ansVal = `214`; w1=`123`; w2=`224`; w3=`114`;
+                    explanation = `Direct letter numbering.`;
+                }
+
+                // --- 3. BLOOD RELATIONS ---
+                else if (t === 'Blood Relations') {
+                    qText = `A is brother of B. B is father of C. How is A related to C?`;
+                    ansVal = `Uncle`; w1=`Father`; w2=`Grandfather`; w3=`Brother`;
+                    explanation = `Father's brother is Uncle.`;
+                }
+
+                // --- 4. SYLLOGISM ---
+                else if (t === 'Syllogism') {
+                    qText = `Statement: All Cats are Dogs. Some Dogs are Birds. Conclusion: Some Cats are Birds?`;
+                    ansVal = `False / Cannot be determined`; w1=`True`; w2=`Maybe`; w3=`None`;
+                    explanation = `No direct relation given between Cats and Birds.`;
+                }
+
+                // --- 5. SEATING ARRANGEMENT ---
+                else if (t === 'Seating Arrangement') {
+                    qText = `5 people A,B,C,D,E sit in a row. C is in middle. A is left of C. B is right of C. Who is at immediate right of C?`;
+                    ansVal = `B`; w1=`A`; w2=`D`; w3=`E`;
+                    explanation = `Directly given in statement.`;
+                }
+
+                // --- 6. DIRECTION SENSE ---
+                else if (t === 'Direction Sense') {
+                    qText = `Person walks 3km North, then turns Right and walks 4km. Distance from start?`;
+                    ansVal = `5km`; w1=`7km`; w2=`3km`; w3=`4km`;
+                    explanation = `Pythagoras theorem: sqrt(3^2 + 4^2) = 5.`;
+                }
+
+                // SHUFFLE & INSERT
+                if(qText) {
+                    let opts = shuffle([
+                        { val: ansVal, isCorrect: true },
+                        { val: w1, isCorrect: false },
+                        { val: w2, isCorrect: false },
+                        { val: w3, isCorrect: false }
+                    ]);
+
+                    let finalAns = 'A';
+                    if(opts[1].isCorrect) finalAns = 'B';
+                    if(opts[2].isCorrect) finalAns = 'C';
+                    if(opts[3].isCorrect) finalAns = 'D';
+
+                    await addQ('Logical', t, qText, opts[0].val, opts[1].val, opts[2].val, opts[3].val, finalAns, explanation);
+                }
+            }
+        }
+
+        res.send(`<h1>✅ CORE REASONING FIXED!</h1><p>Series, Coding, Blood Relations, Syllogism, Seating, Directions are now FILLED.</p><a href="/">Go to Dashboard</a>`);
+
+    } catch(err) { res.send("Error: " + err.message); }
+});
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
