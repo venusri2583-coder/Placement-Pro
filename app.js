@@ -90,9 +90,9 @@ app.get('/practice/:topic', requireLogin, async (req, res) => {
         if (questions.length === 0) {
             return res.send(`
                 <div style="text-align:center; padding:50px;">
-                    <h2>Topic '${topic}' is empty.</h2>
+                    <h2>Topic '${topic}' is empty!</h2>
                     <br>
-                    <a href="/generate-real-math" style="background:green; color:white; padding:15px 30px; text-decoration:none; border-radius:5px; font-size:20px;">CLICK HERE TO LOAD QUESTIONS</a>
+                    <a href="/fix-questions" style="background:green; color:white; padding:15px 30px; text-decoration:none; border-radius:5px; font-size:20px;">CLICK TO FIX QUESTIONS</a>
                 </div>
             `);
         }
@@ -140,11 +140,11 @@ app.post('/upload-resume', requireLogin, upload.single('resume'), async (req, re
 });
 
 // =============================================================
-// 🔥 SMART GENERATOR: REAL MATH LOGIC (NO "PRACTICE Q" TEXT)
+// 🔥 FINAL FIX: EXACT TOPIC LOGIC (NO MORE WRONG QUESTIONS)
 // =============================================================
-app.get('/generate-real-math', async (req, res) => {
+app.get('/fix-questions', async (req, res) => {
     try {
-        await db.query("TRUNCATE TABLE aptitude_questions"); // Clear old garbage
+        await db.query("TRUNCATE TABLE aptitude_questions"); 
 
         const addQ = async (cat, topic, q, a, b, c, d, corr, exp) => {
             await db.execute(`INSERT INTO aptitude_questions 
@@ -152,62 +152,84 @@ app.get('/generate-real-math', async (req, res) => {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, [cat, topic, q, a, b, c, d, corr, exp]);
         };
 
-        const topics = ['Percentages', 'Profit & Loss', 'Time & Work', 'Trains', 'Averages', 'Simple Interest', 'Boats & Streams', 'HCF & LCM', 'Probability', 'Ratio & Proportion', 'Ages'];
+        // EXACT NAMES FROM YOUR SCREENSHOT
+        const topics = [
+            'Percentages', 'Profit & Loss', 'Time & Work', 'Probability', 'Averages',
+            'HCF & LCM', 'Trains', 'Boats & Streams', 'Simple Interest', 'Ratio & Proportion', 'Ages'
+        ];
 
         for (let t of topics) {
-            // Generate 30 UNIQUE Questions per topic
-            for (let i = 1; i <= 30; i++) {
+            for (let i = 1; i <= 20; i++) {
                 
-                let qText="", optA="", optB="", optC="", optD="", ans="A", exp="";
-                let num1 = i * 50;  // Example: 50, 100, 150...
-                let num2 = 10 + i;  // Example: 11, 12, 13...
+                let qText="", optA="", optB="", optC="", optD="", ans="A";
+                let n1 = i * 10;
+                let n2 = i + 5;
 
+                // --- LOGIC FOR EACH TOPIC ---
+                
                 if (t === 'Percentages') {
-                    let res = (num2 / 100) * num1;
-                    qText = `What is ${num2}% of ${num1}?`;
-                    optA = `${res}`; optB = `${res + 10}`; optC = `${res - 5}`; optD = `${res * 2}`;
-                    exp = `${num1} * (${num2}/100) = ${res}`;
+                    let res = (n2 / 100) * n1;
+                    qText = `What is ${n2}% of ${n1}?`;
+                    optA = `${res}`; optB = `${res+10}`; optC = `${res-5}`; optD = `${res*2}`;
                 } 
                 else if (t === 'Profit & Loss') {
-                    let cp = num1; let profit = num2; let sp = cp + (cp * profit / 100);
-                    qText = `Cost Price is Rs.${cp} and Profit is ${profit}%. Find Selling Price.`;
-                    optA = `${sp}`; optB = `${sp - 20}`; optC = `${sp + 50}`; optD = `${cp}`;
-                    exp = `SP = CP + Profit = ${cp} + (${profit}% of ${cp}) = ${sp}`;
+                    let cp = n1 * 10; let p = 20; let sp = cp + (cp*p/100);
+                    qText = `CP is ${cp}, Profit is ${p}%. Find Selling Price.`;
+                    optA = `${sp}`; optB = `${cp}`; optC = `${sp-10}`; optD = `${sp+20}`;
                 }
                 else if (t === 'Time & Work') {
-                    let d1 = 10 + i; let d2 = 20 + i;
-                    let total = ((d1 * d2) / (d1 + d2)).toFixed(2);
-                    qText = `A finishes work in ${d1} days, B in ${d2} days. Together?`;
-                    optA = `${total} days`; optB = `${d1 + d2} days`; optC = `${(d1+d2)/2} days`; optD = `5 days`;
-                    exp = `Formula: (A*B)/(A+B)`;
+                    let d1 = 10; let d2 = 15;
+                    qText = `A does work in ${d1} days, B in ${d2} days. Together?`;
+                    optA = `6 days`; optB = `8 days`; optC = `12 days`; optD = `5 days`;
+                }
+                else if (t === 'HCF & LCM') {
+                    // Logic: LCM of (12, 18) -> 36. HCF -> 6
+                    let numA = 12 * i; let numB = 18 * i;
+                    qText = `Find the HCF of ${numA} and ${numB}.`;
+                    optA = `${6*i}`; optB = `${numA}`; optC = `${numB}`; optD = `1`;
+                }
+                else if (t === 'Averages') {
+                    // Logic: Avg of 5 numbers is X. Sum = 5*X
+                    let avg = n1; 
+                    qText = `The average of 5 numbers is ${avg}. What is the sum?`;
+                    optA = `${avg*5}`; optB = `${avg}`; optC = `${avg*2}`; optD = `${avg+5}`;
                 }
                 else if (t === 'Trains') {
-                    let speed = 36 + i; let dist = 100 + (i*10);
-                    let speedMS = (speed * 5/18).toFixed(1);
-                    let time = (dist / speedMS).toFixed(1);
-                    qText = `Train length ${dist}m running at ${speed} kmph crosses a pole in?`;
-                    optA = `${time} sec`; optB = `${time + 5} sec`; optC = `${time - 2} sec`; optD = `10 sec`;
-                    exp = `Time = Dist/Speed (m/s).`;
+                    let length = n1 * 10; let speed = 36; // 36kmph = 10m/s
+                    let time = length / 10;
+                    qText = `Train of length ${length}m moving at ${speed}kmph crosses a pole in?`;
+                    optA = `${time} sec`; optB = `${time+5} sec`; optC = `${time-2} sec`; optD = `10 sec`;
+                }
+                else if (t === 'Boats & Streams') {
+                    let b = 10 + i; let s = 5;
+                    qText = `Boat speed ${b} kmph, Stream ${s} kmph. Find Downstream speed.`;
+                    optA = `${b+s} kmph`; optB = `${b-s} kmph`; optC = `${b} kmph`; optD = `${s} kmph`;
                 }
                 else if (t === 'Simple Interest') {
-                    let P = num1; let R = 5; let T = 2;
-                    let SI = (P * R * T) / 100;
-                    qText = `Simple Interest on Rs.${P} at ${R}% for ${T} years?`;
-                    optA = `${SI}`; optB = `${SI + 50}`; optC = `${SI - 20}`; optD = `${P}`;
-                    exp = `SI = PTR/100`;
+                    let p = n1 * 100; let r = 10; let time = 2;
+                    let si = (p*r*time)/100;
+                    qText = `Find SI on ${p} at ${r}% for ${time} years.`;
+                    optA = `${si}`; optB = `${si+100}`; optC = `${p}`; optD = `${si-50}`;
+                }
+                else if (t === 'Ratio & Proportion') {
+                    qText = `If A:B = 2:3 and B:C = 4:5, find A:B:C`;
+                    optA = `8:12:15`; optB = `2:3:5`; optC = `4:6:9`; optD = `None`;
+                }
+                else if (t === 'Ages') {
+                    qText = `A is ${n1} years old. B is twice as old as A. Find B's age.`;
+                    optA = `${n1*2}`; optB = `${n1}`; optC = `${n1+5}`; optD = `${n1+10}`;
                 }
                 else {
-                    let val = num1 + num2;
-                    qText = `Solve: ${num1} + ${num2} = ?`;
-                    optA = `${val}`; optB = `${val + 10}`; optC = `${val - 5}`; optD = `0`;
-                    exp = `Basic Addition`;
+                    // Probability Fallback
+                    qText = `Probability of getting a Head when tossing a coin?`;
+                    optA = `1/2`; optB = `1/4`; optC = `1`; optD = `0`;
                 }
 
-                await addQ('Quantitative', t, qText, optA, optB, optC, optD, ans, exp);
+                await addQ('Quantitative', t, qText, optA, optB, optC, optD, ans, "Formula Applied");
             }
         }
 
-        res.send(`<h1>✅ REAL MATH QUESTIONS LOADED!</h1><p>Check Percentages, P&L, etc. No garbage text.</p><a href="/">Go Home</a>`);
+        res.send(`<h1>✅ QUESTIONS FIXED!</h1><p>Check HCF, Averages, etc. They are now CORRECT.</p><a href="/">Go to Dashboard</a>`);
 
     } catch(err) { res.send("Error: " + err.message); }
 });
