@@ -259,10 +259,112 @@ app.get('/load-quant-final', async (req, res) => {
         await addQ(t, '5 kids 3y gap. Sum 50. Young?', '4', '3', '5', '6', 'A', '4');
         await fillPracticeQs(t);
 
-        res.send("<h1>✅ QUANT LOADED SUCCESSFULLY!</h1><p>Check Dashboard.</p><a href='/'>Go Home</a>");
 
-    } catch(err) { res.send(err.message); }
+// =============================================================
+// 🔥 SMART GENERATOR: 30 REAL MATH QUESTIONS (No Garbage Text)
+// =============================================================
+app.get('/generate-real-questions', async (req, res) => {
+    try {
+        // 1. పాత చెత్త మొత్తం క్లీన్ చేయడం
+        await db.query("TRUNCATE TABLE aptitude_questions");
+
+        const addQ = async (cat, topic, q, a, b, c, d, corr, exp) => {
+            await db.execute(`INSERT INTO aptitude_questions 
+            (category, topic, question, option_a, option_b, option_c, option_d, correct_option, explanation) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, [cat, topic, q, a, b, c, d, corr, exp]);
+        };
+
+        const topics = ['Percentages', 'Profit & Loss', 'Time & Work', 'Trains', 'Averages', 'Simple Interest'];
+
+        for (let t of topics) {
+            
+            // 30 Questions Loop
+            for (let i = 1; i <= 30; i++) {
+                
+                let qText = "", optA="", optB="", optC="", optD="", ans="", exp="";
+                let num1 = i * 100;  // Example: 100, 200, 300...
+                let num2 = 10 + i;   // Example: 11, 12, 13...
+
+                // --- LOGIC FOR REAL QUESTIONS ---
+                
+                if (t === 'Percentages') {
+                    // Q: What is X% of Y?
+                    let res = (num2 / 100) * num1;
+                    qText = `What is ${num2}% of ${num1}?`;
+                    optA = `${res}`; 
+                    optB = `${res + 10}`; 
+                    optC = `${res - 5}`; 
+                    optD = `${res * 2}`;
+                    ans = 'A';
+                    exp = `${num1} * (${num2}/100) = ${res}`;
+                } 
+                else if (t === 'Profit & Loss') {
+                    // Q: CP is X, Profit is Y%. Find SP.
+                    let cp = num1;
+                    let profit = num2;
+                    let sp = cp + (cp * profit / 100);
+                    qText = `Cost Price is Rs.${cp} and Profit is ${profit}%. Find the Selling Price.`;
+                    optA = `${sp}`;
+                    optB = `${sp - 20}`;
+                    optC = `${sp + 50}`;
+                    optD = `${cp}`;
+                    ans = 'A';
+                    exp = `SP = CP + Profit = ${cp} + (${profit}% of ${cp}) = ${sp}`;
+                }
+                else if (t === 'Time & Work') {
+                    // Q: A does in X days, B in Y days. Together?
+                    let d1 = 10 + i;
+                    let d2 = 20 + i;
+                    let total = ((d1 * d2) / (d1 + d2)).toFixed(2);
+                    qText = `A can do a work in ${d1} days and B in ${d2} days. In how many days can they complete it together?`;
+                    optA = `${total} days`;
+                    optB = `${d1 + d2} days`;
+                    optC = `${(d1 + d2)/2} days`;
+                    optD = `10 days`;
+                    ans = 'A';
+                    exp = `Formula: (A*B)/(A+B) = (${d1}*${d2})/(${d1}+${d2}) = ${total}`;
+                }
+                else if (t === 'Simple Interest') {
+                    // Q: Find SI
+                    let P = num1;
+                    let R = 5;
+                    let T = i;
+                    let SI = (P * R * T) / 100;
+                    qText = `Find Simple Interest on Rs.${P} at ${R}% per annum for ${T} years.`;
+                    optA = `${SI}`;
+                    optB = `${SI + 100}`;
+                    optC = `${SI - 50}`;
+                    optD = `${P}`;
+                    ans = 'A';
+                    exp = `SI = PTR/100 = (${P}*${R}*${T})/100 = ${SI}`;
+                }
+                else {
+                    // Generic Math Q for other topics
+                    qText = `Solve the following: ${num1} + ${num2} * 2 = ?`;
+                    let val = num1 + (num2 * 2);
+                    optA = `${val}`;
+                    optB = `${val + 10}`;
+                    optC = `${val - 10}`;
+                    optD = `${val * 2}`;
+                    ans = 'A';
+                    exp = `BODMAS Rule: Multiply first, then Add.`;
+                }
+
+                // Add to Database
+                await addQ('Quantitative', t, qText, optA, optB, optC, optD, ans, exp);
+            }
+        }
+
+        res.send(`
+            <div style="font-family: sans-serif; text-align: center; padding: 50px;">
+                <h1 style="color: green;">✅ REAL QUESTIONS GENERATED!</h1>
+                <h3>30 Questions per topic created dynamically.</h3>
+                <p>No "Practice Q1" text. Only real numbers.</p>
+                <a href="/" style="background: blue; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">GO TO DASHBOARD</a>
+            </div>
+        `);
+
+    } catch(err) { res.send("Error: " + err.message); }
 });
-
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
