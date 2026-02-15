@@ -623,5 +623,100 @@ app.get('/fix-core-reasoning', async (req, res) => {
 
     } catch(err) { res.send("Error: " + err.message); }
 });
+
+// =============================================================
+// 🔥 ONLY REASONING FIX (MATHS SAFE MODE)
+// =============================================================
+app.get('/fix-only-reasoning', async (req, res) => {
+    try {
+        // 1. DELETE ONLY LOGICAL CATEGORY (Maths is SAFE)
+        await db.execute("DELETE FROM aptitude_questions WHERE category = 'Logical'");
+
+        const addQ = async (cat, topic, q, a, b, c, d, corr, exp) => {
+            await db.execute(`INSERT INTO aptitude_questions 
+            (category, topic, question, option_a, option_b, option_c, option_d, correct_option, explanation) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, [cat, topic, q, a, b, c, d, corr, exp]);
+        };
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // ALL REASONING TOPICS
+        const topics = [
+            'Blood Relations', 'Number Series', 'Coding-Decoding', 'Syllogism', 
+            'Seating Arrangement', 'Direction Sense', 'Clocks & Calendars', 
+            'Analogy', 'Data Sufficiency', 'Logic Puzzles'
+        ];
+
+        for (let t of topics) {
+            for (let i = 1; i <= 20; i++) {
+                
+                let qText="", ansVal="", w1="", w2="", w3="", exp="";
+                let n = i + 5;
+
+                // --- 1. NUMBER SERIES ---
+                if (t === 'Number Series') {
+                    if (i % 3 === 0) { 
+                        qText=`Find next: ${n}, ${n+5}, ${n+10}, ?`; ansVal=`${n+15}`; w1=`${n+12}`; w2=`${n+20}`; w3=`0`; exp=`Add 5 logic`; 
+                    } else if (i % 3 === 1) { 
+                        qText=`Find next: 2, 6, 18, ?`; ansVal=`54`; w1=`36`; w2=`72`; w3=`100`; exp=`Multiply by 3`; 
+                    } else { 
+                        qText=`Find next: 10, 20, 40, ?`; ansVal=`80`; w1=`60`; w2=`100`; w3=`50`; exp=`Double the number`; 
+                    }
+                }
+                // --- 2. CODING ---
+                else if (t === 'Coding-Decoding') {
+                    qText=`If A=1, B=2, CAT=?`; ansVal=`24`; w1=`20`; w2=`26`; w3=`15`; exp=`Sum of positions (3+1+20)`;
+                }
+                // --- 3. BLOOD RELATIONS ---
+                else if (t === 'Blood Relations') {
+                    qText=`A is father of B. B is sister of C. A to C?`; ansVal=`Father`; w1=`Uncle`; w2=`Brother`; w3=`Grandpa`; exp=`Direct relation`;
+                }
+                // --- 4. SYLLOGISM ---
+                else if (t === 'Syllogism') {
+                    qText=`Statement: All A are B. No B is C. Conclusion: No A is C?`; ansVal=`True`; w1=`False`; w2=`Maybe`; w3=`None`; exp=`A is inside B, B touches no C.`;
+                }
+                // --- 5. DIRECTIONS ---
+                else if (t === 'Direction Sense') {
+                    qText=`Walk 3km North, turn Right, walk 4km. Dist?`; ansVal=`5km`; w1=`7km`; w2=`3km`; w3=`4km`; exp=`Pythagoras theorem`;
+                }
+                // --- 6. SEATING ---
+                else if (t === 'Seating Arrangement') {
+                    qText=`A, B, C sit in row. A is left of B. C is right of B. Middle?`; ansVal=`B`; w1=`A`; w2=`C`; w3=`None`; exp=`Order: A - B - C`;
+                }
+                // --- 7. CLOCKS ---
+                else if (t.includes('Clocks')) {
+                    qText=`Angle at 3:00?`; ansVal=`90°`; w1=`180°`; w2=`60°`; w3=`0°`; exp=`3 gaps * 30 deg`;
+                }
+                // --- 8. ANALOGY ---
+                else if (t === 'Analogy') {
+                    qText=`Day : Night :: Up : ?`; ansVal=`Down`; w1=`Sky`; w2=`High`; w3=`Low`; exp=`Antonyms`;
+                }
+                // --- 9. DATA SUFFICIENCY ---
+                else if (t === 'Data Sufficiency') {
+                    qText=`Value of x? I. x+y=5 II. x-y=1`; ansVal=`Both required`; w1=`Only I`; w2=`Only II`; w3=`None`; exp=`Linear equations`;
+                }
+                // --- 10. PUZZLES ---
+                else {
+                    qText=`Logical Puzzle Q${i}`; ansVal=`Logic A`; w1=`Logic B`; w2=`Logic C`; w3=`Logic D`; exp=`Reasoning check`;
+                }
+
+                // Shuffle Options
+                let opts = shuffle([{v:ansVal,c:true}, {v:w1,c:false}, {v:w2,c:false}, {v:w3,c:false}]);
+                let f='A'; if(opts[1].c)f='B'; if(opts[2].c)f='C'; if(opts[3].c)f='D';
+
+                await addQ('Logical', t, qText, opts[0].v, opts[1].v, opts[2].v, opts[3].v, f, exp);
+            }
+        }
+
+        res.send(`<h1>✅ REASONING FIXED!</h1><p>Blood Relations, Series, Coding... all filled. <br> <b>Maths (Aptitude) is 100% SAFE.</b></p><a href="/">Go to Dashboard</a>`);
+
+    } catch(err) { res.send("Error: " + err.message); }
+});
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
