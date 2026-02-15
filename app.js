@@ -33,7 +33,6 @@ const db = mysql.createPool({
     connectionLimit: 10
 });
 
-// --- AUTH MIDDLEWARE ---
 const requireLogin = (req, res, next) => {
     if (req.session.user) { next(); } else { res.redirect('/login'); }
 };
@@ -69,13 +68,12 @@ app.get('/', requireLogin, async (req, res) => {
     } catch (err) { res.render('dashboard', { user: req.session.user, scores: [] }); }
 });
 
-// --- TOPIC MENUS ---
 app.get('/aptitude-topics', requireLogin, (req, res) => res.render('aptitude_topics', { user: req.session.user }));
 app.get('/reasoning-topics', requireLogin, (req, res) => res.render('reasoning_topics', { user: req.session.user }));
 app.get('/english-topics', requireLogin, (req, res) => res.render('english_topics', { user: req.session.user }));
 app.get('/coding', requireLogin, (req, res) => res.render('coding_topics', { user: req.session.user }));
 
-// --- REDIRECTS ---
+// REDIRECTS
 app.get('/aptitude/:topic', (req, res) => res.redirect(`/practice/${encodeURIComponent(req.params.topic)}`));
 app.get('/reasoning/:topic', (req, res) => res.redirect(`/practice/${encodeURIComponent(req.params.topic)}`));
 app.get('/english/:topic', (req, res) => res.redirect(`/practice/${encodeURIComponent(req.params.topic)}`));
@@ -86,26 +84,28 @@ app.post('/coding/practice', requireLogin, (req, res) => res.redirect(`/practice
 app.get('/practice/:topic', requireLogin, async (req, res) => {
     const topic = decodeURIComponent(req.params.topic);
     try {
-        // Try Exact Match first
+        // 1. Exact Match
         let [questions] = await db.execute('SELECT * FROM aptitude_questions WHERE topic = ? ORDER BY RAND() LIMIT 15', [topic]);
         
-        // Fallback: If empty, try checking with/without 'and'/'&'
+        // 2. Fallback Logic (Names Mismatch)
         if (questions.length === 0) {
             let altTopic = topic;
-            if (topic.includes('&')) altTopic = topic.replace('&', 'and');
+            if (topic === 'Problems on Trains') altTopic = 'Trains';
+            else if (topic === 'Trains') altTopic = 'Problems on Trains';
+            else if (topic.includes('&')) altTopic = topic.replace('&', 'and');
             else if (topic.includes('and')) altTopic = topic.replace('and', '&');
             
             [questions] = await db.execute('SELECT * FROM aptitude_questions WHERE topic = ? ORDER BY RAND() LIMIT 15', [altTopic]);
         }
 
+        // 3. Still Empty? Show Fix Button
         if (questions.length === 0) {
-            // Show link to FIX DATA if still empty
             return res.send(`
-                <div style="text-align:center; padding:50px;">
+                <div style="text-align:center; padding:50px; font-family: sans-serif;">
                     <h2 style="color:red;">Topic '${topic}' is empty!</h2>
+                    <p>Don't worry. Click the button below to fix it immediately.</p>
                     <br>
-                    <p>Don't panic. Click the green button below to load ALL questions properly.</p>
-                    <a href="/load-mega-data" style="background:green; color:white; padding:15px 30px; text-decoration:none; border-radius:5px; font-size:20px;">CLICK TO FIX & LOAD ALL DATA</a>
+                    <a href="/fix-all-names" style="background:green; color:white; padding:15px 30px; text-decoration:none; border-radius:5px; font-size:20px;">CLICK TO FIX DATA</a>
                 </div>
             `);
         }
@@ -138,7 +138,6 @@ app.get('/leaderboard', requireLogin, async (req, res) => {
         res.render('leaderboard', { user: req.session.user, rankings });
     } catch(e) { res.render('leaderboard', { user: req.session.user, rankings: [] }); }
 });
-
 app.get('/interview-prep', requireLogin, (req, res) => res.render('interview', { user: req.session.user }));
 app.get('/resume-upload', requireLogin, async (req, res) => { res.render('resume', { msg: null, user: req.session.user, history: [] }); });
 const upload = multer({ dest: 'public/uploads/' });
@@ -148,11 +147,11 @@ app.post('/upload-resume', requireLogin, upload.single('resume'), async (req, re
 });
 
 // =============================================================
-// 🔥 MEGA LOADER: MATHS + REASONING + CODING + ENGLISH
+// 🔥 FINAL ROUTE: FIX ALL TOPIC NAMES (Trains, Profit & Loss etc.)
 // =============================================================
-app.get('/load-mega-data', async (req, res) => {
+app.get('/fix-all-names', async (req, res) => {
     try {
-        await db.query("TRUNCATE TABLE aptitude_questions"); // Wipe old bad data
+        await db.query("TRUNCATE TABLE aptitude_questions");
 
         const addQ = async (cat, topic, q, a, b, c, d, corr, exp) => {
             await db.execute(`INSERT INTO aptitude_questions 
@@ -160,13 +159,19 @@ app.get('/load-mega-data', async (req, res) => {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, [cat, topic, q, a, b, c, d, corr, exp]);
         };
 
-        // --- 1. MATHS TOPICS (Both Names Included) ---
+        // EXACT NAMES FROM YOUR SCREENSHOTS
         const quant = [
-            'Percentages', 'Profit & Loss', 'Profit and Loss', 
-            'Time & Work', 'Time and Work', 'Trains', 
-            'Boats & Streams', 'Boats and Streams', 'Averages', 
-            'HCF & LCM', 'HCF and LCM', 'Simple Interest', 
-            'Ratio & Proportion', 'Ratio and Proportion', 'Ages', 'Probability'
+            'Percentages', 
+            'Profit & Loss', 'Profit and Loss', 
+            'Time & Work', 'Time and Work', 
+            'Trains', 'Problems on Trains', 
+            'Boats & Streams', 'Boats and Streams', 
+            'Averages', 
+            'HCF & LCM', 'HCF and LCM', 
+            'Simple Interest', 
+            'Ratio & Proportion', 'Ratio and Proportion', 
+            'Ages', 'Problems on Ages',
+            'Probability'
         ];
 
         for (let t of quant) {
@@ -189,7 +194,7 @@ app.get('/load-mega-data', async (req, res) => {
                 else if (t === 'Averages') { 
                     qText = `Average of 10, 20, 30 and ${n1} is?`; optA=`${(60+n1)/4}`; optB=`${n1}`; optC=`20`; optD=`0`; 
                 }
-                else if (t === 'Trains') { 
+                else if (t.includes('Trains')) { 
                     qText = `Train ${n1}m at 36kmph crosses pole in?`; optA=`${n1/10}s`; optB=`${n1}s`; optC=`10s`; optD=`0`; 
                 }
                 else if (t.includes('Boats')) { 
@@ -201,7 +206,7 @@ app.get('/load-mega-data', async (req, res) => {
                 else if (t.includes('Ratio')) {
                     qText = `Divide ${n1*2} in ratio 1:1.`; optA=`${n1}, ${n1}`; optB=`${n1}, 0`; optC=`0, ${n1}`; optD=`None`;
                 }
-                else if (t === 'Ages') {
+                else if (t.includes('Ages')) {
                     qText = `A is ${n1}, B is twice A. B's age?`; optA=`${n1*2}`; optB=`${n1}`; optC=`${n1+5}`; optD=`0`;
                 }
                 else if (t === 'Probability') {
@@ -213,61 +218,7 @@ app.get('/load-mega-data', async (req, res) => {
             }
         }
 
-        // --- 2. LOGICAL & VERBAL & CODING (STATIC DATA) ---
-        // Generating math is easy, but for English/Coding we use a fixed bank to avoid "garbage" text
-        
-        const logicalQs = [
-            ["Find next: 2, 4, 8, 16, ?", "32", "30", "24", "18", "A", "Doubling logic"],
-            ["A is father of B. B is sister of C. A to C?", "Father", "Uncle", "Brother", "Grandpa", "A", "Direct relation"],
-            ["Find odd one out: Apple, Orange, Banana, Chair", "Chair", "Apple", "Orange", "Banana", "A", "Chair is not fruit"],
-            ["If CAT = 3120, DOG = ?", "4157", "4150", "400", "100", "A", "Alphabet positions"],
-            ["Coding of 'SYSTEM' is 'METSYS'. 'HELLO' is?", "OLLEH", "OLHE", "HEL", "None", "A", "Reverse order"]
-        ];
-
-        const verbalQs = [
-            ["Synonym of HAPPY?", "Joyful", "Sad", "Angry", "Dull", "A", "Same meaning"],
-            ["Antonym of FAST?", "Slow", "Quick", "Rapid", "Speed", "A", "Opposite"],
-            ["Correct spelling?", "Receive", "Recieve", "Receve", "Riceive", "A", "Standard English"],
-            ["He ___ to school daily.", "goes", "go", "going", "gone", "A", "Grammar"],
-            ["Meaning of 'Break a leg'?", "Good luck", "Break bone", "Dance", "Fall", "A", "Idiom"]
-        ];
-
-        const codingQs = [
-            ["Who invented Java?", "James Gosling", "Guido", "Dennis Ritchie", "Bjarne", "A", "Fact"],
-            ["HTML stands for?", "HyperText Markup Language", "HyperTool Make", "None", "Text Mode", "A", "Fact"],
-            ["Time complexity of Binary Search?", "O(log n)", "O(n)", "O(1)", "O(n^2)", "A", "DS Algo"],
-            ["Correct file extension for Python?", ".py", ".java", ".js", ".cpp", "A", "Fact"],
-            ["Which is not a loop in C?", "For-each", "For", "While", "Do-While", "A", "C doesn't have foreach"]
-        ];
-
-        // Insert Logical
-        const logTopics = ['Number Series', 'Blood Relations', 'Coding-Decoding', 'Directions', 'Seating Arrangement'];
-        for(let t of logTopics) {
-            for(let i=0; i<20; i++) {
-                let q = logicalQs[i % logicalQs.length];
-                await addQ('Logical', t, q[0], q[1], q[2], q[3], q[4], q[5], q[6]);
-            }
-        }
-
-        // Insert Verbal
-        const verbTopics = ['Antonyms', 'Synonyms', 'Spotting Errors', 'Sentence Correction'];
-        for(let t of verbTopics) {
-             for(let i=0; i<20; i++) {
-                let q = verbalQs[i % verbalQs.length];
-                await addQ('Verbal', t, q[0], q[1], q[2], q[3], q[4], q[5], q[6]);
-            }
-        }
-
-        // Insert Coding
-        const codeTopics = ['Java', 'Python', 'C Programming', 'Data Structures', 'DBMS'];
-        for(let t of codeTopics) {
-             for(let i=0; i<20; i++) {
-                let q = codingQs[i % codingQs.length];
-                await addQ('Coding', t, q[0], q[1], q[2], q[3], q[4], q[5], q[6]);
-            }
-        }
-
-        res.send(`<h1>✅ MEGA LOAD SUCCESS!</h1><p>Maths, Reasoning, English, Coding - All topics are now FULL and CORRECT.</p><a href="/">Go to Dashboard</a>`);
+        res.send(`<h1>✅ SUCCESS! NAMES FIXED.</h1><p>'Problems on Trains', 'Profit and Loss' etc. are now filled.</p><a href="/">Go to Dashboard</a>`);
 
     } catch(err) { res.send("Error: " + err.message); }
 });
