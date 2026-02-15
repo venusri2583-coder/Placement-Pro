@@ -40,14 +40,12 @@ const requireLogin = (req, res, next) => {
 // --- ROUTES ---
 app.get('/login', (req, res) => res.render('login', { error: null, msg: null }));
 app.get('/register', (req, res) => res.render('register', { error: null }));
-
 app.post('/register', async (req, res) => {
     try {
         await db.execute('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', [req.body.username, req.body.email, req.body.password]);
         res.render('login', { msg: 'Account Created!', error: null });
     } catch (err) { res.render('register', { error: 'Email exists.' }); }
 });
-
 app.post('/login', async (req, res) => {
     try {
         const [users] = await db.execute('SELECT * FROM users WHERE email = ?', [req.body.email]);
@@ -57,7 +55,6 @@ app.post('/login', async (req, res) => {
         } else { res.render('login', { error: 'Invalid Details', msg: null }); }
     } catch (err) { res.render('login', { error: 'Server Error', msg: null }); }
 });
-
 app.get('/logout', (req, res) => { req.session.destroy(); res.redirect('/login'); });
 
 // --- DASHBOARD ---
@@ -84,10 +81,8 @@ app.post('/coding/practice', requireLogin, (req, res) => res.redirect(`/practice
 app.get('/practice/:topic', requireLogin, async (req, res) => {
     const topic = decodeURIComponent(req.params.topic);
     try {
-        // 1. Exact Match
         let [questions] = await db.execute('SELECT * FROM aptitude_questions WHERE topic = ? ORDER BY RAND() LIMIT 15', [topic]);
         
-        // 2. Fallback Logic (Names Mismatch)
         if (questions.length === 0) {
             let altTopic = topic;
             if (topic === 'Problems on Trains') altTopic = 'Trains';
@@ -98,14 +93,12 @@ app.get('/practice/:topic', requireLogin, async (req, res) => {
             [questions] = await db.execute('SELECT * FROM aptitude_questions WHERE topic = ? ORDER BY RAND() LIMIT 15', [altTopic]);
         }
 
-        // 3. Still Empty? Show Fix Button
         if (questions.length === 0) {
             return res.send(`
-                <div style="text-align:center; padding:50px; font-family: sans-serif;">
+                <div style="text-align:center; padding:50px;">
                     <h2 style="color:red;">Topic '${topic}' is empty!</h2>
-                    <p>Don't worry. Click the button below to fix it immediately.</p>
                     <br>
-                    <a href="/fix-all-names" style="background:green; color:white; padding:15px 30px; text-decoration:none; border-radius:5px; font-size:20px;">CLICK TO FIX DATA</a>
+                    <a href="/shuffle-data-final" style="background:green; color:white; padding:15px 30px; text-decoration:none; border-radius:5px; font-size:20px;">CLICK TO LOAD SHUFFLED QUESTIONS</a>
                 </div>
             `);
         }
@@ -113,18 +106,31 @@ app.get('/practice/:topic', requireLogin, async (req, res) => {
     } catch (err) { res.redirect('/'); }
 });
 
+// --- SMART GRADING ---
 app.post('/submit-quiz', requireLogin, async (req, res) => {
     const userAnswers = req.body;
     let score = 0, total = 0, reviewData = [];
     for (const key in userAnswers) {
         if (key.startsWith('q')) {
             const qId = key.substring(1);
-            const [q] = await db.execute('SELECT * FROM aptitude_questions WHERE id=?', [qId]);
-            if(q.length > 0) {
-                const isCorrect = q[0].correct_option === userAnswers[key];
+            const [rows] = await db.execute('SELECT * FROM aptitude_questions WHERE id=?', [qId]);
+            if(rows.length > 0) {
+                const dbQ = rows[0];
+                const userVal = userAnswers[key].toString().trim(); 
+                const correctOpt = dbQ.correct_option.trim(); 
+                const correctVal = dbQ[`option_${correctOpt.toLowerCase()}`].toString().trim(); 
+                
+                let isCorrect = (userVal === correctOpt) || (userVal == correctVal);
                 if(isCorrect) score++;
                 total++;
-                reviewData.push({ q: q[0].question, userAns: userAnswers[key], correctAns: q[0].correct_option, explanation: q[0].explanation, isCorrect });
+                
+                reviewData.push({ 
+                    q: dbQ.question, 
+                    userAns: userVal, 
+                    correctAns: `${correctOpt}) ${correctVal}`, 
+                    explanation: dbQ.explanation, 
+                    isCorrect 
+                });
             }
         }
     }
@@ -147,9 +153,9 @@ app.post('/upload-resume', requireLogin, upload.single('resume'), async (req, re
 });
 
 // =============================================================
-// 🔥 FINAL ROUTE: FIX ALL TOPIC NAMES (Trains, Profit & Loss etc.)
+// 🔥 SHUFFLE DATA GENERATOR (Random A, B, C, D)
 // =============================================================
-app.get('/fix-all-names', async (req, res) => {
+app.get('/shuffle-data-final', async (req, res) => {
     try {
         await db.query("TRUNCATE TABLE aptitude_questions");
 
@@ -159,67 +165,83 @@ app.get('/fix-all-names', async (req, res) => {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, [cat, topic, q, a, b, c, d, corr, exp]);
         };
 
-        // EXACT NAMES FROM YOUR SCREENSHOTS
+        // Helper to shuffle array
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
         const quant = [
-            'Percentages', 
-            'Profit & Loss', 'Profit and Loss', 
-            'Time & Work', 'Time and Work', 
-            'Trains', 'Problems on Trains', 
-            'Boats & Streams', 'Boats and Streams', 
-            'Averages', 
-            'HCF & LCM', 'HCF and LCM', 
-            'Simple Interest', 
-            'Ratio & Proportion', 'Ratio and Proportion', 
-            'Ages', 'Problems on Ages',
-            'Probability'
+            'Percentages', 'Profit & Loss', 'Profit and Loss', 'Time & Work', 'Time and Work', 
+            'Trains', 'Problems on Trains', 'Boats & Streams', 'Boats and Streams', 'Averages', 
+            'HCF & LCM', 'HCF and LCM', 'Simple Interest', 'Ratio & Proportion', 'Ratio and Proportion', 
+            'Ages', 'Problems on Ages', 'Probability'
         ];
 
         for (let t of quant) {
             for (let i = 1; i <= 20; i++) {
                 let n1 = i * 10, n2 = i + 2;
-                let qText="", optA="", optB="", optC="", optD="", ans="A";
+                let qText="", ansVal="", w1="", w2="", w3="", explanation="";
 
+                // 1. Generate Question & Correct Answer
                 if (t === 'Percentages') { 
-                    qText = `What is ${n2}% of ${n1}?`; optA=`${n1*n2/100}`; optB=`${n1}`; optC=`0`; optD=`100`; 
+                    qText = `What is ${n2}% of ${n1}?`; ansVal = `${n1*n2/100}`; w1=`${n1}`; w2=`0`; w3=`100`; explanation=`${n1} * ${n2}/100`;
                 }
                 else if (t.includes('Profit')) { 
-                    qText = `CP = ${n1*10}, Profit = 20%. Find SP.`; optA=`${n1*12}`; optB=`${n1*10}`; optC=`${n1*8}`; optD=`0`; 
+                    qText = `CP = ${n1*10}, Profit = 20%. Find SP.`; ansVal=`${n1*12}`; w1=`${n1*10}`; w2=`${n1*8}`; w3=`0`; explanation=`SP = CP * 1.2`;
                 }
                 else if (t.includes('Time')) { 
-                    qText = `A does work in ${n1} days, B in ${n1*2}. Together?`; optA=`${(n1*n1*2)/(n1*3)}`; optB=`${n1}`; optC=`${n1+5}`; optD=`1`; 
+                    qText = `A in ${n1} days, B in ${n1*2}. Together?`; ansVal=`${(n1*n1*2)/(n1*3)}`; w1=`${n1}`; w2=`${n1+5}`; w3=`1`; explanation=`(A*B)/(A+B)`;
                 }
                 else if (t.includes('HCF')) { 
-                    qText = `Find HCF of ${n1} and ${n1*2}.`; optA=`${n1}`; optB=`1`; optC=`${n1*2}`; optD=`0`; 
+                    qText = `HCF of ${n1} and ${n1*2}.`; ansVal=`${n1}`; w1=`1`; w2=`${n1*2}`; w3=`0`; explanation=`Highest common factor is ${n1}`;
                 }
                 else if (t === 'Averages') { 
-                    qText = `Average of 10, 20, 30 and ${n1} is?`; optA=`${(60+n1)/4}`; optB=`${n1}`; optC=`20`; optD=`0`; 
+                    qText = `Avg of 10, 20, 30 and ${n1}?`; ansVal=`${(60+n1)/4}`; w1=`${n1}`; w2=`20`; w3=`0`; explanation=`Sum/Count`;
                 }
                 else if (t.includes('Trains')) { 
-                    qText = `Train ${n1}m at 36kmph crosses pole in?`; optA=`${n1/10}s`; optB=`${n1}s`; optC=`10s`; optD=`0`; 
+                    qText = `Train ${n1}m at 36kmph crosses pole in?`; ansVal=`${n1/10}s`; w1=`${n1}s`; w2=`10s`; w3=`0`; explanation=`Time = Dist/Speed`;
                 }
                 else if (t.includes('Boats')) { 
-                    qText = `Boat ${n1}kmph, Stream 2kmph. Downstream?`; optA=`${n1+2}`; optB=`${n1-2}`; optC=`${n1}`; optD=`2`; 
+                    qText = `Boat ${n1}kmph, Stream 2kmph. Downstream?`; ansVal=`${n1+2}`; w1=`${n1-2}`; w2=`${n1}`; w3=`2`; explanation=`Down = Boat + Stream`;
                 }
                 else if (t === 'Simple Interest') {
-                    qText = `SI on ${n1*100} at 10% for 2 years?`; optA=`${n1*20}`; optB=`${n1*10}`; optC=`${n1}`; optD=`0`;
+                    qText = `SI on ${n1*100} at 10% for 2 years?`; ansVal=`${n1*20}`; w1=`${n1*10}`; w2=`${n1}`; w3=`0`; explanation=`PTR/100`;
                 }
                 else if (t.includes('Ratio')) {
-                    qText = `Divide ${n1*2} in ratio 1:1.`; optA=`${n1}, ${n1}`; optB=`${n1}, 0`; optC=`0, ${n1}`; optD=`None`;
+                    qText = `Ratio of ${n1} to ${n1}?`; ansVal=`1:1`; w1=`1:2`; w2=`2:1`; w3=`None`; explanation=`Same numbers ratio is 1:1`;
                 }
                 else if (t.includes('Ages')) {
-                    qText = `A is ${n1}, B is twice A. B's age?`; optA=`${n1*2}`; optB=`${n1}`; optC=`${n1+5}`; optD=`0`;
+                    qText = `A is ${n1}, B is twice A. B's age?`; ansVal=`${n1*2}`; w1=`${n1}`; w2=`${n1+5}`; w3=`0`; explanation=`2 * ${n1}`;
                 }
                 else if (t === 'Probability') {
-                     if(i%2==0) { qText=`Prob of Head in 1 toss?`; optA=`1/2`; } else { qText=`Prob of 6 on Dice?`; optA=`1/6`; }
-                     optB=`1/4`; optC=`0`; optD=`1`;
+                     qText=`Prob of Head in 1 toss?`; ansVal=`1/2`; w1=`1/4`; w2=`0`; w3=`1`; explanation=`1 outcome out of 2`;
                 }
-                
-                if(qText) await addQ('Quantitative', t, qText, optA, optB, optC, optD, ans, "Formula Applied");
+
+                // 2. SHUFFLE OPTIONS
+                if(qText) {
+                    let opts = [
+                        { val: ansVal, isCorrect: true },
+                        { val: w1, isCorrect: false },
+                        { val: w2, isCorrect: false },
+                        { val: w3, isCorrect: false }
+                    ];
+                    opts = shuffle(opts); // Randomize positions
+
+                    // 3. Find which position holds the correct answer
+                    let finalAns = 'A';
+                    if(opts[1].isCorrect) finalAns = 'B';
+                    if(opts[2].isCorrect) finalAns = 'C';
+                    if(opts[3].isCorrect) finalAns = 'D';
+
+                    await addQ('Quantitative', t, qText, opts[0].val, opts[1].val, opts[2].val, opts[3].val, finalAns, explanation);
+                }
             }
         }
-
-        res.send(`<h1>✅ SUCCESS! NAMES FIXED.</h1><p>'Problems on Trains', 'Profit and Loss' etc. are now filled.</p><a href="/">Go to Dashboard</a>`);
-
+        res.send(`<h1>✅ DATA SHUFFLED!</h1><p>Questions now have randomized options (A, B, C, D).</p><a href="/">Go to Dashboard</a>`);
     } catch(err) { res.send("Error: " + err.message); }
 });
 
