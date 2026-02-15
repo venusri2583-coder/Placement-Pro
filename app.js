@@ -89,9 +89,10 @@ app.get('/practice/:topic', requireLogin, async (req, res) => {
         const [questions] = await db.execute('SELECT * FROM aptitude_questions WHERE topic = ? ORDER BY RAND() LIMIT 15', [topic]);
         if (questions.length === 0) {
             return res.send(`
-                <div style="text-align:center; padding:50px;">
+                <div style="text-align:center; padding:50px; font-family:sans-serif;">
                     <h2>Topic '${topic}' is empty.</h2>
-                    <a href="/load-quant-final" style="background:blue; color:white; padding:10px 20px; text-decoration:none;">CLICK TO LOAD DATA</a>
+                    <p>Click the button below to load data.</p>
+                    <a href="/load-quant-final" style="background:blue; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;">LOAD QUANT DATA</a>
                 </div>
             `);
         }
@@ -120,13 +121,17 @@ app.post('/submit-quiz', requireLogin, async (req, res) => {
 
 // LEADERBOARD & RESUME
 app.get('/leaderboard', requireLogin, async (req, res) => {
-    const [rankings] = await db.query("SELECT u.username, MAX(m.score) as high_score FROM mock_results m JOIN users u ON m.user_id = u.id GROUP BY u.id, u.username ORDER BY high_score DESC LIMIT 10");
-    res.render('leaderboard', { user: req.session.user, rankings });
+    try {
+        const [rankings] = await db.query("SELECT u.username, MAX(m.score) as high_score FROM mock_results m JOIN users u ON m.user_id = u.id GROUP BY u.id, u.username ORDER BY high_score DESC LIMIT 10");
+        res.render('leaderboard', { user: req.session.user, rankings });
+    } catch(e) { res.render('leaderboard', { user: req.session.user, rankings: [] }); }
 });
 app.get('/interview-prep', requireLogin, (req, res) => res.render('interview', { user: req.session.user }));
 app.get('/resume-upload', requireLogin, async (req, res) => {
-    const [history] = await db.execute('SELECT * FROM user_resumes WHERE email = ?', [req.session.user.email]);
-    res.render('resume', { msg: null, user: req.session.user, history });
+    try {
+        const [history] = await db.execute('SELECT * FROM user_resumes WHERE email = ?', [req.session.user.email]);
+        res.render('resume', { msg: null, user: req.session.user, history });
+    } catch(e) { res.render('resume', { msg: null, user: req.session.user, history: [] }); }
 });
 const upload = multer({ dest: 'public/uploads/' });
 app.post('/upload-resume', requireLogin, upload.single('resume'), async (req, res) => {
@@ -135,7 +140,7 @@ app.post('/upload-resume', requireLogin, upload.single('resume'), async (req, re
 });
 
 // =============================================================
-// 🔥 FINAL QUANT MASTER LOADER (THE MISSING LINK)
+// 🔥 FINAL QUANT MASTER LOADER
 // =============================================================
 app.get('/load-quant-final', async (req, res) => {
     try {
@@ -147,8 +152,8 @@ app.get('/load-quant-final', async (req, res) => {
         };
 
         const fillPracticeQs = async (topic) => {
-            for (let i = 6; i <= 15; i++) {
-                await addQ(topic, `Practice Q${i}: Calculate value for ${topic} based on formula.`, 'Option A', 'Option B', 'Option C', 'Option D', 'A', `Use standard formula for ${topic}.`);
+            for (let i = 6; i <= 20; i++) {
+                await addQ(topic, `Practice Q${i}: Solve problem related to ${topic}.`, 'Option A', 'Option B', 'Option C', 'Option D', 'A', `Standard formula for ${topic}.`);
             }
         };
 
@@ -161,7 +166,7 @@ app.get('/load-quant-final', async (req, res) => {
         await addQ(t, 'Numerator inc 20%, Denom dec 20%, fraction 4/5.', '8/15', '4/15', '16/15', '2/3', 'A', '8/15');
         await fillPracticeQs(t);
 
-        // 2. PROFIT & LOSS (Handles both names)
+        // 2. PROFIT & LOSS
         const pl = ['Profit & Loss', 'Profit and Loss'];
         for(let topic of pl) {
             await addQ(topic, 'CP=500, SP=600. Profit?', '20%', '25%', '10%', '15%', 'A', '20%');
@@ -259,112 +264,9 @@ app.get('/load-quant-final', async (req, res) => {
         await addQ(t, '5 kids 3y gap. Sum 50. Young?', '4', '3', '5', '6', 'A', '4');
         await fillPracticeQs(t);
 
-
-// =============================================================
-// 🔥 SMART GENERATOR: 30 REAL MATH QUESTIONS (No Garbage Text)
-// =============================================================
-app.get('/generate-real-questions', async (req, res) => {
-    try {
-        // 1. పాత చెత్త మొత్తం క్లీన్ చేయడం
-        await db.query("TRUNCATE TABLE aptitude_questions");
-
-        const addQ = async (cat, topic, q, a, b, c, d, corr, exp) => {
-            await db.execute(`INSERT INTO aptitude_questions 
-            (category, topic, question, option_a, option_b, option_c, option_d, correct_option, explanation) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, [cat, topic, q, a, b, c, d, corr, exp]);
-        };
-
-        const topics = ['Percentages', 'Profit & Loss', 'Time & Work', 'Trains', 'Averages', 'Simple Interest'];
-
-        for (let t of topics) {
-            
-            // 30 Questions Loop
-            for (let i = 1; i <= 30; i++) {
-                
-                let qText = "", optA="", optB="", optC="", optD="", ans="", exp="";
-                let num1 = i * 100;  // Example: 100, 200, 300...
-                let num2 = 10 + i;   // Example: 11, 12, 13...
-
-                // --- LOGIC FOR REAL QUESTIONS ---
-                
-                if (t === 'Percentages') {
-                    // Q: What is X% of Y?
-                    let res = (num2 / 100) * num1;
-                    qText = `What is ${num2}% of ${num1}?`;
-                    optA = `${res}`; 
-                    optB = `${res + 10}`; 
-                    optC = `${res - 5}`; 
-                    optD = `${res * 2}`;
-                    ans = 'A';
-                    exp = `${num1} * (${num2}/100) = ${res}`;
-                } 
-                else if (t === 'Profit & Loss') {
-                    // Q: CP is X, Profit is Y%. Find SP.
-                    let cp = num1;
-                    let profit = num2;
-                    let sp = cp + (cp * profit / 100);
-                    qText = `Cost Price is Rs.${cp} and Profit is ${profit}%. Find the Selling Price.`;
-                    optA = `${sp}`;
-                    optB = `${sp - 20}`;
-                    optC = `${sp + 50}`;
-                    optD = `${cp}`;
-                    ans = 'A';
-                    exp = `SP = CP + Profit = ${cp} + (${profit}% of ${cp}) = ${sp}`;
-                }
-                else if (t === 'Time & Work') {
-                    // Q: A does in X days, B in Y days. Together?
-                    let d1 = 10 + i;
-                    let d2 = 20 + i;
-                    let total = ((d1 * d2) / (d1 + d2)).toFixed(2);
-                    qText = `A can do a work in ${d1} days and B in ${d2} days. In how many days can they complete it together?`;
-                    optA = `${total} days`;
-                    optB = `${d1 + d2} days`;
-                    optC = `${(d1 + d2)/2} days`;
-                    optD = `10 days`;
-                    ans = 'A';
-                    exp = `Formula: (A*B)/(A+B) = (${d1}*${d2})/(${d1}+${d2}) = ${total}`;
-                }
-                else if (t === 'Simple Interest') {
-                    // Q: Find SI
-                    let P = num1;
-                    let R = 5;
-                    let T = i;
-                    let SI = (P * R * T) / 100;
-                    qText = `Find Simple Interest on Rs.${P} at ${R}% per annum for ${T} years.`;
-                    optA = `${SI}`;
-                    optB = `${SI + 100}`;
-                    optC = `${SI - 50}`;
-                    optD = `${P}`;
-                    ans = 'A';
-                    exp = `SI = PTR/100 = (${P}*${R}*${T})/100 = ${SI}`;
-                }
-                else {
-                    // Generic Math Q for other topics
-                    qText = `Solve the following: ${num1} + ${num2} * 2 = ?`;
-                    let val = num1 + (num2 * 2);
-                    optA = `${val}`;
-                    optB = `${val + 10}`;
-                    optC = `${val - 10}`;
-                    optD = `${val * 2}`;
-                    ans = 'A';
-                    exp = `BODMAS Rule: Multiply first, then Add.`;
-                }
-
-                // Add to Database
-                await addQ('Quantitative', t, qText, optA, optB, optC, optD, ans, exp);
-            }
-        }
-
-        res.send(`
-            <div style="font-family: sans-serif; text-align: center; padding: 50px;">
-                <h1 style="color: green;">✅ REAL QUESTIONS GENERATED!</h1>
-                <h3>30 Questions per topic created dynamically.</h3>
-                <p>No "Practice Q1" text. Only real numbers.</p>
-                <a href="/" style="background: blue; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">GO TO DASHBOARD</a>
-            </div>
-        `);
-
-    } catch(err) { res.send("Error: " + err.message); }
+        res.send("<h1>✅ QUANT LOADED!</h1><p>20 Questions in all topics. Go to Dashboard.</p>");
+    } catch(err) { res.send(err.message); }
 });
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
