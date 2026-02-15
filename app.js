@@ -4,225 +4,397 @@ const dotenv = require('dotenv');
 const path = require('path');
 const multer = require('multer');
 const session = require('express-session');
+const puppeteer = require('puppeteer'); 
+const ejs = require('ejs');
 const fs = require('fs');
-const MySQLStore = require('express-mysql-session')(session);
 
 dotenv.config();
 const app = express();
 
-// 1. DATABASE CONNECTION (Robust Pool)
-const db = mysql.createPool({
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || 'root',
-    database: process.env.DB_NAME || 'placement_db',
-    port: process.env.DB_PORT || 3306,
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0,
-    ssl: process.env.DB_HOST ? { rejectUnauthorized: false } : false 
-});
-
-// 2. SESSION SETUP
-const sessionStore = new MySQLStore({}, db);
+// --- 1. SESSION & MIDDLEWARE ---
 app.use(session({
-    key: 'placement_session_v2',
-    secret: 'fresh_start_secret',
-    store: sessionStore,
-    resave: false,
-    saveUninitialized: false,
-    cookie: { maxAge: 86400000 } // 1 Day
+    secret: 'placement_portal_secret',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { maxAge: 24 * 60 * 60 * 1000 }
 }));
 
-// 3. MIDDLEWARE
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 4. FILE UPLOAD
-const uploadDir = path.join(__dirname, 'public', 'uploads');
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+// --- 2. MULTER STORAGE (Resume Upload) ---
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, 'public/uploads/'), 
-    filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
+    destination: (req, file, cb) => cb(null, 'public/uploads/'), 
+    filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
 });
 const upload = multer({ storage: storage });
 
-// 5. AUTH CHECK
+// --- 3. DATABASE CONNECTION ---
+const db = mysql.createPool({
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASS || '',
+    database: process.env.DB_NAME || 'placement_db'
+});
+
+// --- 4. AUTHENTICATION WALL ---
 const requireLogin = (req, res, next) => {
-    if (req.session.user) { next(); } else { res.redirect('/login'); }
+    if (req.session.user) {
+        next(); 
+    } else {
+        res.redirect('/login'); 
+    }
 };
 
-// ================= ROUTES (All Pages Working) =================
-
-// DASHBOARD
+// --- 5. AUTH & HOME ROUTES ---
 app.get('/', requireLogin, async (req, res) => {
-    try {
-        const [scores] = await db.execute('SELECT * FROM mock_results WHERE user_id = ? ORDER BY test_date DESC', [req.session.user.id]);
-        res.render('dashboard', { user: req.session.user, scores });
-    } catch (err) { res.render('dashboard', { user: req.session.user, scores: [] }); }
+    try {
+        const [scores] = await db.execute('SELECT * FROM mock_results WHERE user_id = ? ORDER BY test_date DESC', [req.session.user.id]);
+        res.render('dashboard', { user: req.session.user, scores: scores });
+    } catch (err) {
+        res.render('dashboard', { user: req.session.user, scores: [] });
+    }
 });
 
-// LOGIN / REGISTER
 app.get('/login', (req, res) => res.render('login', { error: null, msg: null }));
-app.get('/register', (req, res) => res.render('register', { error: null, msg: null }));
-
-app.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-    try {
-        const [users] = await db.execute('SELECT * FROM users WHERE email = ?', [email]);
-        if (users.length > 0 && users[0].password === password) {
-            req.session.user = users[0]; res.redirect('/'); 
-        } else { res.render('login', { error: 'Invalid Credentials', msg: null }); }
-    } catch (err) { res.render('login', { error: 'Server Error', msg: null }); }
-});
+app.get('/register', (req, res) => res.render('register', { error: null }));
 
 app.post('/register', async (req, res) => {
-    try {
-        await db.execute('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', [req.body.username, req.body.email, req.body.password]);
-        res.render('login', { msg: 'Account Created!', error: null });
-    } catch (err) { res.render('register', { error: 'Email exists', msg: null }); }
+    const { username, email, password } = req.body;
+    try {
+        await db.execute('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', [username, email, password]);
+        res.render('login', { msg: 'Account Created! Please Login.', error: null });
+    } catch (err) { res.render('register', { error: 'Registration failed.' }); }
 });
 
-app.get('/logout', (req, res) => { req.session.destroy(); res.redirect('/login'); });
+app.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+    try {
+        const [users] = await db.execute('SELECT * FROM users WHERE email = ?', [email]);
+        if (users.length > 0 && users[0].password === password) {
+            req.session.user = users[0]; 
+            res.redirect('/'); 
+        } else {
+            res.render('login', { error: 'Invalid Credentials', msg: null });
+        }
+    } catch (err) { res.render('login', { error: 'Login failed.', msg: null }); }
+});
 
-// --- FEATURES ---
+app.get('/logout', (req, res) => {
+    req.session.destroy();
+    res.redirect('/login');
+});
 
-// 1. LEADERBOARD
+// --- 6. TOPIC SELECTION ROUTES (Including English) ---
+
+// Aptitude
+app.get('/aptitude-topics', requireLogin, async (req, res) => {
+    try {
+        const [topics] = await db.execute('SELECT DISTINCT topic FROM aptitude_questions WHERE category="Quantitative"');
+        res.render('aptitude_topics', { topics, user: req.session.user });
+    } catch (err) { res.redirect('/'); }
+});
+
+// Reasoning
+app.get('/reasoning-topics', requireLogin, async (req, res) => {
+    try {
+        const [topics] = await db.execute('SELECT DISTINCT topic FROM aptitude_questions WHERE category="Logical"');
+        res.render('reasoning_topics', { topics, user: req.session.user });
+    } catch (err) { res.redirect('/'); }
+});
+
+// English (Verbal) - THIS WAS MISSING OR BROKEN BEFORE
+app.get('/english-topics', requireLogin, async (req, res) => {
+    try {
+        const [topics] = await db.execute('SELECT DISTINCT topic FROM aptitude_questions WHERE category="Verbal"');
+        res.render('english_topics', { topics, user: req.session.user });
+    } catch (err) { res.redirect('/'); }
+});
+
+// Coding
+app.get('/coding', requireLogin, async (req, res) => {
+    try {
+        const [topics] = await db.execute('SELECT DISTINCT topic FROM aptitude_questions WHERE category="Coding"');
+        res.render('coding_topics', { topics, user: req.session.user, topicName: "Coding Hub" });
+    } catch (err) { res.redirect('/'); }
+});
+
+// --- 🛠️ FIX FOR CODING HUB ERROR (Cannot POST /coding/practice) ---
+app.post('/coding/practice', requireLogin, (req, res) => {
+    const topicName = req.body.topic || req.body.subject; // Grab topic from form
+    if (topicName) {
+        // Redirect to the main practice route
+        res.redirect(`/practice/${encodeURIComponent(topicName)}`);
+    } else {
+        res.redirect('/coding');
+    }
+});
+
+// 🚀 DYNAMIC PRACTICE ROUTE (Limits to 15 Questions)
+app.get('/practice/:topic', requireLogin, async (req, res) => {
+    const topicName = decodeURIComponent(req.params.topic);
+    try {
+        const sql = `
+            SELECT * FROM aptitude_questions 
+            WHERE topic = ? 
+            ORDER BY RAND() 
+            LIMIT 15
+        `;
+        
+        const [questions] = await db.execute(sql, [topicName]);
+
+        if (questions.length === 0) {
+            return res.send(`
+                <div style="text-align:center; margin-top:50px;">
+                    <h3>No questions found for topic: ${topicName}</h3>
+                    <p>Please check if questions exist in database under this topic.</p>
+                    <a href="/">Go Back</a>
+                </div>
+            `);
+        }
+
+        res.render('mocktest', { questions, user: req.session.user, topic: topicName });
+
+    } catch (err) { 
+        console.error(err);
+        res.redirect('/'); 
+    }
+});
+
+// Compatibility Redirects
+app.get('/aptitude/:topic', (req, res) => res.redirect(`/practice/${req.params.topic}`));
+app.get('/reasoning/:topic', (req, res) => res.redirect(`/practice/${req.params.topic}`));
+app.get('/english/:topic', (req, res) => res.redirect(`/practice/${req.params.topic}`));
+app.get('/coding/:topic', (req, res) => res.redirect(`/practice/${req.params.topic}`));
+
+
+// --- 7. MOCK TEST & LEADERBOARD ---
+
+// 🚀 FIXED: GLOBAL MOCK TEST (No Duplicates)
+// app.js lo mocktest route ni ila marchu:
+// MOCK TEST ROUTE
+// Important: URL "/mocktest" ani undali (hyphen vaddu)
+app.get('/mocktest', requireLogin, async (req, res) => {
+    try {
+        // 1. Random ga 30 questions select cheyadam
+        // Note: Ikkada 'aptitude_questions' table nundi data testunnam
+        const result = await db.query("SELECT * FROM aptitude_questions ORDER BY RAND() LIMIT 30");
+
+        // 2. Mocktest page render cheyadam
+        res.render('mocktest', { 
+            questions: result[0],      // Questions pass chestunnam
+            user: req.session.user     // Login ayina user details pass chestunnam
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Server Error: Unable to load questions.");
+    }
+});
+
+// Submit Route
+app.post('/submit-quiz', requireLogin, async (req, res) => {
+    const userAnswers = req.body;
+    let score = 0;
+    let reviewData = []; 
+
+    try {
+        for (const key in userAnswers) {
+            if (key.startsWith('q')) {
+                const qId = key.substring(1);
+                const [qData] = await db.execute('SELECT * FROM aptitude_questions WHERE id = ?', [qId]);
+                
+                if (qData.length > 0) {
+                    const question = qData[0];
+                    const userAnswer = userAnswers[key];
+                    const isCorrect = question.correct_option === userAnswer;
+                    
+                    if (isCorrect) score++;
+
+                    reviewData.push({
+                        question: question.question,
+                        userAnswer: userAnswer,
+                        correctAnswer: question.correct_option,
+                        explanation: question.explanation || "No explanation available.",
+                        isCorrect: isCorrect,
+                        options: { A: question.option_a, B: question.option_b, C: question.option_c, D: question.option_d }
+                    });
+                }
+            }
+        }
+        
+        await db.execute('INSERT INTO mock_results (user_id, score, total) VALUES (?, ?, ?)', 
+            [req.session.user.id, score, reviewData.length]);
+
+        res.render('result', { 
+            score, 
+            total: reviewData.length, 
+            reviewData, 
+            user: req.session.user 
+        });
+    } catch (err) { 
+        console.error(err);
+        res.redirect('/'); 
+    }
+});
+
 app.get('/leaderboard', requireLogin, async (req, res) => {
-    try {
-        const [rankings] = await db.query("SELECT u.username, MAX(m.score) as high_score FROM mock_results m JOIN users u ON m.user_id = u.id GROUP BY u.id, u.username ORDER BY high_score DESC LIMIT 10");
-        const [myScores] = await db.query("SELECT * FROM mock_results WHERE user_id = ? ORDER BY test_date DESC LIMIT 5", [req.session.user.id]);
-        res.render('leaderboard', { user: req.session.user, rankings, myScores });
-    } catch(e) { res.redirect('/'); }
+    try {
+        const [rankings] = await db.execute(`
+            SELECT u.username, MAX(m.score) as high_score, MAX(m.total) as total, MAX(m.test_date) as last_attempt
+            FROM mock_results m JOIN users u ON m.user_id = u.id
+            GROUP BY u.id, u.username ORDER BY high_score DESC LIMIT 10
+        `);
+        res.render('leaderboard', { rankings, user: req.session.user });
+    } catch (err) { res.redirect('/'); }
 });
 
-// 2. INTERVIEW PREP
+// --- 8. RESUME BUILDER ROUTES ---
+
 app.get('/interview-prep', requireLogin, (req, res) => {
-    res.render('interview', { user: req.session.user, msg: null });
+    res.render('interview', { msg: null, user: req.session.user }); 
 });
 
-// 3. MOCK TEST
-app.get('/mock-test', requireLogin, async (req, res) => {
-    try {
-        const [questions] = await db.query("SELECT * FROM aptitude_questions ORDER BY RAND() LIMIT 30");
-        res.render('mocktest', { questions, user: req.session.user, topic: 'Full Mock Test' });
-    } catch(e) { res.redirect('/'); }
-});
-
-// 4. RESUME UPLOAD
 app.get('/resume-upload', requireLogin, async (req, res) => {
-    try {
-        const [history] = await db.execute('SELECT * FROM user_resumes WHERE email = ? ORDER BY created_at DESC', [req.session.user.email]);
-        res.render('resume', { msg: null, user: req.session.user, history });
-    } catch (e) { res.render('resume', { msg: null, user: req.session.user, history: [] }); }
+    try {
+        const [history] = await db.execute('SELECT * FROM user_resumes WHERE email = ? ORDER BY created_at DESC', [req.session.user.email]);
+        res.render('resume', { msg: null, user: req.session.user, history: history });
+    } catch (err) {
+        res.render('resume', { msg: null, user: req.session.user, history: [] });
+    }
 });
 
 app.post('/upload-resume', requireLogin, upload.single('resume'), async (req, res) => {
-    if(req.file) {
-        await db.execute('INSERT INTO user_resumes (full_name, email, file_path, ats_score) VALUES (?, ?, ?, ?)', ['User', req.session.user.email, req.file.path, 85]);
-    }
-    res.redirect('/resume-upload');
+    try {
+        if (!req.file) return res.redirect('/resume-upload');
+        const sql = `INSERT INTO user_resumes (full_name, email, file_path, ats_score) VALUES (?, ?, ?, ?)`;
+        await db.execute(sql, ['Uploaded: ' + req.file.originalname, req.session.user.email, req.file.path, 75]);
+        res.redirect('/resume-upload');
+    } catch (err) { res.redirect('/resume-upload'); }
 });
 
-// --- TOPIC MENUS ---
-app.get('/aptitude-topics', requireLogin, (req, res) => res.render('aptitude_topics', { user: req.session.user }));
-app.get('/reasoning-topics', requireLogin, (req, res) => res.render('reasoning_topics', { user: req.session.user }));
-app.get('/english-topics', requireLogin, (req, res) => res.render('english_topics', { user: req.session.user }));
-app.get('/coding', requireLogin, (req, res) => res.render('coding_topics', { user: req.session.user }));
+app.post('/resume/generate', requireLogin, async (req, res) => {
+    try {
+        const d = req.body;
+        const certs = Array.isArray(d['cert_list[]']) ? d['cert_list[]'].filter(c => c.trim() !== "").join(', ') : d['cert_list[]'];
+        
+        const projectsArray = [];
+        if (Array.isArray(d['p_titles[]'])) {
+            d['p_titles[]'].forEach((title, index) => {
+                if (title.trim() !== "") projectsArray.push({ title: title, desc: d['p_descs[]'][index] });
+            });
+        }
+        const projects_json = JSON.stringify(projectsArray);
 
-// --- REDIRECTS ---
-app.get('/aptitude/:topic', (req, res) => res.redirect(`/practice/${encodeURIComponent(req.params.topic)}`));
-app.get('/reasoning/:topic', (req, res) => res.redirect(`/practice/${encodeURIComponent(req.params.topic)}`));
-app.get('/english/:topic', (req, res) => res.redirect(`/practice/${encodeURIComponent(req.params.topic)}`));
-app.get('/coding/:topic', (req, res) => res.redirect(`/practice/${encodeURIComponent(req.params.topic)}`));
-app.post('/coding/practice', requireLogin, (req, res) => res.redirect(`/practice/${encodeURIComponent(req.body.topic)}`));
+        let score = 40;
+        if (d.linkedin_link || d.github_link) score += 20;
+        if (projectsArray.length > 0) score += 20;
+        if (certs) score += 20;
 
-// --- PRACTICE ENGINE ---
-app.get('/practice/:topic', requireLogin, async (req, res) => {
-    const topic = decodeURIComponent(req.params.topic);
+        const sql = `INSERT INTO user_resumes (
+            full_name, phone_number, persona_type, linkedin_link, github_link, 
+            career_objective, projects_json, technical_skills, strengths, 
+            languages_known, hobbies, certifications, high_qual_name, high_qual_college, 
+            high_qual_loc, high_qual_score, inter_qual_name, inter_college, 
+            inter_college_loc, inter_score, school_name_10th, school_10th_loc, 
+            score_10th, ats_score, email, template_style
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+
+        const params = [
+            d.full_name, d.phone_number, d.persona_type, d.linkedin_link, d.github_link,
+            d.career_objective, projects_json, d.tech_skills, d.strengths,
+            d.languages_known, d.hobbies, certs, d.high_qual_name, d.high_qual_college,
+            d.high_qual_loc, d.high_qual_score, d.inter_qual_name, d.inter_college,
+            d.inter_college_loc, d.inter_score, d.school_name_10th, d.school_10th_loc,
+            d.score_10th, score, req.session.user.email, d.template_style
+        ];
+
+        await db.execute(sql, params);
+        res.redirect('/resume-upload'); 
+    } catch (err) { console.error(err); res.redirect('/resume-upload'); }
+});
+
+app.post('/resume/preview', requireLogin, async (req, res) => {
+    let browser;
+    try {
+        const d = req.body;
+        const certs = Array.isArray(d['cert_list[]']) ? d['cert_list[]'].filter(c => c.trim() !== "").join(', ') : d['cert_list[]'];
+        const projectsArray = [];
+        if (Array.isArray(d['p_titles[]'])) {
+            d['p_titles[]'].forEach((title, index) => {
+                if (title.trim() !== "") projectsArray.push({ title: title, desc: d['p_descs[]'][index] });
+            });
+        }
+        const dataForTemplate = { ...d, email: req.session.user.email, projects: projectsArray, certifications: certs, ats_score: "PREVIEW" };
+        const templateFile = d.template_style === 'modern' ? 'resume-modern.ejs' : 'resume-pdf.ejs';
+        const html = await ejs.renderFile(path.join(__dirname, 'views', templateFile), { data: dataForTemplate });
+        browser = await puppeteer.launch({ headless: "new", args: ['--no-sandbox'] });
+        const page = await browser.newPage();
+        await page.setContent(html, { waitUntil: 'networkidle2' });
+        const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
+        await browser.close();
+        res.writeHead(200, { 'Content-Type': 'application/pdf' });
+        res.end(Buffer.from(pdfBuffer, 'binary'));
+    } catch (err) { if (browser) await browser.close(); res.status(500).send("Preview Error: " + err.message); }
+});
+
+app.get('/resume/download/:id', requireLogin, async (req, res) => {
+    let browser;
+    try {
+        const [rows] = await db.execute('SELECT * FROM user_resumes WHERE id = ?', [req.params.id]);
+        if (rows.length === 0) return res.status(404).send("Resume Not Found");
+        const r = rows[0];
+        r.projects = JSON.parse(r.projects_json || '[]');
+        const templateFile = r.template_style === 'modern' ? 'resume-modern.ejs' : 'resume-pdf.ejs';
+        const html = await ejs.renderFile(path.join(__dirname, 'views', templateFile), { data: r });
+        browser = await puppeteer.launch({ headless: "new", args: ['--no-sandbox'] });
+        const page = await browser.newPage();
+        await page.setContent(html, { waitUntil: 'networkidle2' });
+        const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
+        await browser.close();
+        res.writeHead(200, {
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': `attachment; filename="${r.full_name.replace(/\s+/g, '_')}_Resume.pdf"`,
+            'Content-Length': pdfBuffer.length
+        });
+        res.end(Buffer.from(pdfBuffer, 'binary'));
+    } catch (err) { if (browser) await browser.close(); res.status(500).send("Error: " + err.message); }
+});
+
+app.get('/resume/delete/:id', requireLogin, async (req, res) => {
+    try {
+        await db.execute('DELETE FROM user_resumes WHERE id = ?', [req.params.id]);
+        res.redirect('/resume-upload');
+    } catch (err) { res.redirect('/resume-upload'); }
+});
+
+const startServer = (port) => {
+    app.listen(port, () => {
+        console.log(`🚀 Elite Placement Portal Live: http://localhost:${port}`);
+    }).on('error', (err) => {
+        if (err.code === 'EADDRINUSE') {
+            console.log(`⚠️ Port ${port} is busy, trying ${port + 1}...`);
+            startServer(port + 1);
+        } else { console.error(err); }
+    });
+};
+// --- 🔥 ADD THIS LOADER TO YOUR BACKUP CODE ---
+app.get('/load-all-quant', async (req, res) => {
     try {
-        const [questions] = await db.execute('SELECT * FROM aptitude_questions WHERE topic = ? ORDER BY RAND() LIMIT 30', [topic]);
-        // If empty, auto-redirect to fresh start (User-friendly)
-        if (questions.length === 0) {
-            return res.send(`<h2>Topic ${topic} is empty. <a href="/fresh-start">CLICK HERE TO RESET & LOAD QUESTIONS</a></h2>`);
-        }
-        res.render('mocktest', { questions, user: req.session.user, topic });
-    } catch (err) { res.redirect('/'); }
-});
-
-app.post('/submit-quiz', requireLogin, async (req, res) => {
-    const userAnswers = req.body;
-    let score = 0, total = 0, reviewData = [];
-    for (const key in userAnswers) {
-        if (key.startsWith('q')) {
-            const qId = key.substring(1);
-            const [q] = await db.execute('SELECT * FROM aptitude_questions WHERE id=?', [qId]);
-            if(q.length > 0) {
-                const isCorrect = q[0].correct_option === userAnswers[key];
-                if(isCorrect) score++;
-                total++;
-                reviewData.push({ q: q[0].question, userAns: userAnswers[key], correctAns: q[0].correct_option, isCorrect });
-            }
-        }
-    }
-    await db.execute('INSERT INTO mock_results (user_id, score, total, topic) VALUES (?, ?, ?, ?)', [req.session.user.id, score, total, req.body.topic_name || "Quiz"]);
-    res.render('result', { score, total, reviewData, user: req.session.user });
-});
-
-// =========================================================
-// 🔥 THE "FRESH START" ROUTE (Deletes Old, Puts New)
-// =========================================================
-app.get('/fresh-start', async (req, res) => {
-    try {
-        // 1. DELETE ALL OLD DATA
-        await db.query("TRUNCATE TABLE aptitude_questions");
-
-        const addQ = async (cat, topic, q, a, b, c, d, corr, exp) => {
-            await db.execute(`INSERT INTO aptitude_questions (category, topic, question, option_a, option_b, option_c, option_d, correct_option, explanation) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, [cat, topic, q, a, b, c, d, corr, exp]);
+        await db.query("DELETE FROM aptitude_questions WHERE category = 'Quantitative'");
+        const addQ = async (topic, q, a, b, c, d, corr, exp) => {
+            await db.execute(`INSERT INTO aptitude_questions (category, topic, question, option_a, option_b, option_c, option_d, correct_option, explanation) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
+            ['Quantitative', topic, q, a, b, c, d, corr, exp]);
         };
 
-        // 2. INSERT HIGH-QUALITY QUESTIONS (No Variables, Real Text)
-        
-        // --- QUANTITATIVE ---
-        const quantTopics = ['Percentages', 'Profit & Loss', 'Time & Work', 'Probability', 'Averages', 'Trains', 'Boats & Streams', 'Simple Interest', 'Ratio & Proportion', 'Ages'];
-        for(let t of quantTopics) {
-            await addQ('Quantitative', t, 'A train running at the speed of 60 km/hr crosses a pole in 9 seconds. What is the length of the train?', '120 metres', '180 metres', '324 metres', '150 metres', 'D', 'Speed = 60*(5/18) = 50/3 m/sec. Length = Speed x Time = (50/3)*9 = 150m.');
-            await addQ('Quantitative', t, 'What is 20% of 500?', '100', '200', '150', '50', 'A', '500 * 0.20 = 100');
-            await addQ('Quantitative', t, 'A and B together can do a piece of work in 15 days and B alone in 20 days. In how many days can A alone do it?', '60 days', '45 days', '40 days', '30 days', 'A', '1/A = 1/15 - 1/20 = 1/60.');
-            // Fill more slots
-            for(let i=1; i<=25; i++) await addQ('Quantitative', t, `[${t}] Standard Question ${i}: Calculate the correct value based on standard formulas.`, 'Option A', 'Option B', 'Option C', 'Option D', 'A', 'Formula application.');
-        }
+        // Sample Questions
+        await addQ('Percentages', "What is 20% of 500?", "100", "200", "50", "150", "A", "500 * 0.20 = 100");
+        await addQ('Trains', "100m train running at 36kmph crosses a pole in?", "10s", "12s", "15s", "8s", "A", "36kmph = 10m/s. 100/10 = 10s");
+        // ఇక్కడ మనం ఇందాక అనుకున్న 15 క్వశ్చన్ల సెట్ ని యాడ్ చేసుకోవచ్చు.
 
-        // --- LOGICAL ---
-        const logicTopics = ['Blood Relations', 'Number Series', 'Coding-Decoding', 'Syllogism', 'Direction Sense', 'Seating Arrangement'];
-        for(let t of logicTopics) {
-            await addQ('Logical', t, 'Point to a man, a woman said, "His mother is the only daughter of my mother." How is the woman related to the man?', 'Mother', 'Sister', 'Daughter', 'Grandmother', 'A', 'Only daughter of my mother is myself. So I am his mother.');
-            await addQ('Logical', t, 'Look at this series: 2, 1, (1/2), (1/4), ... What number should come next?', '(1/8)', '(1/16)', '(1/3)', '(1/10)', 'A', 'Each number is half of the previous number.');
-            // Fill more slots
-            for(let i=1; i<=25; i++) await addQ('Logical', t, `[${t}] Logical Reasoning Test ${i}: Identify the correct pattern.`, 'Option A', 'Option B', 'Option C', 'Option D', 'A', 'Logical deduction.');
-        }
-
-        // --- VERBAL ---
-        const verbalTopics = ['Spotting Errors', 'Antonyms', 'Synonyms'];
-        for(let t of verbalTopics) {
-             await addQ('Verbal', t, 'Choose the correct synonym for: HAPPY', 'Joyful', 'Sad', 'Angry', 'Bored', 'A', 'Joyful means happy.');
-             for(let i=1; i<=25; i++) await addQ('Verbal', t, `[${t}] English Proficiency ${i}: Choose the correct option.`, 'Option A', 'Option B', 'Option C', 'Option D', 'A', 'Grammar check.');
-        }
-
-        // --- CODING ---
-        const codingTopics = ['C Programming', 'Java', 'Python', 'Data Structures'];
-        for(let t of codingTopics) {
-            await addQ('Coding', t, 'Who invented Java?', 'James Gosling', 'Dennis Ritchie', 'Bjarne Stroustrup', 'Guido van Rossum', 'A', 'James Gosling at Sun Microsystems.');
-            await addQ('Coding', t, 'Which data structure uses LIFO?', 'Stack', 'Queue', 'Array', 'Tree', 'A', 'Stack is Last-In-First-Out.');
-            for(let i=1; i<=25; i++) await addQ('Coding', t, `[${t}] Technical Question ${i}: Identify the output or syntax.`, 'Correct', 'Error', 'Wrong', 'None', 'A', 'Syntax rules.');
-        }
-
-        res.send("<h1>✅ FRESH START SUCCESSFUL!</h1><p>Old garbage deleted. New clean questions loaded.</p><a href='/'>Go to Dashboard</a>");
-
-    } catch(err) { res.send(err.message); }
+        res.send("<h1>✅ SUCCESS: Data Loaded into Backup System!</h1><a href='/'>Go to Dashboard</a>");
+    } catch(err) { res.send("Error: " + err.message); }
 });
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on ${PORT}`));
+startServer(5000);
