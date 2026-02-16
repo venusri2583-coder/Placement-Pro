@@ -1,0 +1,281 @@
+<%- include('partials/header') %>
+
+<div class="container-fluid py-4" style="background-color: #f4f6f9; min-height: 100vh;">
+    <div class="row">
+        <div class="col-md-9">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                    <h5 class="m-0 fw-bold text-primary"><%= topic %> Test</h5>
+                    <div class="timer-box px-3 py-2 rounded bg-dark text-white fw-bold">
+                        Time Left: <span id="timer">15:00</span>
+                    </div>
+                </div>
+                
+                <div class="card-body p-4" style="min-height: 400px;">
+                    <% if(questions && questions.length > 0) { %>
+                        <% questions.forEach((q, index) => { %>
+                            <div class="question-block" id="q-block-<%= index %>" style="display: <%= index === 0 ? 'block' : 'none' %>;">
+                                <div class="d-flex mb-4">
+                                    <span class="badge bg-primary me-3 align-self-start" style="font-size: 1rem;">Q<%= index + 1 %></span>
+                                    <h5 class="fw-normal" style="line-height: 1.6;"><%= q.question %></h5>
+                                </div>
+
+                                <div class="options-list ms-4">
+                                    <div class="form-check mb-3 p-3 border rounded option-item" onclick="selectOption(<%= index %>, 'A')">
+                                        <input class="form-check-input" type="radio" name="q<%= index %>" id="opt_<%= index %>_A" value="A">
+                                        <label class="form-check-label w-100" style="cursor: pointer;" for="opt_<%= index %>_A">
+                                            <%= q.option_a %>
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-3 p-3 border rounded option-item" onclick="selectOption(<%= index %>, 'B')">
+                                        <input class="form-check-input" type="radio" name="q<%= index %>" id="opt_<%= index %>_B" value="B">
+                                        <label class="form-check-label w-100" style="cursor: pointer;" for="opt_<%= index %>_B">
+                                            <%= q.option_b %>
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-3 p-3 border rounded option-item" onclick="selectOption(<%= index %>, 'C')">
+                                        <input class="form-check-input" type="radio" name="q<%= index %>" id="opt_<%= index %>_C" value="C">
+                                        <label class="form-check-label w-100" style="cursor: pointer;" for="opt_<%= index %>_C">
+                                            <%= q.option_c %>
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-3 p-3 border rounded option-item" onclick="selectOption(<%= index %>, 'D')">
+                                        <input class="form-check-input" type="radio" name="q<%= index %>" id="opt_<%= index %>_D" value="D">
+                                        <label class="form-check-label w-100" style="cursor: pointer;" for="opt_<%= index %>_D">
+                                            <%= q.option_d %>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }) %>
+                    <% } else { %>
+                        <div class="alert alert-warning">No questions available for this topic yet.</div>
+                    <% } %>
+                </div>
+
+                <div class="card-footer bg-white py-3 d-flex justify-content-between">
+                    <div>
+                        <button class="btn btn-outline-secondary me-2" onclick="prevQuestion()">Previous</button>
+                        <button class="btn btn-warning text-white" onclick="markForReview()">Mark for Review</button>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary px-4" onclick="saveAndNext()">Save & Next</button>
+                        <button class="btn btn-success px-4 ms-2" onclick="submitTest()">Submit Test</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="d-flex align-items-center mb-2" style="width: 48%;">
+                            <span class="badge bg-success me-2" id="count-answered">0</span> <small>Answered</small>
+                        </div>
+                        <div class="d-flex align-items-center mb-2" style="width: 48%;">
+                            <span class="badge bg-danger me-2" id="count-not-answered">0</span> <small>Not Answered</small>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center" style="width: 48%;">
+                            <span class="badge bg-secondary me-2" id="count-not-visited">0</span> <small>Not Visited</small>
+                        </div>
+                        <div class="d-flex align-items-center" style="width: 48%;">
+                            <span class="badge bg-warning text-dark me-2" id="count-review">0</span> <small>Review</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="m-0">Question Palette</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2" id="palette-container">
+                        <% if(questions && questions.length > 0) { %>
+                            <% questions.forEach((q, index) => { %>
+                                <button class="btn btn-outline-secondary btn-sm palette-btn" 
+                                        id="palette-btn-<%= index %>" 
+                                        style="width: 40px; height: 40px;"
+                                        onclick="jumpToQuestion(<%= index %>)">
+                                    <%= index + 1 %>
+                                </button>
+                            <% }) %>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. SET TIME LIMIT TO 15 MINUTES (15 * 60 Seconds)
+    let totalSeconds = 15 * 60; 
+    let currentQIndex = 0;
+    const totalQuestions = <%= questions.length %>;
+    
+    // Arrays to track status
+    // Status codes: 0 = Not Visited, 1 = Not Answered, 2 = Answered, 3 = Review
+    let questionStatus = new Array(totalQuestions).fill(0); 
+    let userAnswers = new Array(totalQuestions).fill(null);
+
+    // Initialize first question as "Not Answered" (since we visited it)
+    questionStatus[0] = 1;
+
+    // --- TIMER LOGIC ---
+    const timerElement = document.getElementById("timer");
+    const timerInterval = setInterval(() => {
+        if (totalSeconds <= 0) {
+            clearInterval(timerInterval);
+            submitTest();
+        } else {
+            let m = Math.floor(totalSeconds / 60);
+            let s = totalSeconds % 60;
+            timerElement.innerHTML = `${m}:${s < 10 ? '0' : ''}${s}`;
+            totalSeconds--;
+        }
+    }, 1000);
+
+    // --- NAVIGATION FUNCTIONS ---
+    function showQuestion(index) {
+        // Hide all questions
+        document.querySelectorAll('.question-block').forEach(el => el.style.display = 'none');
+        // Show current question
+        document.getElementById(`q-block-${index}`).style.display = 'block';
+        currentQIndex = index;
+        
+        // If status is 'Not Visited', change to 'Not Answered'
+        if (questionStatus[index] === 0) {
+            questionStatus[index] = 1; 
+        }
+        updatePalette();
+        updateCounts();
+    }
+
+    function jumpToQuestion(index) {
+        showQuestion(index);
+    }
+
+    function prevQuestion() {
+        if (currentQIndex > 0) showQuestion(currentQIndex - 1);
+    }
+
+    // --- SELECTION LOGIC ---
+    function selectOption(qIndex, option) {
+        // Set radio button checked
+        document.getElementById(`opt_${qIndex}_${option}`).checked = true;
+        
+        // Update user answer array
+        userAnswers[qIndex] = option;
+        
+        // Highlight logic for UI
+        const options = document.querySelectorAll(`#q-block-${qIndex} .option-item`);
+        options.forEach(div => div.classList.remove('border-primary', 'bg-light'));
+        document.getElementById(`opt_${qIndex}_${option}`).parentElement.classList.add('border-primary', 'bg-light');
+    }
+
+    // --- BUTTON ACTIONS ---
+    function saveAndNext() {
+        // If user selected an answer, mark as Answered (2)
+        if (userAnswers[currentQIndex]) {
+            questionStatus[currentQIndex] = 2; 
+        } else {
+            // Visited but not answered
+            questionStatus[currentQIndex] = 1; 
+        }
+
+        if (currentQIndex < totalQuestions - 1) {
+            showQuestion(currentQIndex + 1);
+        } else {
+            updatePalette();
+            updateCounts();
+            alert("This is the last question. You can submit the test.");
+        }
+    }
+
+    function markForReview() {
+        questionStatus[currentQIndex] = 3; // Mark as Review
+        if (currentQIndex < totalQuestions - 1) {
+            showQuestion(currentQIndex + 1);
+        } else {
+            updatePalette();
+            updateCounts();
+        }
+    }
+
+    // --- UPDATE UI LOGIC ---
+    function updatePalette() {
+        for (let i = 0; i < totalQuestions; i++) {
+            const btn = document.getElementById(`palette-btn-${i}`);
+            btn.classList.remove('btn-outline-secondary', 'btn-success', 'btn-danger', 'btn-warning', 'text-white');
+            
+            if (i === currentQIndex) {
+                btn.style.border = "2px solid #000"; // Highlight current
+            } else {
+                btn.style.border = "1px solid #ccc";
+            }
+
+            if (questionStatus[i] == 2) { // Answered
+                btn.classList.add('btn-success', 'text-white');
+            } else if (questionStatus[i] == 3) { // Review
+                btn.classList.add('btn-warning', 'text-dark');
+            } else if (questionStatus[i] == 1) { // Not Answered (Visited)
+                btn.classList.add('btn-danger', 'text-white');
+            } else { // Not Visited
+                btn.classList.add('btn-outline-secondary');
+            }
+        }
+    }
+
+    // --- REAL-TIME COUNTS UPDATE (Your Requirement) ---
+    function updateCounts() {
+        let answered = 0;
+        let notAnswered = 0;
+        let review = 0;
+        let notVisited = 0;
+
+        questionStatus.forEach(status => {
+            if (status === 2) answered++;
+            else if (status === 1) notAnswered++;
+            else if (status === 3) review++;
+            else notVisited++;
+        });
+
+        document.getElementById('count-answered').innerText = answered;
+        document.getElementById('count-not-answered').innerText = notAnswered;
+        document.getElementById('count-review').innerText = review;
+        document.getElementById('count-not-visited').innerText = notVisited;
+    }
+
+    // --- SUBMIT LOGIC ---
+    function submitTest() {
+        // Collect answers and submit to backend
+        // Creating a hidden form or using fetch
+        let form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/submit-exam'; // Make sure this matches your backend route
+
+        let inputTopic = document.createElement('input');
+        inputTopic.type = 'hidden';
+        inputTopic.name = 'topic';
+        inputTopic.value = '<%= topic %>';
+        form.appendChild(inputTopic);
+
+        let inputAnswers = document.createElement('input');
+        inputAnswers.type = 'hidden';
+        inputAnswers.name = 'answers';
+        inputAnswers.value = JSON.stringify(userAnswers);
+        form.appendChild(inputAnswers);
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    // Initial call to set counts
+    updateCounts();
+</script>
+
+<%- include('partials/footer') %>
