@@ -67,7 +67,7 @@ app.get('/', requireLogin, async (req, res) => {
 
 app.get('/aptitude-topics', requireLogin, (req, res) => res.render('aptitude_topics', { user: req.session.user }));
 app.get('/reasoning-topics', requireLogin, (req, res) => res.render('reasoning_topics', { user: req.session.user }));
-app.get('/english-topics', requireLogin, (req, res) => res.render('english_topics', { user: req.session.user }));
+
 app.get('/coding', requireLogin, (req, res) => res.render('coding_topics', { user: req.session.user }));
 
 // REDIRECTS
@@ -731,10 +731,10 @@ app.get('/fix-only-reasoning', async (req, res) => {
     } catch(err) { res.send("Error: " + err.message); }
 });
 // =============================================================
-// 📘 ENGLISH ROUTE (Only Topics - No Questions for now)
+// 📘 ENGLISH TOPICS ROUTE (Hardcoded List - 100% GUARANTEE)
 // =============================================================
 app.get('/english-topics', requireLogin, (req, res) => {
-    // మనం ఇక్కడ టాపిక్స్ లిస్ట్ ని మాన్యువల్ గా ఇస్తున్నాం
+    // మనం మాన్యువల్ గా ఇస్తున్న లిస్ట్
     const englishTopics = [
         { topic: 'Antonyms' },
         { topic: 'Synonyms' },
@@ -743,10 +743,13 @@ app.get('/english-topics', requireLogin, (req, res) => {
         { topic: 'Idioms and Phrases' },
         { topic: 'One Word Substitution' },
         { topic: 'Ordering of Sentences' },
-        { topic: 'Selecting Words' }
+        { topic: 'Selecting Words' },
+        { topic: 'Completing Statements' },
+        { topic: 'Change of Voice' }
     ];
 
-    // ఈ లిస్ట్ ని english_topics.ejs పేజీకి పంపిస్తున్నాం
+    console.log("Sending Topics:", englishTopics); // ఇది నీ టెర్మినల్ లో కనిపిస్తుంది
+
     res.render('english_topics', { 
         user: req.session.user, 
         topics: englishTopics 
