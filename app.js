@@ -93,67 +93,53 @@ app.get('/practice/:topic', requireLogin, async (req, res) => {
     } catch (err) { res.redirect('/'); }
 });
 
-// --- SUBMIT EXAM ROUTE ---
+// --- FINAL SUBMIT EXAM ROUTE (Synced with your result.ejs) ---
 app.post('/submit-exam', requireLogin, async (req, res) => {
     try {
         const { topic, answers } = JSON.parse(req.body.payload);
-        const [questions] = await db.execute("SELECT * FROM aptitude_questions WHERE topic = ? LIMIT 15", [topic]);
+        const [questions] = await db.execute(
+            "SELECT * FROM aptitude_questions WHERE topic = ? LIMIT 15", 
+            [topic]
+        );
         
         let score = 0;
+        let reviewData = [];
+
         questions.forEach((q, i) => {
-            if (answers[i] === q.correct_option) score++;
-        });
-
-        res.send(`
-            <div style="text-align:center; padding:50px; font-family:sans-serif;">
-                <h1 style="color:green;">Exam Submitted!</h1>
-                <h2>Your Score in ${topic}: <span style="color:blue;">${score} / ${questions.length}</span></h2>
-                <br><a href="/dashboard" style="background:blue; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;">Go to Dashboard</a>
-            </div>
-        `);
-    } catch (err) { res.redirect('/'); }
-});
-app.post('/submit-quiz', requireLogin, async (req, res) => {
-    const userAnswers = req.body;
-    const topicName = req.body.topic_name;
-    let score = 0;
-    let totalQuestions = 0;
-    let reviewData = [];
-
-    try {
-        // Topic ni batti anni 15 questions ni malli database nundi testunnam review kosam
-        const [allQuestions] = await db.execute('SELECT * FROM aptitude_questions WHERE topic = ?', [topicName]);
-        totalQuestions = allQuestions.length > 15 ? 15 : allQuestions.length;
-
-        for (let i = 0; i < totalQuestions; i++) {
-            const dbQ = allQuestions[i];
-            const qId = dbQ.id;
-            const userVal = userAnswers[`q${qId}`] ? userAnswers[`q${qId}`].toString().trim() : "Not Attempted";
+            const userAns = answers[i] || null; // User selection (A, B, C, or D)
+            const correctOpt = q.correct_option.trim(); // Correct option (A, B, C, or D)
+            const isCorrect = (userAns === correctOpt);
             
-            const correctOpt = dbQ.correct_option.trim(); // E.g., 'A'
-            const correctVal = dbQ[`option_${correctOpt.toLowerCase()}`].toString().trim(); // E.g., '10km'
-            
-            // Check if user's answer is correct
-            let isCorrect = (userVal === correctOpt) || (userVal === correctVal);
             if (isCorrect) score++;
 
+            // Mapping database values to match your result.ejs variables
             reviewData.push({
-                q: dbQ.question,
-                userAns: userVal,
-                correctAns: `${correctOpt}) ${correctVal}`,
-                explanation: dbQ.explanation || "Logic: Standard reasoning method applied.",
-                isCorrect: isCorrect
+                q: q.question, // Matches item.q in your EJS
+                userAns: userAns, // Matches item.userAns
+                correctAns: correctOpt, // Matches item.correctAns
+                explanation: q.explanation, // Matches item.explanation
+                isCorrect: isCorrect // Matches item.isCorrect
             });
-        }
+        });
 
-        // Result ni database lo store chestunnam
-        await db.execute('INSERT INTO mock_results (user_id, score, total, topic) VALUES (?, ?, ?, ?)', 
-            [req.session.user.id, score, totalQuestions, topicName]);
+        // Optional: Save to database for history
+        await db.execute(
+            'INSERT INTO mock_results (user_id, score, total, topic) VALUES (?, ?, ?, ?)', 
+            [req.session.user.id, score, questions.length, topic]
+        );
 
-        res.render('result', { score, total: totalQuestions, reviewData, user: req.session.user });
-    } catch (err) {
-        console.error(err);
-        res.redirect('/');
+        // Rendering your beautiful result.ejs
+        res.render('result', { 
+            score: score, 
+            total: questions.length, 
+            reviewData: reviewData, 
+            topic: topic,
+            user: req.session.user 
+        });
+
+    } catch (err) { 
+        console.error("Submit Error:", err);
+        res.redirect('/'); 
     }
 });
 
