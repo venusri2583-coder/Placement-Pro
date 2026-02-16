@@ -5,59 +5,51 @@
         <div class="col-md-9">
             <div class="card shadow-sm border-0 mb-3">
                 <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 text-uppercase fw-bold">ELITE MOCK TEST</h6>
-                    <span class="badge bg-secondary">meme <i class="bi bi-person-circle"></i></span>
+                    <h6 class="m-0 fw-bold">ELITE MOCK TEST</h6>
+                    <span class="badge bg-secondary"><%= user.username %></span>
                 </div>
-                <div class="card-body bg-light py-2">
-                    <span class="fw-bold"><%= topic %></span>
-                </div>
+                <div class="card-body bg-light py-2 fw-bold"><%= topic %></div>
                 
-                <div class="card-body p-4" id="exam-area" style="min-height: 450px;">
+                <div class="card-body p-4" id="exam-area" style="min-height: 400px;">
                     <% questions.forEach((q, index) => { %>
-                        <div class="question-container" id="q-<%= index %>" style="display: <%= index === 0 ? 'block' : 'none' %>;">
+                        <div class="q-block" id="q-<%= index %>" style="display: <%= index === 0 ? 'block' : 'none' %>;">
                             <p class="fw-bold mb-4">Q<%= index + 1 %>: <%= q.question %></p>
-                            <div class="options ps-3">
-                                <% ['a', 'b', 'c', 'd'].forEach(opt => { %>
-                                    <div class="form-check mb-3 border p-2 rounded option-row" onclick="selectOption(<%= index %>, '<%= opt.toUpperCase() %>')">
-                                        <input class="form-check-input ms-1" type="radio" name="ans<%= index %>" id="opt_<%= index %>_<%= opt %>" value="<%= opt.toUpperCase() %>">
-                                        <label class="form-check-label ms-2 w-100" style="cursor:pointer;" for="opt_<%= index %>_<%= opt %>">
-                                            <%= opt.toUpperCase() %>) <%= q['option_' + opt] %>
-                                        </label>
-                                    </div>
-                                <% }) %>
-                            </div>
+                            <% ['a', 'b', 'c', 'd'].forEach(opt => { %>
+                                <div class="form-check mb-3 border p-2 rounded" onclick="selectOpt(<%= index %>, '<%= opt.toUpperCase() %>')">
+                                    <input class="form-check-input ms-1" type="radio" name="ans<%= index %>" id="opt_<%= index %>_<%= opt %>" value="<%= opt.toUpperCase() %>">
+                                    <label class="form-check-label ms-2 w-100" style="cursor:pointer;"><%= opt.toUpperCase() %>) <%= q['option_' + opt] %></label>
+                                </div>
+                            <% }) %>
                         </div>
                     <% }) %>
                 </div>
 
                 <div class="card-footer bg-white d-flex justify-content-between">
-                    <button class="btn btn-outline-secondary" onclick="clearResponse()">Clear Response</button>
-                    <button class="btn btn-primary" style="background-color: #5d5dff;" onclick="markForReview()">Mark for Review</button>
+                    <button class="btn btn-outline-secondary" onclick="clearAns()">Clear Response</button>
+                    <button class="btn btn-primary" onclick="markReview()">Mark for Review</button>
                     <div class="ms-auto">
-                        <button class="btn btn-success me-2" onclick="saveAndNext()">Save & Next</button>
-                        <button class="btn btn-primary" onclick="submitExam()">SUBMIT TEST</button>
+                        <button class="btn btn-success me-2" onclick="nextQ()">Save & Next</button>
+                        <button class="btn btn-danger" onclick="submit()">SUBMIT TEST</button>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-md-3">
-            <div class="card shadow-sm border-0 mb-3">
-                <div class="card-body p-2 text-center bg-dark text-white rounded-top">
+            <div class="card shadow-sm border-0 mb-3 text-center">
+                <div class="card-body bg-dark text-white py-2 rounded-top">
                     <span class="fw-bold">Time Left: <span id="timer">15:00</span></span>
                 </div>
                 <div class="card-body">
-                    <div class="row g-2 text-center mb-3">
-                        <div class="col-6"><small><span class="badge bg-success" id="stat-ans">0</span> Answered</small></div>
-                        <div class="col-6"><small><span class="badge bg-danger" id="stat-notans">0</span> Not Answered</small></div>
-                        <div class="col-6"><small><span class="badge bg-light text-dark border" id="stat-visited">0</span> Not Visited</small></div>
-                        <div class="col-6"><small><span class="badge bg-primary" id="stat-review">0</span> Review</small></div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6"><small><span class="badge bg-success" id="c-ans">0</span> Answered</small></div>
+                        <div class="col-6"><small><span class="badge bg-danger" id="c-notans">0</span> Not Ans</small></div>
+                        <div class="col-6"><small><span class="badge bg-light text-dark border" id="c-visit">0</span> Not Visit</small></div>
+                        <div class="col-6"><small><span class="badge bg-primary" id="c-rev">0</span> Review</small></div>
                     </div>
-                    
-                    <div class="palette-header bg-info text-white text-center py-1 mb-2">Question Palette</div>
-                    <div class="d-flex flex-wrap gap-2 justify-content-center overflow-auto" style="max-height: 300px;">
+                    <div class="palette d-flex flex-wrap gap-2 justify-content-center">
                         <% questions.forEach((_, i) => { %>
-                            <button class="btn btn-light border p-0 palette-btn" id="btn-<%= i %>" style="width: 40px; height: 40px;" onclick="goToQuestion(<i %>)"><%= i + 1 %></button>
+                            <button class="btn btn-light border p-0" id="btn-<%= i %>" style="width: 35px; height: 35px;" onclick="goTo(<%= i %>)"><%= i + 1 %></button>
                         <% }) %>
                     </div>
                 </div>
@@ -67,85 +59,46 @@
 </div>
 
 <script>
-    let currentIdx = 0;
-    let totalQs = <%= questions.length %>;
-    let time = 15 * 60; // 15 Minutes
-    let answers = new Array(totalQs).fill(null);
-    let status = new Array(totalQs).fill(0); // 0: Not Visited, 1: Visited/Not Answered, 2: Answered, 3: Review
+    let cur = 0, total = <%= questions.length %>, time = 15 * 60;
+    let ans = new Array(total).fill(null), stat = new Array(total).fill(0); // 0:Not Visit, 1:Not Ans, 2:Ans, 3:Review
+    stat[0] = 1;
 
-    // Initialize first question
-    status[0] = 1;
-
-    // Timer Logic
-    const timerTick = setInterval(() => {
-        if(time <= 0) { clearInterval(timerTick); submitExam(); }
+    setInterval(() => {
+        if(time <= 0) submit();
         let m = Math.floor(time/60), s = time % 60;
         document.getElementById('timer').innerText = `${m}:${s < 10 ? '0'+s : s}`;
         time--;
     }, 1000);
 
-    function updateUI() {
-        // Show/Hide Questions
-        document.querySelectorAll('.question-container').forEach((el, i) => el.style.display = i === currentIdx ? 'block' : 'none');
-        
-        // Update Palette Colors
-        status.forEach((s, i) => {
-            let btn = document.getElementById(`btn-${i}`);
-            btn.className = "btn p-0 palette-btn"; // reset
-            if(i === currentIdx) btn.classList.add('border-dark', 'border-3');
-            if(s === 2) btn.classList.add('bg-success', 'text-white');
-            else if(s === 3) btn.classList.add('bg-primary', 'text-white');
-            else if(s === 1) btn.classList.add('bg-danger', 'text-white');
-            else btn.classList.add('bg-light');
+    function update() {
+        document.querySelectorAll('.q-block').forEach((el, i) => el.style.display = i === cur ? 'block' : 'none');
+        stat.forEach((s, i) => {
+            let b = document.getElementById(`btn-${i}`);
+            b.className = "btn p-0 " + (i===cur ? "border-dark border-3 " : "");
+            if(s === 2) b.classList.add('bg-success', 'text-white');
+            else if(s === 3) b.classList.add('bg-primary', 'text-white');
+            else if(s === 1) b.classList.add('bg-danger', 'text-white');
+            else b.classList.add('bg-light');
         });
-
-        // Update Counts
-        document.getElementById('stat-ans').innerText = status.filter(s => s === 2).length;
-        document.getElementById('stat-notans').innerText = status.filter(s => s === 1).length;
-        document.getElementById('stat-visited').innerText = status.filter(s => s === 0).length;
-        document.getElementById('stat-review').innerText = status.filter(s => s === 3).length;
+        document.getElementById('c-ans').innerText = stat.filter(s => s === 2).length;
+        document.getElementById('c-notans').innerText = stat.filter(s => s === 1).length;
+        document.getElementById('c-visit').innerText = stat.filter(s => s === 0).length;
+        document.getElementById('c-rev').innerText = stat.filter(s => s === 3).length;
     }
 
-    function selectOption(qIdx, opt) {
-        answers[qIdx] = opt;
-        document.getElementById(`opt_${qIdx}_${opt.toLowerCase()}`).checked = true;
-    }
-
-    function saveAndNext() {
-        status[currentIdx] = answers[currentIdx] ? 2 : 1;
-        if(currentIdx < totalQs - 1) { currentIdx++; if(status[currentIdx] === 0) status[currentIdx] = 1; }
-        updateUI();
-    }
-
-    function markForReview() {
-        status[currentIdx] = 3;
-        if(currentIdx < totalQs - 1) { currentIdx++; if(status[currentIdx] === 0) status[currentIdx] = 1; }
-        updateUI();
-    }
-
-    function goToQuestion(i) { currentIdx = i; if(status[i] === 0) status[i] = 1; updateUI(); }
+    function selectOpt(i, o) { ans[i] = o; document.getElementById(`opt_${i}_${o.toLowerCase()}`).checked = true; }
+    function nextQ() { stat[cur] = ans[cur] ? 2 : 1; if(cur < total-1) { cur++; if(stat[cur]===0) stat[cur]=1; } update(); }
+    function markReview() { stat[cur] = 3; if(cur < total-1) { cur++; if(stat[cur]===0) stat[cur]=1; } update(); }
+    function goTo(i) { cur = i; if(stat[i]===0) stat[i]=1; update(); }
+    function clearAns() { ans[cur] = null; document.querySelectorAll(`input[name="ans${cur}"]`).forEach(r => r.checked = false); stat[cur] = 1; update(); }
     
-    function clearResponse() {
-        answers[currentIdx] = null;
-        document.querySelectorAll(`input[name="ans${currentIdx}"]`).forEach(r => r.checked = false);
-        status[currentIdx] = 1;
-        updateUI();
+    function submit() {
+        const f = document.createElement('form'); f.method = 'POST'; f.action = '/submit-exam';
+        const i = document.createElement('input'); i.type = 'hidden'; i.name = 'payload';
+        i.value = JSON.stringify({ topic: '<%= topic %>', answers: ans });
+        f.appendChild(i); document.body.appendChild(f); f.submit();
     }
-
-    function submitExam() {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/submit-exam';
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'payload';
-        input.value = JSON.stringify({ topic: '<%= topic %>', answers: answers });
-        form.appendChild(input);
-        document.body.appendChild(form);
-        form.submit();
-    }
-
-    updateUI(); // Initial run
+    update();
 </script>
 
 <%- include('partials/footer') %>

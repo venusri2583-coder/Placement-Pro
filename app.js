@@ -77,71 +77,42 @@ app.get('/english/:topic', (req, res) => res.redirect(`/practice/${encodeURIComp
 app.get('/coding/:topic', (req, res) => res.redirect(`/practice/${encodeURIComponent(req.params.topic)}`));
 app.post('/coding/practice', requireLogin, (req, res) => res.redirect(`/practice/${encodeURIComponent(req.body.topic)}`));
 
-// =============================================================
-// 📝 PRACTICE EXAM ROUTE (15 Mins Timer & Status Logic)
-// =============================================================
+// --- PRACTICE ENGINE ---
 app.get('/practice/:topic', requireLogin, async (req, res) => {
+    const topic = decodeURIComponent(req.params.topic);
     try {
-        const topic = req.params.topic; // Topic name from URL
+        // Fetch exactly 15 questions to match the 15-minute timer
+        let [questions] = await db.execute('SELECT * FROM aptitude_questions WHERE topic = ? ORDER BY RAND() LIMIT 15', [topic]);
+        
+        if (questions.length === 0) {
+            return res.send(`<div style="text-align:center; padding:50px;"><h2 style="color:red;">Topic '${topic}' is empty!</h2><a href="/dashboard">Go Back</a></div>`);
+        }
 
-        // 1. Fetch exactly 15 Questions (To match 15 Min Timer)
-        // Questions are completely safe, we are just selecting 15 of them.
-        const [questions] = await db.execute(
-            "SELECT * FROM aptitude_questions WHERE topic = ? ORDER BY RAND() LIMIT 15", 
-            [topic]
-        );
-
-        // 2. Render the NEW file ('practice.ejs') instead of 'mocktest'
-        // This is the main change that shows your new design
-        res.render('practice', { 
-            user: req.session.user, 
-            topic: topic,
-            questions: questions 
-        });
-
-    } catch (err) {
-        console.log(err);
-        res.send("Error loading quiz.");
-    }
+        // IMPORTANT: rendering 'practice' file instead of 'mocktest'
+        res.render('practice', { questions, user: req.session.user, topic });
+    } catch (err) { res.redirect('/'); }
 });
-// ---------------------------------------------------------
-// 🏁 EXAM SUBMISSION ROUTE
-// ---------------------------------------------------------
+
+// --- SUBMIT EXAM ROUTE ---
 app.post('/submit-exam', requireLogin, async (req, res) => {
     try {
-        // ఇది ఫ్రంటెండ్ నుండి వచ్చిన డేటాను తీసుకుంటుంది
         const { topic, answers } = JSON.parse(req.body.payload);
-        
-        // డేటాబేస్ నుండి ఆ టాపిక్ కి సంబంధించిన కరెక్ట్ ఆన్సర్స్ తెస్తుంది
-        const [questions] = await db.execute(
-            "SELECT * FROM aptitude_questions WHERE topic = ? LIMIT 15", 
-            [topic]
-        );
+        const [questions] = await db.execute("SELECT * FROM aptitude_questions WHERE topic = ? LIMIT 15", [topic]);
         
         let score = 0;
-        // యూజర్ పెట్టిన ఆన్సర్ ని, డేటాబేస్ ఆన్సర్ తో పోలుస్తుంది
         questions.forEach((q, i) => {
-            if (answers[i] === q.correct_option) {
-                score++;
-            }
+            if (answers[i] === q.correct_option) score++;
         });
 
-        // రిజల్ట్ ని స్క్రీన్ మీద చూపిస్తుంది
         res.send(`
-            <div style="text-align:center; padding:50px; font-family:Arial;">
-                <h1 style="color: #28a745;">✅ Exam Submitted Successfully!</h1>
+            <div style="text-align:center; padding:50px; font-family:sans-serif;">
+                <h1 style="color:green;">Exam Submitted!</h1>
                 <h2>Your Score in ${topic}: <span style="color:blue;">${score} / ${questions.length}</span></h2>
-                <br>
-                <a href="/dashboard" style="padding:10px 20px; background: #007bff; color:white; text-decoration:none; border-radius:5px;">Go to Dashboard</a>
+                <br><a href="/dashboard" style="background:blue; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;">Go to Dashboard</a>
             </div>
         `);
-
-    } catch (err) { 
-        console.error(err);
-        res.redirect('/'); 
-    }
+    } catch (err) { res.redirect('/'); }
 });
-
 app.post('/submit-quiz', requireLogin, async (req, res) => {
     const userAnswers = req.body;
     const topicName = req.body.topic_name;
