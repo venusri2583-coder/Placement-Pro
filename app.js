@@ -731,6 +731,34 @@ app.get('/fix-only-reasoning', async (req, res) => {
     } catch(err) { res.send("Error: " + err.message); }
 });
 // =============================================================
+// 📘 ENGLISH PAGE ROUTE (ఇది లేకపోతే పేజీ రాదు)
+// =============================================================
+app.get('/english-topics', requireLogin, (req, res) => {
+    // ఈ 15 టాపిక్స్ లిస్ట్ ఉంటేనే నీకు ఐకాన్స్ కనిపిస్తాయి
+    const englishTopics = [
+        { topic: 'Parts of Speech' },
+        { topic: 'Tenses' },
+        { topic: 'Active and Passive Voice' },
+        { topic: 'Direct and Indirect Speech' },
+        { topic: 'Subject-Verb Agreement' },
+        { topic: 'Spotting Errors' },
+        { topic: 'Synonyms and Antonyms' },
+        { topic: 'Idioms and Phrases' },
+        { topic: 'One Word Substitution' },
+        { topic: 'Spelling Test' },
+        { topic: 'Fill in the Blanks' },
+        { topic: 'Phrasal Verbs' },
+        { topic: 'Reading Comprehension' },
+        { topic: 'Cloze Test' },
+        { topic: 'Sentence Rearrangement' }
+    ];
+
+    res.render('english_topics', { 
+        user: req.session.user, 
+        topics: englishTopics 
+    });
+});
+// =============================================================
 // 🔥 ENGLISH REAL FINAL (250+ UNIQUE QUESTIONS - NO LOOPS)
 // =============================================================
 app.get('/fix-english-real-final', async (req, res) => {
