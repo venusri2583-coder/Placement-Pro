@@ -77,33 +77,32 @@ app.get('/english/:topic', (req, res) => res.redirect(`/practice/${encodeURIComp
 app.get('/coding/:topic', (req, res) => res.redirect(`/practice/${encodeURIComponent(req.params.topic)}`));
 app.post('/coding/practice', requireLogin, (req, res) => res.redirect(`/practice/${encodeURIComponent(req.body.topic)}`));
 
-// --- PRACTICE ENGINE ---
+// =============================================================
+// 📝 PRACTICE EXAM ROUTE (15 Mins Timer & Status Logic)
+// =============================================================
 app.get('/practice/:topic', requireLogin, async (req, res) => {
-    const topic = decodeURIComponent(req.params.topic);
     try {
-        let [questions] = await db.execute('SELECT * FROM aptitude_questions WHERE topic = ? ORDER BY RAND() LIMIT 15', [topic]);
-        
-        if (questions.length === 0) {
-            let altTopic = topic;
-            if (topic === 'Problems on Trains') altTopic = 'Trains';
-            else if (topic === 'Trains') altTopic = 'Problems on Trains';
-            else if (topic.includes('&')) altTopic = topic.replace('&', 'and');
-            else if (topic.includes('and')) altTopic = topic.replace('and', '&');
-            
-            [questions] = await db.execute('SELECT * FROM aptitude_questions WHERE topic = ? ORDER BY RAND() LIMIT 15', [altTopic]);
-        }
+        const topic = req.params.topic; // Topic name from URL
 
-        if (questions.length === 0) {
-            return res.send(`
-                <div style="text-align:center; padding:50px;">
-                    <h2 style="color:red;">Topic '${topic}' is empty!</h2>
-                    <br>
-                    <a href="/shuffle-data-final" style="background:green; color:white; padding:15px 30px; text-decoration:none; border-radius:5px; font-size:20px;">CLICK TO LOAD SHUFFLED QUESTIONS</a>
-                </div>
-            `);
-        }
-        res.render('mocktest', { questions, user: req.session.user, topic });
-    } catch (err) { res.redirect('/'); }
+        // 1. Fetch exactly 15 Questions (To match 15 Min Timer)
+        // Questions are completely safe, we are just selecting 15 of them.
+        const [questions] = await db.execute(
+            "SELECT * FROM aptitude_questions WHERE topic = ? ORDER BY RAND() LIMIT 15", 
+            [topic]
+        );
+
+        // 2. Render the NEW file ('practice.ejs') instead of 'mocktest'
+        // This is the main change that shows your new design
+        res.render('practice', { 
+            user: req.session.user, 
+            topic: topic,
+            questions: questions 
+        });
+
+    } catch (err) {
+        console.log(err);
+        res.send("Error loading quiz.");
+    }
 });
 
 app.post('/submit-quiz', requireLogin, async (req, res) => {
