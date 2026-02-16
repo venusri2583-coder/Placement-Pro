@@ -1065,9 +1065,9 @@ app.get('/fix-english-real-final', async (req, res) => {
     } catch(err) { res.send("Error: " + err.message); }
 });
 // =============================================================
-// 🚀 TECHNICAL JUMBO PACK (ERROR FREE & TESTED)
+// 🚀 TECHNICAL FINAL PACK (20 UNIQUE Qs PER TOPIC)
 // =============================================================
-app.get('/fix-technical-jumbo', async (req, res) => {
+app.get('/fix-technical-final-20', async (req, res) => {
     try {
         // 1. DELETE ONLY TECHNICAL QUESTIONS
         await db.execute("DELETE FROM aptitude_questions WHERE category = 'Technical'");
@@ -1078,7 +1078,7 @@ app.get('/fix-technical-jumbo', async (req, res) => {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, ['Technical', topic, q, a, b, c, d, corr, exp]);
         };
 
-        // --- SHUFFLE FUNCTION (Compulsory) ---
+        // --- SHUFFLE FUNCTION ---
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -1087,99 +1087,168 @@ app.get('/fix-technical-jumbo', async (req, res) => {
             return array;
         }
 
-        // --- QUESTION BANK ---
+        // --- 20 UNIQUE QUESTIONS PER TOPIC ---
         const techData = {
             'C Programming': [
-                {q:'Output of: printf("%d %d", n++, ++n); where n=3', a:'Implementation Dependent', w1:'3 5', w2:'4 5', w3:'4 4', exp:'Order of evaluation of arguments is undefined in C.'},
-                {q:'Output of: int i=10; { int i=20; { int i=30; cout << i << ::i; } }', a:'3010', w1:'3020', w2:'2010', w3:'Error', exp:'Local i is 30, Global scope ::i is 10.'},
-                {q:'Loop: for(i=1; i<5; ++i) if(i==3) continue; else printf("%d", i);', a:'1 2 4 5', w1:'1 2 3 4', w2:'1 2 4', w3:'Error', exp:'Continue skips printing when i is 3.'},
-                {q:'Output: int i=107, x=5; printf((x<7) ? "%d" : "%c", i);', a:'107', w1:'k', w2:'Error', w3:'Garbage', exp:'x<7 is true, so %d prints 107.'},
-                {q:'What loop prints: while(printf("%d", printf("az")))', a:'azbyazby...', w1:'azby', w2:'Error', w3:'Infinite', exp:'printf returns count, loop continues based on non-zero return.'},
-                {q:'Size of void pointer in C?', a:'Depends on compiler', w1:'2 bytes', w2:'4 bytes', w3:'0', exp:'Depends on architecture.'},
-                {q:'Bitwise operator for XOR?', a:'^', w1:'|', w2:'&', w3:'~', exp:'^ is XOR operator.'},
+                {q:'Output: int n=3; printf("%d %d", n++, ++n);', a:'Compiler Dependent', w1:'3 5', w2:'4 5', w3:'4 4', exp:'Order of evaluation is undefined.'},
+                {q:'Output: int i=10; { int i=20; { int i=30; cout<<i<<::i; } }', a:'3010', w1:'3020', w2:'2010', w3:'Error', exp:'Local i is 30, Global ::i is 10.'},
+                {q:'Loop: for(i=1; i<5; ++i) if(i==3) continue; printf("%d", i);', a:'1245', w1:'12345', w2:'124', w3:'Error', exp:'Skips 3 due to continue.'},
+                {q:'Output: printf("%d", printf("Tim"));', a:'Tim3', w1:'Tim', w2:'3', w3:'Error', exp:'Inner prints Tim, returns 3.'},
+                {q:'Size of void pointer?', a:'System Dependent', w1:'2', w2:'4', w3:'0', exp:'Depends on 32/64 bit arch.'},
                 {q:'Value of EOF?', a:'-1', w1:'0', w2:'1', w3:'Null', exp:'End of File macro.'},
-                {q:'Output: printf("%d", sizeof("a"));', a:'2', w1:'1', w2:'4', w3:'8', exp:'String "a" includes null terminator.'},
-                {q:'Keyword "volatile" does what?', a:'Prevents optimization', w1:'Makes constant', w2:'Register alloc', w3:'None', exp:'Tells compiler value can change unexpectedly.'}
+                {q:'Output: printf("%d", sizeof("a"));', a:'2', w1:'1', w2:'4', w3:'8', exp:'"a" has "a" + "\\0".'},
+                {q:'Bitwise XOR operator?', a:'^', w1:'|', w2:'&', w3:'~', exp:'Symbol for XOR.'},
+                {q:'scanf() return value?', a:'Number of items read', w1:'First item', w2:'Void', w3:'EOF', exp:'Returns count of successful inputs.'},
+                {q:'Output: int a=10; printf("%d", ~a);', a:'-11', w1:'-10', w2:'9', w3:'10', exp:'~N = -(N+1).'},
+                {q:'Which is not a storage class?', a:'dynamic', w1:'auto', w2:'static', w3:'register', exp:'dynamic is not a keyword.'},
+                {q:'Output: printf("%c", "ABC"[1]);', a:'B', w1:'A', w2:'C', w3:'Error', exp:'Array indexing on string.'},
+                {q:'calloc() initializes memory to?', a:'Zero', w1:'Garbage', w2:'Null', w3:'One', exp:'calloc clears memory.'},
+                {q:'Structure members are stored in?', a:'Contiguous memory', w1:'Random', w2:'Stack', w3:'Heap', exp:'Sequential memory.'},
+                {q:'Union size is?', a:'Size of largest member', w1:'Sum of members', w2:'Smallest member', w3:'Average', exp:'Shared memory.'},
+                {q:'Header for sqrt()?', a:'math.h', w1:'stdio.h', w2:'conio.h', w3:'stdlib.h', exp:'Math library.'},
+                {q:'Logical AND operator?', a:'&&', w1:'&', w2:'||', w3:'!', exp:'Symbol.'},
+                {q:'Pointer to a pointer?', a:'int **ptr', w1:'int *ptr', w2:'int &ptr', w3:'int ptr', exp:'Double pointer.'},
+                {q:'Keyword to define constant?', a:'const', w1:'define', w2:'static', w3:'final', exp:'const keyword.'},
+                {q:'Recursion uses which memory?', a:'Stack', w1:'Heap', w2:'Data', w3:'Code', exp:'Call stack.'}
             ],
             'Data Structures': [
-                {q:'Stack Ops: push(1), push(2), pop, push(2), pop, pop, pop, push(2), pop. Popped?', a:'2, 2, 1, 1, 2', w1:'2, 2, 1, 2, 2', w2:'2, 1, 2, 2, 1', w3:'Error', exp:'Trace LIFO order carefully.'},
-                {q:'Hash f(key)=key%7. Insert 37,38,72,48,98,11. Loc of 11?', a:'5', w1:'3', w2:'4', w3:'6', exp:'Linear probing resolves collision.'},
-                {q:'Binary trees possible with 4 nodes?', a:'14', w1:'12', w2:'13', w3:'15', exp:'Catalan number formula.'},
-                {q:'Sparse matrices have?', a:'Many zero entries', w1:'Many non-zero', w2:'High dimension', w3:'None', exp:'Definition of sparse.'},
-                {q:'Arranging cards while picking up is?', a:'Insertion sort', w1:'Bubble sort', w2:'Selection sort', w3:'Merge sort', exp:'Classic example of Insertion Sort.'},
-                {q:'Time complexity of Binary Search (Worst)?', a:'O(log n)', w1:'O(n)', w2:'O(n^2)', w3:'O(1)', exp:'Splits search space in half.'},
-                {q:'Preorder traversal is same as?', a:'Depth-first order', w1:'Breadth-first', w2:'Topological', w3:'Linear', exp:'DFS strategy.'},
-                {q:'Min queues to implement stack?', a:'2', w1:'1', w2:'3', w3:'4', exp:'Two queues needed.'},
-                {q:'Circular Queue full condition?', a:'(rear+1)%size == front', w1:'rear == front', w2:'rear == size', w3:'front == -1', exp:'Standard logic.'},
-                {q:'Which DS for recursion?', a:'Stack', w1:'Queue', w2:'Tree', w3:'Graph', exp:'System call stack.'}
+                {q:'Stack Ops: push(1), push(2), pop, push(2), pop, pop, pop, push(2), pop. Popped?', a:'2, 2, 1, 1, 2', w1:'2, 2, 1, 2, 2', w2:'Error', w3:'2, 1, 1, 2, 2', exp:'LIFO order trace.'},
+                {q:'Hash f(key)=key%7. Insert 37,38,72,48,98,11. Loc of 11?', a:'5', w1:'3', w2:'4', w3:'6', exp:'Linear probing collision at 4.'},
+                {q:'Binary trees with 4 nodes?', a:'14', w1:'12', w2:'13', w3:'15', exp:'Catalan Number.'},
+                {q:'Arranging cards is example of?', a:'Insertion Sort', w1:'Bubble', w2:'Selection', w3:'Merge', exp:'Inserting into sorted hand.'},
+                {q:'Min queues for Stack?', a:'2', w1:'1', w2:'3', w3:'4', exp:'Two queues logic.'},
+                {q:'Worst case Binary Search?', a:'O(log n)', w1:'O(n)', w2:'O(n^2)', w3:'O(1)', exp:'Logarithmic.'},
+                {q:'Sparse matrix has?', a:'Many zeros', w1:'Many non-zeros', w2:'High dim', w3:'None', exp:'Mostly empty.'},
+                {q:'Preorder is same as?', a:'DFS', w1:'BFS', w2:'Topological', w3:'Linear', exp:'Depth First.'},
+                {q:'Circular Queue Full?', a:'(rear+1)%size == front', w1:'rear==front', w2:'rear==size', w3:'front==-1', exp:'Wrap around check.'},
+                {q:'Linked List node contains?', a:'Data + Address', w1:'Data', w2:'Address', w3:'Index', exp:'Node structure.'},
+                {q:'BST worst case search?', a:'O(n)', w1:'O(log n)', w2:'O(1)', w3:'O(n^2)', exp:'Skewed tree.'},
+                {q:'Height balanced tree?', a:'AVL', w1:'BST', w2:'Heap', w3:'B-Tree', exp:'Self balancing.'},
+                {q:'Postfix evaluation uses?', a:'Stack', w1:'Queue', w2:'Array', w3:'Graph', exp:'Operand push logic.'},
+                {q:'Level order traversal?', a:'Queue', w1:'Stack', w2:'Heap', w3:'Tree', exp:'BFS.'},
+                {q:'Best DS for undo?', a:'Stack', w1:'Queue', w2:'List', w3:'Array', exp:'LIFO.'},
+                {q:'Access time Hash Table?', a:'O(1)', w1:'O(n)', w2:'O(log n)', w3:'O(n^2)', exp:'Direct access.'},
+                {q:'Graph with no cycles?', a:'Acyclic', w1:'Cyclic', w2:'Complete', w3:'Dense', exp:'Tree/Forest.'},
+                {q:'Priority Queue uses?', a:'Heap', w1:'Stack', w2:'Array', w3:'List', exp:'Max/Min heap.'},
+                {q:'Quick Sort worst case?', a:'O(n^2)', w1:'O(n log n)', w2:'O(n)', w3:'O(1)', exp:'Bad pivot.'},
+                {q:'Which is non-linear?', a:'Tree', w1:'Stack', w2:'Queue', w3:'List', exp:'Hierarchy.'}
             ],
             'Algorithms': [
-                {q:'Postfix for: A+B*(C+D)/F+D*E', a:'ABCD+*F/+DE*+', w1:'AB+CD+*F/D+E*', w2:'A*B+CD/F*DE++', w3:'A+*BCD/F*DE++', exp:'Precedence logic.'},
-                {q:'Sort for already sorted/reverse data with equal speed?', a:'Merge sort', w1:'Quick sort', w2:'Insertion sort', w3:'Selection sort', exp:'Consistent O(nlogn) performance.'},
-                {q:'All pair shortest path algorithm?', a:'Floyd-Warshall', w1:'Dijkstra', w2:'Prim', w3:'Kruskal', exp:'Dynamic programming approach.'},
-                {q:'Quick sort strategy?', a:'Divide and Conquer', w1:'Greedy', w2:'Dynamic', w3:'Backtracking', exp:'Partition logic.'},
-                {q:'Minimum weighted spanning tree uses?', a:'Greedy', w1:'Dynamic', w2:'Divide Conquer', w3:'Backtracking', exp:'Prim\'s algorithm is greedy.'},
-                {q:'Worst case of Quick Sort?', a:'O(n^2)', w1:'O(n log n)', w2:'O(n)', w3:'O(log n)', exp:'Pivot is smallest/largest.'},
-                {q:'BFS uses which DS?', a:'Queue', w1:'Stack', w2:'Heap', w3:'Tree', exp:'Level order traversal.'},
-                {q:'Huffman coding is?', a:'Greedy', w1:'Dynamic', w2:'Divide', w3:'Backtracking', exp:'Builds optimal tree.'},
-                {q:'Best case Bubble Sort?', a:'O(n)', w1:'O(n^2)', w2:'O(log n)', w3:'O(1)', exp:'If array sorted.'},
-                {q:'Binary Search requires?', a:'Sorted array', w1:'Unsorted array', w2:'Linked List', w3:'Stack', exp:'Pre-condition.'}
+                {q:'Postfix: A+B*(C+D)/F+D*E', a:'ABCD+*F/+DE*+', w1:'AB+CD+*F/D+E*', w2:'Error', w3:'A+B*CD+/F', exp:'Precedence order.'},
+                {q:'Sort for sorted/reverse data?', a:'Merge Sort', w1:'Quick', w2:'Insertion', w3:'Selection', exp:'Stable O(nlogn).'},
+                {q:'Shortest path all pairs?', a:'Floyd-Warshall', w1:'Dijkstra', w2:'Prim', w3:'Kruskal', exp:'Dynamic Prog.'},
+                {q:'Huffman coding?', a:'Greedy', w1:'Dynamic', w2:'Divide', w3:'Backtracking', exp:'Optimal prefix.'},
+                {q:'Quick Sort strategy?', a:'Divide & Conquer', w1:'Greedy', w2:'Dynamic', w3:'Backtracking', exp:'Partitioning.'},
+                {q:'Bubble Sort best case?', a:'O(n)', w1:'O(n^2)', w2:'O(log n)', w3:'O(1)', exp:'Sorted input.'},
+                {q:'Binary Search req?', a:'Sorted Array', w1:'Unsorted', w2:'List', w3:'Stack', exp:'Pre-condition.'},
+                {q:'DFS uses?', a:'Stack', w1:'Queue', w2:'Heap', w3:'Array', exp:'Recursion/Stack.'},
+                {q:'BFS uses?', a:'Queue', w1:'Stack', w2:'Heap', w3:'Array', exp:'Level order.'},
+                {q:'Kruskal Algo uses?', a:'Union-Find', w1:'Stack', w2:'Queue', w3:'Tree', exp:'Disjoint sets.'},
+                {q:'Prim\'s Algo is?', a:'Greedy', w1:'Dynamic', w2:'Divide', w3:'Backtracking', exp:'MST.'},
+                {q:'Traveling Salesman complexity?', a:'NP-Hard', w1:'P', w2:'O(n)', w3:'O(n^2)', exp:'Factorial time.'},
+                {q:'Master Theorem solves?', a:'Recurrences', w1:'Sorting', w2:'Searching', w3:'Graphs', exp:'Complexity analysis.'},
+                {q:'Strassen\'s Algo?', a:'Matrix Multiplication', w1:'Sorting', w2:'Searching', w3:'Graph', exp:'Faster matrix mult.'},
+                {q:'LCS problem uses?', a:'Dynamic Programming', w1:'Greedy', w2:'Divide', w3:'Backtracking', exp:'Subsequence.'},
+                {q:'Knapsack (Fractional)?', a:'Greedy', w1:'Dynamic', w2:'Divide', w3:'Backtracking', exp:'Ratio sort.'},
+                {q:'0/1 Knapsack?', a:'Dynamic Programming', w1:'Greedy', w2:'Divide', w3:'Backtracking', exp:'Pick or leave.'},
+                {q:'Merge Sort complexity?', a:'O(n log n)', w1:'O(n^2)', w2:'O(n)', w3:'O(log n)', exp:'Always.'},
+                {q:'Selection Sort complexity?', a:'O(n^2)', w1:'O(n)', w2:'O(n log n)', w3:'O(1)', exp:'Two loops.'},
+                {q:'Topological Sort uses?', a:'DAG', w1:'Cyclic', w2:'Tree', w3:'Complete', exp:'Directed Acyclic Graph.'}
             ],
             'DBMS': [
-                {q:'Redundancy is a threat to data ____?', a:'Integrity', w1:'Consistency', w2:'Sufficiency', w3:'None', exp:'Update anomalies affect integrity.'},
-                {q:'Join also called Inner Join?', a:'Equijoin', w1:'Non-equijoin', w2:'Self-join', w3:'None', exp:'Based on equality.'},
-                {q:'SGA stands for?', a:'System Global Area', w1:'Show Global Area', w2:'Start Global Area', w3:'Shut Global Area', exp:'Oracle memory structure.'},
-                {q:'Command to add data?', a:'INSERT', w1:'ADD', w2:'UPDATE', w3:'APPEND', exp:'INSERT INTO....'},
-                {q:'DESCRIBE command does NOT show?', a:'Triggers', w1:'Primary key', w2:'Default values', w3:'Indexes', exp:'Shows structure, not logic.'},
-                {q:'ACID properties?', a:'Atomicity, Consistency, Isolation, Durability', w1:'Atomicity, Concurrency, Isolation, DB', w2:'None', w3:'Auto', exp:'Transaction rules.'},
-                {q:'2NF removes?', a:'Partial Dependency', w1:'Transitive', w2:'Multivalued', w3:'None', exp:'Normalization step.'},
-                {q:'3NF removes?', a:'Transitive Dependency', w1:'Partial', w2:'Atomic', w3:'None', exp:'Normalization step.'},
-                {q:'Virtual table is called?', a:'View', w1:'Trigger', w2:'Procedure', w3:'Index', exp:'Saved query.'},
-                {q:'Unique identifier?', a:'Primary Key', w1:'Foreign Key', w2:'Unique Key', w3:'Candidate', exp:'No duplicates.'}
+                {q:'Redundancy threat to?', a:'Integrity', w1:'Consistency', w2:'Speed', w3:'None', exp:'Update anomalies.'},
+                {q:'Inner Join also called?', a:'Equijoin', w1:'Outer', w2:'Self', w3:'Cross', exp:'Equality check.'},
+                {q:'SGA stands for?', a:'System Global Area', w1:'Show Global Area', w2:'Start Global', w3:'Shut Global', exp:'Oracle memory.'},
+                {q:'Command to add data?', a:'INSERT', w1:'ADD', w2:'UPDATE', w3:'APPEND', exp:'INSERT INTO.'},
+                {q:'DESCRIBE does NOT show?', a:'Triggers', w1:'Primary Key', w2:'Type', w3:'Null', exp:'Shows schema.'},
+                {q:'ACID properties?', a:'Atomicity Consistency Isolation Durability', w1:'Auto...', w2:'Access...', w3:'None', exp:'Transaction.'},
+                {q:'2NF removes?', a:'Partial Dependency', w1:'Transitive', w2:'Atomic', w3:'None', exp:'Key dependency.'},
+                {q:'3NF removes?', a:'Transitive Dependency', w1:'Partial', w2:'Atomic', w3:'None', exp:'Non-key dependency.'},
+                {q:'Unique Identifier?', a:'Primary Key', w1:'Foreign', w2:'Candidate', w3:'Super', exp:'Uniqueness.'},
+                {q:'Virtual Table?', a:'View', w1:'Index', w2:'Trigger', w3:'Procedure', exp:'Stored query.'},
+                {q:'ER Model relation is?', a:'Diamond', w1:'Rectangle', w2:'Oval', w3:'Line', exp:'Symbol.'},
+                {q:'Cardinality is?', a:'Number of tuples', w1:'Columns', w2:'Tables', w3:'Relations', exp:'Row count.'},
+                {q:'Degree is?', a:'Number of attributes', w1:'Rows', w2:'Tables', w3:'Relations', exp:'Column count.'},
+                {q:'DML commands?', a:'INSERT, UPDATE, DELETE', w1:'CREATE, DROP', w2:'GRANT', w3:'COMMIT', exp:'Manipulation.'},
+                {q:'DDL commands?', a:'CREATE, ALTER, DROP', w1:'SELECT', w2:'INSERT', w3:'GRANT', exp:'Definition.'},
+                {q:'Foreign Key constraint?', a:'Referential Integrity', w1:'Entity Integrity', w2:'Domain', w3:'None', exp:'Parent-Child link.'},
+                {q:'Commit does?', a:'Saves changes', w1:'Undo', w2:'Delete', w3:'Lock', exp:'Permanent save.'},
+                {q:'Rollback does?', a:'Undo changes', w1:'Save', w2:'Delete', w3:'Lock', exp:'Revert.'},
+                {q:'Indexing helps?', a:'Faster retrieval', w1:'Space', w2:'Updates', w3:'None', exp:'Search speed.'},
+                {q:'Normalization goal?', a:'Reduce redundancy', w1:'Increase speed', w2:'More tables', w3:'None', exp:'Clean data.'}
             ],
             'SQL Queries': [
-                {q:'SELECT TRUNC(45.926, -1) FROM DUAL;', a:'40', w1:'50', w2:'45.9', w3:'45', exp:'-1 truncates to tens place.'},
-                {q:'SELECT LENGTH(123) FROM DUAL;', a:'3', w1:'0', w2:'Garbage', w3:'Null', exp:'Converts 123 to string, length is 3.'},
-                {q:'SELECT NVL(NVL(NULL, 3), 4) FROM DUAL;', a:'3', w1:'4', w2:'Null', w3:'Error', exp:'Inner NVL returns 3, outer sees 3.'},
-                {q:'SELECT DECODE(2, 2, DECODE(3, 3, 2)) FROM DUAL;', a:'2', w1:'3', w2:'Null', w3:'Error', exp:'Nested decode logic returns 2.'},
-                {q:'Wildcards that are equivalent?', a:'_%', w1:'%_', w2:'_ _', w3:'None', exp:'Depending on context.'},
-                {q:'SELECT 10/NULL FROM DUAL;', a:'NULL', w1:'0', w2:'10', w3:'Error', exp:'Null propagation.'},
-                {q:'Filter after GROUP BY?', a:'HAVING', w1:'WHERE', w2:'ORDER BY', w3:'LIKE', exp:'HAVING filters groups.'},
-                {q:'Delete rows keep structure?', a:'TRUNCATE', w1:'DROP', w2:'DELETE', w3:'REMOVE', exp:'Fast deletion.'},
-                {q:'Pattern matching operator?', a:'LIKE', w1:'MATCH', w2:'SAME', w3:'EQUALS', exp:'Used with % and _.'},
-                {q:'DDL command?', a:'CREATE', w1:'INSERT', w2:'UPDATE', w3:'SELECT', exp:'Defines structure.'}
+                {q:'SELECT TRUNC(45.926, -1);', a:'40', w1:'50', w2:'45', w3:'45.9', exp:'Truncate to tens.'},
+                {q:'SELECT LENGTH(123);', a:'3', w1:'0', w2:'Error', w3:'Null', exp:'String length.'},
+                {q:'SELECT NVL(NVL(NULL, 3), 4);', a:'3', w1:'4', w2:'Null', w3:'Error', exp:'Returns first non-null.'},
+                {q:'SELECT DECODE(2, 2, DECODE(3, 3, 2));', a:'2', w1:'3', w2:'Null', w3:'Error', exp:'Nested decode.'},
+                {q:'Wildcard for single char?', a:'_', w1:'%', w2:'*', w3:'?', exp:'Underscore.'},
+                {q:'Wildcard for zero/more chars?', a:'%', w1:'_', w2:'*', w3:'?', exp:'Percent.'},
+                {q:'SELECT 10/NULL;', a:'NULL', w1:'0', w2:'10', w3:'Error', exp:'Null propagation.'},
+                {q:'Delete rows keep schema?', a:'TRUNCATE', w1:'DROP', w2:'DELETE', w3:'REMOVE', exp:'Fast delete.'},
+                {q:'Filter groups?', a:'HAVING', w1:'WHERE', w2:'GROUP', w3:'ORDER', exp:'After grouping.'},
+                {q:'Pattern matching?', a:'LIKE', w1:'MATCH', w2:'SAME', w3:'IS', exp:'String match.'},
+                {q:'Remove duplicates?', a:'DISTINCT', w1:'UNIQUE', w2:'DIFFERENT', w3:'SINGLE', exp:'Select distinct.'},
+                {q:'Sort output?', a:'ORDER BY', w1:'SORT BY', w2:'GROUP BY', w3:'ALIGN', exp:'Sorting.'},
+                {q:'Count rows?', a:'COUNT(*)', w1:'SUM', w2:'TOTAL', w3:'ADD', exp:'Counting.'},
+                {q:'Current date in Oracle?', a:'SYSDATE', w1:'NOW', w2:'TODAY', w3:'DATE', exp:'System date.'},
+                {q:'Cartesian Product?', a:'Cross Join', w1:'Inner', w2:'Outer', w3:'Self', exp:'All combinations.'},
+                {q:'Left Outer Join returns?', a:'All left + matching right', w1:'All right', w2:'Matching only', w3:'None', exp:'Join logic.'},
+                {q:'Subquery runs?', a:'Before main query', w1:'After', w2:'Parallel', w3:'Never', exp:'Inner first.'},
+                {q:'Concatenation operator?', a:'||', w1:'+', w2:'&', w3:'CONCAT', exp:'Oracle/SQL syntax.'},
+                {q:'Change table structure?', a:'ALTER', w1:'UPDATE', w2:'CHANGE', w3:'MODIFY', exp:'DDL.'},
+                {q:'Grant permission?', a:'GRANT', w1:'ALLOW', w2:'PERMIT', w3:'GIVE', exp:'DCL.'}
             ],
             'Java Programming': [
-                {q:'System.out.println(Math.round(Math.random())); prints?', a:'0 or 1', w1:'Only 0', w2:'Only 1', w3:'Any int', exp:'random is 0.0-1.0, round gives 0 or 1.'},
-                {q:'Is null an object?', a:'No', w1:'Yes', w2:'Sometimes', w3:'None', exp:'null is a literal.'},
-                {q:'Variable m is byte. m<<4 is same as?', a:'m*16', w1:'m*4', w2:'m^4', w3:'m+4', exp:'Left shift 4 is * 2^4 (16).'},
-                {q:'Exceptions that possibly occur are?', a:'Checked exceptions', w1:'Unchecked', w2:'Runtime', w3:'Errors', exp:'Checked by compiler.'},
-                {q:'Subclass is also called?', a:'Derived class', w1:'Base class', w2:'Super class', w3:'None', exp:'Inheritance terminology.'},
-                {q:'Size of int in Java?', a:'4 bytes', w1:'2 bytes', w2:'Dependent', w3:'8 bytes', exp:'Fixed size.'},
-                {q:'Multiple inheritance supported via?', a:'Interfaces', w1:'Classes', w2:'Both', w3:'None', exp:'Java restriction.'},
+                {q:'Math.round(Math.random())?', a:'0 or 1', w1:'0', w2:'1', w3:'Any', exp:'Rounds 0.0-1.0.'},
+                {q:'Is null an object?', a:'No', w1:'Yes', w2:'Maybe', w3:'Error', exp:'Literal.'},
+                {q:'byte m; m<<4 is?', a:'m*16', w1:'m*4', w2:'m^4', w3:'m+4', exp:'Left shift.'},
+                {q:'Possible exceptions?', a:'Checked', w1:'Unchecked', w2:'Error', w3:'Runtime', exp:'Compiler checks.'},
+                {q:'Subclass called?', a:'Derived', w1:'Base', w2:'Super', w3:'Root', exp:'Child class.'},
+                {q:'Size of int?', a:'4 bytes', w1:'2', w2:'Platform dependent', w3:'8', exp:'Fixed.'},
+                {q:'Multiple Inheritance?', a:'Interfaces', w1:'Classes', w2:'Both', w3:'None', exp:'Interface only.'},
                 {q:'String mutable?', a:'No', w1:'Yes', w2:'Sometimes', w3:'None', exp:'Immutable.'},
-                {q:'Default value of boolean?', a:'false', w1:'true', w2:'null', w3:'0', exp:'Default.'},
-                {q:'Prevent inheritance keyword?', a:'final', w1:'static', w2:'const', w3:'super', exp:'Final class.'}
+                {q:'Default boolean val?', a:'false', w1:'true', w2:'null', w3:'0', exp:'Default.'},
+                {q:'Prevent inheritance?', a:'final', w1:'static', w2:'const', w3:'super', exp:'Final class.'},
+                {q:'Main method signature?', a:'public static void main', w1:'void main', w2:'static main', w3:'public main', exp:'Standard.'},
+                {q:'JVM stands for?', a:'Java Virtual Machine', w1:'Java Variable Machine', w2:'Java Version', w3:'None', exp:'Runtime env.'},
+                {q:'Super class of all?', a:'Object', w1:'Class', w2:'System', w3:'Main', exp:'Root class.'},
+                {q:'Garbage collection?', a:'Automatic', w1:'Manual', w2:'None', w3:'Semi', exp:'JVM handles it.'},
+                {q:'Constructor name?', a:'Same as class', w1:'New', w2:'Init', w3:'Main', exp:'Rule.'},
+                {q:'Overloading is?', a:'Compile time poly', w1:'Runtime', w2:'Inheritance', w3:'None', exp:'Static binding.'},
+                {q:'Overriding is?', a:'Runtime poly', w1:'Compile time', w2:'Static', w3:'None', exp:'Dynamic binding.'},
+                {q:'Interface methods are?', a:'Public abstract', w1:'Private', w2:'Protected', w3:'Final', exp:'Implicitly.'},
+                {q:'Package keyword?', a:'package', w1:'import', w2:'include', w3:'use', exp:'Namespace.'},
+                {q:'Break statement?', a:'Exits loop', w1:'Skips', w2:'Stops program', w3:'None', exp:'Control flow.'}
             ],
             'OOPs Concepts': [
-                {q:'Reusability is achieved by?', a:'Inheritance', w1:'Polymorphism', w2:'Encapsulation', w3:'None', exp:'Using existing code.'},
-                {q:'Operator NOT overloaded in C++?', a:'. (Dot)', w1:'+', w2:'-', w3:'++', exp:'Member access cannot be overloaded.'},
-                {q:'class Dog : public X, public Y is?', a:'Multiple inheritance', w1:'Linear', w2:'Repeated', w3:'None', exp:'Two parents.'},
-                {q:'Wrapping data and code?', a:'Encapsulation', w1:'Abstraction', w2:'Polymorphism', w3:'Inheritance', exp:'Data hiding.'},
-                {q:'Hiding implementation details?', a:'Abstraction', w1:'Encapsulation', w2:'Inheritance', w3:'Polymorphism', exp:'Essential features only.'},
-                {q:'Same method name diff params?', a:'Overloading', w1:'Overriding', w2:'Hiding', w3:'None', exp:'Compile time polymorphism.'},
-                {q:'Same method name in child class?', a:'Overriding', w1:'Overloading', w2:'Hiding', w3:'None', exp:'Runtime polymorphism.'},
+                {q:'Reusability via?', a:'Inheritance', w1:'Poly', w2:'Encap', w3:'None', exp:'Extending classes.'},
+                {q:'Operator NOT overloaded C++?', a:'.', w1:'+', w2:'-', w3:'++', exp:'Dot operator.'},
+                {q:'Dog: public X, public Y is?', a:'Multiple', w1:'Linear', w2:'Single', w3:'None', exp:'Two parents.'},
+                {q:'Data Hiding?', a:'Encapsulation', w1:'Poly', w2:'Inheritance', w3:'Abs', exp:'Private members.'},
+                {q:'Hiding details?', a:'Abstraction', w1:'Encap', w2:'Poly', w3:'Inheritance', exp:'Interface.'},
+                {q:'Same method diff params?', a:'Overloading', w1:'Overriding', w2:'Hiding', w3:'None', exp:'Signature change.'},
+                {q:'Same method child class?', a:'Overriding', w1:'Overloading', w2:'Hiding', w3:'None', exp:'Replacement.'},
+                {q:'Instance of class?', a:'Object', w1:'Method', w2:'Var', w3:'None', exp:'Definition.'},
                 {q:'Destructor symbol?', a:'~', w1:'!', w2:'#', w3:'@', exp:'Tilde.'},
-                {q:'Access parent methods?', a:'super', w1:'this', w2:'base', w3:'parent', exp:'Keyword.'},
-                {q:'Instance of class?', a:'Object', w1:'Method', w2:'Variable', w3:'Pointer', exp:'Basic definition.'}
+                {q:'Parent access?', a:'super', w1:'this', w2:'base', w3:'root', exp:'Keyword.'},
+                {q:'Polymorphism means?', a:'Many forms', w1:'Many classes', w2:'Inheritance', w3:'None', exp:'Greek word.'},
+                {q:'Abstract class?', a:'Cannot instantiate', w1:'No methods', w2:'No vars', w3:'None', exp:'Blueprint.'},
+                {q:'Friend function?', a:'Access private data', w1:'Inherits', w2:'Deletes', w3:'None', exp:'C++ feature.'},
+                {q:'Virtual function?', a:'Runtime poly', w1:'Compile', w2:'Static', w3:'None', exp:'Dynamic dispatch.'},
+                {q:'Coupling should be?', a:'Low', w1:'High', w2:'Medium', w3:'None', exp:'Dependency.'},
+                {q:'Cohesion should be?', a:'High', w1:'Low', w2:'Medium', w3:'None', exp:'Internal strength.'},
+                {q:'Diamond problem in?', a:'Multiple Inheritance', w1:'Single', w2:'Multilevel', w3:'None', exp:'Ambiguity.'},
+                {q:'Message passing?', a:'Object communication', w1:'Inheritance', w2:'Poly', w3:'None', exp:'Interaction.'},
+                {q:'Class is a?', a:'Template', w1:'Object', w2:'Method', w3:'Variable', exp:'Blueprint.'},
+                {q:'Static binding?', a:'Early binding', w1:'Late', w2:'Dynamic', w3:'None', exp:'Compile time.'}
             ]
         };
 
-        // --- INSERTION LOGIC ---
+        // --- INSERT LOGIC ---
         for (let t in techData) {
             let questions = techData[t];
             for (let item of questions) {
-                // Ensure shuffle is called correctly
                 let opts = shuffle([
                     { val: item.a, isCorrect: true },
                     { val: item.w1, isCorrect: false },
@@ -1195,7 +1264,7 @@ app.get('/fix-technical-jumbo', async (req, res) => {
             }
         }
 
-        res.send(`<h1>✅ JUMBO PACK FIXED & LOADED!</h1><p>Technical Questions Ready.<br>Shuffle Logic Added.<br>No Syntax Errors.</p><a href="/">Go to Dashboard</a>`);
+        res.send(`<h1>✅ FINAL PACK LOADED (20 Qs/Topic)</h1><p>20 Unique Questions per Topic.<br>Includes PDF + Hard Qs.<br><b>Shuffle & Logic Perfect.</b></p><a href="/">Go to Dashboard</a>`);
 
     } catch(err) { res.send("Error: " + err.message); }
 });
