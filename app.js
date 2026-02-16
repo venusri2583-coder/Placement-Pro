@@ -104,6 +104,43 @@ app.get('/practice/:topic', requireLogin, async (req, res) => {
         res.send("Error loading quiz.");
     }
 });
+// ---------------------------------------------------------
+// 🏁 EXAM SUBMISSION ROUTE
+// ---------------------------------------------------------
+app.post('/submit-exam', requireLogin, async (req, res) => {
+    try {
+        // ఇది ఫ్రంటెండ్ నుండి వచ్చిన డేటాను తీసుకుంటుంది
+        const { topic, answers } = JSON.parse(req.body.payload);
+        
+        // డేటాబేస్ నుండి ఆ టాపిక్ కి సంబంధించిన కరెక్ట్ ఆన్సర్స్ తెస్తుంది
+        const [questions] = await db.execute(
+            "SELECT * FROM aptitude_questions WHERE topic = ? LIMIT 15", 
+            [topic]
+        );
+        
+        let score = 0;
+        // యూజర్ పెట్టిన ఆన్సర్ ని, డేటాబేస్ ఆన్సర్ తో పోలుస్తుంది
+        questions.forEach((q, i) => {
+            if (answers[i] === q.correct_option) {
+                score++;
+            }
+        });
+
+        // రిజల్ట్ ని స్క్రీన్ మీద చూపిస్తుంది
+        res.send(`
+            <div style="text-align:center; padding:50px; font-family:Arial;">
+                <h1 style="color: #28a745;">✅ Exam Submitted Successfully!</h1>
+                <h2>Your Score in ${topic}: <span style="color:blue;">${score} / ${questions.length}</span></h2>
+                <br>
+                <a href="/dashboard" style="padding:10px 20px; background: #007bff; color:white; text-decoration:none; border-radius:5px;">Go to Dashboard</a>
+            </div>
+        `);
+
+    } catch (err) { 
+        console.error(err);
+        res.redirect('/'); 
+    }
+});
 
 app.post('/submit-quiz', requireLogin, async (req, res) => {
     const userAnswers = req.body;
