@@ -730,56 +730,28 @@ app.get('/fix-only-reasoning', async (req, res) => {
 
     } catch(err) { res.send("Error: " + err.message); }
 });
-app.get('/fix-only-reasoning-v2', async (req, res) => {
-    try {
-        await db.execute("DELETE FROM aptitude_questions WHERE category = 'Logical'");
+// =============================================================
+// 📘 ENGLISH ROUTE (Only Topics - No Questions for now)
+// =============================================================
+app.get('/english-topics', requireLogin, (req, res) => {
+    // మనం ఇక్కడ టాపిక్స్ లిస్ట్ ని మాన్యువల్ గా ఇస్తున్నాం
+    const englishTopics = [
+        { topic: 'Antonyms' },
+        { topic: 'Synonyms' },
+        { topic: 'Spotting Errors' },
+        { topic: 'Sentence Correction' },
+        { topic: 'Idioms and Phrases' },
+        { topic: 'One Word Substitution' },
+        { topic: 'Ordering of Sentences' },
+        { topic: 'Selecting Words' }
+    ];
 
-        const addQ = async (cat, topic, q, a, b, c, d, corr, exp) => {
-            await db.execute(`INSERT INTO aptitude_questions 
-            (category, topic, question, option_a, option_b, option_c, option_d, correct_option, explanation) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, [cat, topic, q, a, b, c, d, corr, exp]);
-        };
-
-        const topics = [
-            'Blood Relations', 'Number Series', 'Coding-Decoding', 'Syllogism', 
-            'Seating Arrangement', 'Direction Sense', 'Clocks & Calendars', 
-            'Analogy', 'Data Sufficiency', 'Logic Puzzles'
-        ];
-
-        for (let t of topics) {
-            for (let i = 1; i <= 15; i++) {
-                let qText="", ansVal="", w1="", w2="", w3="", exp="";
-
-                if (t === 'Blood Relations') {
-                    qText = `A is the mother of B. B is the sister of C. How is A related to C? (Case ${i})`;
-                    ansVal = `Mother`; w1=`Aunt`; w2=`Sister`; w3=`Daughter`;
-                    exp = `B and C are siblings (sisters/brother). A is mother of B, so A is also mother of C.`;
-                } else if (t === 'Number Series') {
-                    let start = i * 2;
-                    qText = `Find the next number in the series: ${start}, ${start+2}, ${start+4}, ${start+6}, ?`;
-                    ansVal = `${start+8}`; w1=`${start+7}`; w2=`${start+10}`; w3=`${start+9}`;
-                    exp = `The logic is a simple addition of 2 (+2) to each preceding number.`;
-                } else if (t === 'Direction Sense') {
-                    qText = `A person moves 3km North, then 4km East. How far is he from the starting point?`;
-                    ansVal = `5km`; w1=`7km`; w2=`1km`; w3=`12km`;
-                    exp = `Using Pythagoras theorem: √(3² + 4²) = √(9 + 16) = √25 = 5km.`;
-                } else if (t === 'Coding-Decoding') {
-                    qText = `If 'RED' is coded as '6720', then 'GREEN' is coded as? (Logic ${i})`;
-                    ansVal = `1677209`; w1=`1677208`; w2=`1577209`; w3=`2677209`;
-                    exp = `Each letter is converted to its alphabetical position and modified with a fixed logic.`;
-                } else {
-                    qText = `Logical Reasoning Question on ${t} - Set ${i}`;
-                    ansVal = `Correct Logic Answer`; w1=`Option X`; w2=`Option Y`; w3=`Option Z`;
-                    exp = `Detailed step-by-step logic for ${t} applied here.`;
-                }
-
-                let opts = [{v:ansVal,c:true}, {v:w1,c:false}, {v:w2,c:false}, {v:w3,c:false}].sort(() => Math.random() - 0.5);
-                let f='A'; if(opts[1].c)f='B'; if(opts[2].c)f='C'; if(opts[3].c)f='D';
-                await addQ('Logical', t, qText, opts[0].v, opts[1].v, opts[2].v, opts[3].v, f, exp);
-            }
-        }
-        res.send("<h1>Reasoning Fixed with 15 Questions each & Proper Logic!</h1><p>Maths is Safe.</p>");
-    } catch(err) { res.send(err.message); }
+    // ఈ లిస్ట్ ని english_topics.ejs పేజీకి పంపిస్తున్నాం
+    res.render('english_topics', { 
+        user: req.session.user, 
+        topics: englishTopics 
+    });
 });
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
