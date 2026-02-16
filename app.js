@@ -758,5 +758,156 @@ app.get('/english-topics', requireLogin, (req, res) => {
         topics: englishTopics 
     });
 });
+// =============================================================
+// 🔥 FIX ALL 15 ENGLISH TOPICS (MODERATE LEVEL)
+// =============================================================
+app.get('/fix-english-final', async (req, res) => {
+    try {
+        // 1. Delete ONLY Verbal category (Maths & Reasoning Safe)
+        await db.execute("DELETE FROM aptitude_questions WHERE category = 'Verbal'");
+
+        const addQ = async (topic, q, a, b, c, d, corr, exp) => {
+            await db.execute(`INSERT INTO aptitude_questions 
+            (category, topic, question, option_a, option_b, option_c, option_d, correct_option, explanation) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, ['Verbal', topic, q, a, b, c, d, corr, exp]);
+        };
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // EXACT LIST FROM YOUR REQUEST
+        const topics = [
+            'Parts of Speech', 'Tenses', 'Active and Passive Voice', 'Direct and Indirect Speech', 
+            'Subject-Verb Agreement', 'Spotting Errors', 'Synonyms and Antonyms', 
+            'Idioms and Phrases', 'One Word Substitution', 'Spelling Test', 
+            'Fill in the Blanks', 'Phrasal Verbs', 'Reading Comprehension', 
+            'Cloze Test', 'Sentence Rearrangement'
+        ];
+
+        for (let t of topics) {
+            for (let i = 1; i <= 15; i++) {
+                let qText="", ansVal="", w1="", w2="", w3="", exp="";
+
+                // 1. PARTS OF SPEECH
+                if (t === 'Parts of Speech') {
+                    qText = `Identify the part of speech of the capitalized word: "She handled the situation with great SKILL."`;
+                    ansVal = 'Noun'; w1 = 'Verb'; w2 = 'Adjective'; w3 = 'Adverb';
+                    exp = '"Skill" is the name of a quality, acting as the object of the preposition "with", so it is a Noun.';
+                }
+                // 2. TENSES
+                else if (t === 'Tenses') {
+                    qText = `By the time you reach the station, the train _______ left.`;
+                    ansVal = 'will have'; w1 = 'will has'; w2 = 'would have'; w3 = 'will be';
+                    exp = 'Future Perfect Tense (will have + V3) is used for actions that will be completed before a specific time in the future.';
+                }
+                // 3. ACTIVE AND PASSIVE VOICE
+                else if (t === 'Active and Passive Voice') {
+                    qText = `Change to Passive: "Who taught you French?"`;
+                    ansVal = 'By whom were you taught French?'; w1 = 'By whom was you taught French?'; w2 = 'Who was teaching you French?'; w3 = 'French was taught by whom?';
+                    exp = 'In passive voice, "Who" becomes "By whom". structure: By whom + helping verb + subject + V3.';
+                }
+                // 4. DIRECT AND INDIRECT SPEECH
+                else if (t === 'Direct and Indirect Speech') {
+                    qText = `He said to me, "Why are you late?"`;
+                    ansVal = 'He asked me why I was late.'; w1 = 'He asked me that why I was late.'; w2 = 'He asked me why was I late.'; w3 = 'He asked me why you are late.';
+                    exp = 'In reported questions, "said to" becomes "asked", no conjunction is used for wh-questions, and tense changes to past.';
+                }
+                // 5. SUBJECT-VERB AGREEMENT
+                else if (t === 'Subject-Verb Agreement') {
+                    qText = `Neither of the two candidates _______ suitable for the job.`;
+                    ansVal = 'is'; w1 = 'are'; w2 = 'have'; w3 = 'were';
+                    exp = '"Neither of" takes a singular verb.';
+                }
+                // 6. SPOTTING ERRORS
+                else if (t === 'Spotting Errors') {
+                    qText = `Find the error: "One of the student was absent yesterday."`;
+                    ansVal = 'student'; w1 = 'One of'; w2 = 'was'; w3 = 'absent';
+                    exp = 'Error is in "student". It should be "One of the students" (Plural Noun).';
+                }
+                // 7. SYNONYMS AND ANTONYMS
+                else if (t === 'Synonyms and Antonyms') {
+                    if(i%2==0) { 
+                        qText = `Synonym of "CANDID"`; ansVal = 'Frank'; w1 = 'Secretive'; w2 = 'Cruel'; w3 = 'Arrogant'; exp = 'Candid means open and honest.';
+                    } else { 
+                        qText = `Antonym of "ADVERSITY"`; ansVal = 'Prosperity'; w1 = 'Misfortune'; w2 = 'Calamity'; w3 = 'Hostility'; exp = 'Adversity means difficulty. Prosperity means success/wealth.';
+                    }
+                }
+                // 8. IDIOMS AND PHRASES
+                else if (t === 'Idioms and Phrases') {
+                    qText = `Meaning of "To burn the midnight oil"`;
+                    ansVal = 'To work late into the night'; w1 = 'To waste resources'; w2 = 'To create trouble'; w3 = 'To be very angry';
+                    exp = 'Refers to working or studying until very late at night.';
+                }
+                // 9. ONE WORD SUBSTITUTION
+                else if (t === 'One Word Substitution') {
+                    qText = `A person who helps others in committing a crime`;
+                    ansVal = 'Accomplice'; w1 = 'Assistant'; w2 = 'Supporter'; w3 = 'Sidekick';
+                    exp = 'Accomplice is the specific legal term for a partner in crime.';
+                }
+                // 10. SPELLING TEST
+                else if (t === 'Spelling Test') {
+                    qText = `Choose the correctly spelled word.`;
+                    ansVal = 'Lieutenant'; w1 = 'Leutenant'; w2 = 'Lieutenent'; w3 = 'Leutinent';
+                    exp = 'Correct spelling is L-I-E-U-T-E-N-A-N-T.';
+                }
+                // 11. FILL IN THE BLANKS
+                else if (t === 'Fill in the Blanks') {
+                    qText = `She is _______ the phone right now.`;
+                    ansVal = 'on'; w1 = 'in'; w2 = 'at'; w3 = 'with';
+                    exp = 'We say "on the phone" when someone is using it.';
+                }
+                // 12. PHRASAL VERBS
+                else if (t === 'Phrasal Verbs') {
+                    qText = `The meeting was _______ due to bad weather. (Meaning: Cancelled)`;
+                    ansVal = 'called off'; w1 = 'called up'; w2 = 'called in'; w3 = 'called out';
+                    exp = '"Call off" means to cancel something.';
+                }
+                // 13. READING COMPREHENSION
+                else if (t === 'Reading Comprehension') {
+                    qText = `Passage: "Success comes to those who dare and act." \nInfer the main idea.`;
+                    ansVal = 'Action is essential for success'; w1 = 'Thinking is enough'; w2 = 'Waiting brings luck'; w3 = 'Success is accidental';
+                    exp = 'The sentence emphasizes "act", meaning action is required.';
+                }
+                // 14. CLOZE TEST
+                else if (t === 'Cloze Test') {
+                    qText = `Cloze: "Education is the most powerful _______ which you can use to change the world."`;
+                    ansVal = 'weapon'; w1 = 'cloth'; w2 = 'building'; w3 = 'machine';
+                    exp = 'Famous quote by Nelson Mandela: "Education is the most powerful weapon..."';
+                }
+                // 15. SENTENCE REARRANGEMENT
+                else if (t === 'Sentence Rearrangement') {
+                    qText = `Arrange: (A) to the market (B) went (C) Ram (D) yesterday`;
+                    ansVal = 'C-B-A-D'; w1 = 'A-B-C-D'; w2 = 'C-A-B-D'; w3 = 'D-C-A-B';
+                    exp = 'Structure: Subject (Ram) + Verb (went) + Object/Place (to the market) + Time (yesterday).';
+                }
+
+                // Shuffle Options & Insert
+                if(qText) {
+                    let opts = shuffle([
+                        { val: ansVal, isCorrect: true },
+                        { val: w1, isCorrect: false },
+                        { val: w2, isCorrect: false },
+                        { val: w3, isCorrect: false }
+                    ]);
+
+                    let finalAns = 'A';
+                    if(opts[1].isCorrect) finalAns = 'B';
+                    if(opts[2].isCorrect) finalAns = 'C';
+                    if(opts[3].isCorrect) finalAns = 'D';
+
+                    await addQ(t, qText, opts[0].val, opts[1].val, opts[2].val, opts[3].val, finalAns, exp);
+                }
+            }
+        }
+
+        res.send(`<h1>✅ ALL 15 ENGLISH TOPICS FIXED!</h1><p>Moderate questions added for Voice, Speech, Errors, Tenses etc.<br><b>Maths & Reasoning are SAFE.</b></p><a href="/">Go to Dashboard</a>`);
+
+    } catch(err) { res.send("Error: " + err.message); }
+});
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
