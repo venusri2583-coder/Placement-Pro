@@ -731,30 +731,32 @@ app.get('/fix-only-reasoning', async (req, res) => {
     } catch(err) { res.send("Error: " + err.message); }
 });
 // =============================================================
-// 📘 ENGLISH TOPICS ROUTE (Hardcoded List - 100% GUARANTEE)
+// 📘 ENGLISH ROUTE (Matching Your EJS Icons Logic)
 // =============================================================
 app.get('/english-topics', requireLogin, (req, res) => {
-    // మనం మాన్యువల్ గా ఇస్తున్న లిస్ట్
+    // ఈ పేర్లు నీ EJS లోని if(tn.includes('...')) కండిషన్స్ కి కరెక్ట్ గా మ్యాచ్ అవుతాయి
     const englishTopics = [
-        { topic: 'Antonyms' },
-        { topic: 'Synonyms' },
-        { topic: 'Spotting Errors' },
-        { topic: 'Sentence Correction' },
-        { topic: 'Idioms and Phrases' },
-        { topic: 'One Word Substitution' },
-        { topic: 'Ordering of Sentences' },
-        { topic: 'Selecting Words' },
-        { topic: 'Completing Statements' },
-        { topic: 'Change of Voice' }
+        { topic: 'Parts of Speech' },             // Matches 'parts of speech' icon
+        { topic: 'Tenses' },                      // Matches 'tenses' icon
+        { topic: 'Active and Passive Voice' },    // Matches 'voice' icon
+        { topic: 'Direct and Indirect Speech' },  // Matches 'speech' icon
+        { topic: 'Subject-Verb Agreement' },      // Matches 'agreement' icon
+        { topic: 'Spotting Errors' },             // Matches 'error' icon
+        { topic: 'Synonyms and Antonyms' },       // Matches 'synonyms' icon
+        { topic: 'Idioms and Phrases' },          // Matches 'idioms' icon
+        { topic: 'One Word Substitution' },       // Matches 'substitution' icon
+        { topic: 'Spelling Test' },               // Matches 'spelling' icon
+        { topic: 'Fill in the Blanks' },          // Matches 'fill' icon
+        { topic: 'Phrasal Verbs' },               // Matches 'phrasal' icon
+        { topic: 'Reading Comprehension' },       // Matches 'comprehension' icon
+        { topic: 'Cloze Test' },                  // Matches 'cloze' icon
+        { topic: 'Sentence Rearrangement' }       // Matches 'rearrangement' icon
     ];
-
-    console.log("Sending Topics:", englishTopics); // ఇది నీ టెర్మినల్ లో కనిపిస్తుంది
 
     res.render('english_topics', { 
         user: req.session.user, 
         topics: englishTopics 
     });
 });
-
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
