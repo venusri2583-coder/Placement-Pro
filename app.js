@@ -1313,5 +1313,37 @@ app.get('/update-db-now', async (req, res) => {
         `);
     }
 });
+// --- 🛠️ EMERGENCY DB FIXER ---
+app.get('/fix-db', async (req, res) => {
+    try {
+        // 1. Check existing columns
+        const [columns] = await db.execute("SHOW COLUMNS FROM users");
+        const columnNames = columns.map(c => c.Field);
+
+        let msg = "<h3>Database Status:</h3><ul>";
+
+        // 2. Add 'security_question' if missing
+        if (!columnNames.includes('security_question')) {
+            await db.execute("ALTER TABLE users ADD COLUMN security_question VARCHAR(255)");
+            msg += "<li style='color:green'>✅ Added: security_question</li>";
+        } else {
+            msg += "<li style='color:blue'>ℹ️ Already Exists: security_question</li>";
+        }
+
+        // 3. Add 'security_answer' if missing
+        if (!columnNames.includes('security_answer')) {
+            await db.execute("ALTER TABLE users ADD COLUMN security_answer VARCHAR(255)");
+            msg += "<li style='color:green'>✅ Added: security_answer</li>";
+        } else {
+            msg += "<li style='color:blue'>ℹ️ Already Exists: security_answer</li>";
+        }
+
+        msg += "</ul><h3>Now try Registering again! 🚀</h3>";
+        res.send(msg);
+
+    } catch (err) {
+        res.send(`<h3 style='color:red'>❌ Error: ${err.message}</h3>`);
+    }
+});
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
