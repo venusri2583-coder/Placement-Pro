@@ -39,29 +39,20 @@ const requireLogin = (req, res, next) => {
 
 // --- ROUTES ---
 app.get('/login', (req, res) => res.render('login', { error: null, msg: null }));
-// 🟢 1. రిజిస్ట్రేషన్ పేజీని చూపించడానికి (ఇది మిస్ అయ్యింది)
+// 🟢 1. GET Route (పేజీ చూపించడానికి)
 app.get('/register', (req, res) => {
     res.render('register', { error: null });
 });
 
-// 🔴 2. ఇది నీ దగ్గర ఆల్రెడీ ఉన్న కోడ్ (డేటా సేవ్ చేయడానికి)
+// 🟢 2. POST Route (డేటా సేవ్ చేయడానికి - అసలైన కోడ్)
 app.post('/register', async (req, res) => {
-    // ... (నీ పాత కోడ్ ఇక్కడ ఉంటుంది) ...
-});
-app.post('/register', async (req, res) => {
-    // 1. ఫ్రంటెండ్ నుండి వచ్చే ఐదు వివరాలను తీసుకుంటున్నాం
     const { username, email, password, security_question, security_answer } = req.body;
-
     try {
-        // 2. డేటాబేస్ INSERT క్వెరీలో ఈ కొత్త కాలమ్స్ ని కూడా యాడ్ చేస్తున్నాం
         await db.execute(
             'INSERT INTO users (username, email, password, security_question, security_answer) VALUES (?, ?, ?, ?, ?)', 
             [username, email, password, security_question, security_answer]
         );
-        
-        // 3. రిజిస్ట్రేషన్ అయిపోయాక లాగిన్ పేజీకి పంపిస్తున్నాం
         res.render('login', { msg: 'Account Created with Security Backup!', error: null });
-        
     } catch (err) { 
         console.error(err);
         res.render('register', { error: 'Email already exists or Database error.' }); 
