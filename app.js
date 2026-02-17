@@ -39,6 +39,15 @@ const requireLogin = (req, res, next) => {
 
 // --- ROUTES ---
 app.get('/login', (req, res) => res.render('login', { error: null, msg: null }));
+// 🟢 1. రిజిస్ట్రేషన్ పేజీని చూపించడానికి (ఇది మిస్ అయ్యింది)
+app.get('/register', (req, res) => {
+    res.render('register', { error: null });
+});
+
+// 🔴 2. ఇది నీ దగ్గర ఆల్రెడీ ఉన్న కోడ్ (డేటా సేవ్ చేయడానికి)
+app.post('/register', async (req, res) => {
+    // ... (నీ పాత కోడ్ ఇక్కడ ఉంటుంది) ...
+});
 app.post('/register', async (req, res) => {
     // 1. ఫ్రంటెండ్ నుండి వచ్చే ఐదు వివరాలను తీసుకుంటున్నాం
     const { username, email, password, security_question, security_answer } = req.body;
