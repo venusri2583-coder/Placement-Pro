@@ -1,0 +1,62 @@
+<%- include('partials/header') %>
+
+<div class="elite-wrapper">
+    <div class="cinematic-bg" style="background-image: linear-gradient(rgba(10, 15, 30, 0.85), rgba(10, 15, 30, 0.98)), url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070');"></div>
+
+    <div class="portal-container animate__animated animate__zoomIn">
+        <div class="split-glass-box" style="max-width: 500px; min-height: auto;">
+            
+            <div class="form-panel" style="padding: 40px;">
+                <div class="auth-box w-100">
+                    <h2 class="fw-bold text-dark mb-1">Security Check</h2>
+                    <p class="text-muted small mb-4">Answer correctly to reset password</p>
+
+                    <% if (error) { %> 
+                        <div class="alert alert-danger pro-alert py-2 small animate__animated animate__shakeX">
+                            <i class="fas fa-exclamation-triangle me-2"></i><%= error %>
+                        </div> 
+                    <% } %>
+
+                    <form action="/verify-answer" method="POST">
+                        <input type="hidden" name="email" value="<%= email %>">
+                        <input type="hidden" name="question" value="<%= question %>">
+
+                        <div class="modern-field mb-3">
+                            <label><i class="fas fa-question-circle me-2"></i>Your Question</label>
+                            <div class="p-3 bg-light rounded border text-dark fw-bold" style="font-size: 0.9rem;">
+                                <%= question %>
+                            </div>
+                        </div>
+
+                        <div class="modern-field mb-4">
+                            <label><i class="fas fa-key me-2"></i>Your Answer</label>
+                            <input type="text" name="answer" placeholder="Type your secret answer" required>
+                        </div>
+                        
+                        <button type="submit" class="btn-elite-action" style="background: #f43f5e;">
+                            Verify Answer <i class="fas fa-check-circle ms-2"></i>
+                        </button>
+                    </form>
+                    
+                    <div class="text-center mt-3">
+                        <a href="/login" class="small text-muted fw-bold text-decoration-none">Back to Login</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    .elite-wrapper { height: 100vh; width: 100vw; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; background: #020617; }
+    .cinematic-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; z-index: -1; }
+    .split-glass-box { display: flex; width: 90%; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(25px); border-radius: 30px; overflow: hidden; box-shadow: 0 40px 80px rgba(0,0,0,0.5); }
+    .modern-field label { display: block; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: #64748b; margin-bottom: 8px; }
+    .modern-field input { width: 100%; padding: 12px; border-radius: 10px; border: 1.5px solid #e2e8f0; background: #f8fafc; outline: none; transition: 0.3s; }
+    .modern-field input:focus { border-color: #f43f5e; background: white; }
+    .btn-elite-action { width: 100%; padding: 14px; border-radius: 12px; color: white; border: none; font-weight: 700; transition: 0.3s; }
+    .btn-elite-action:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(244, 63, 94, 0.3); }
+</style>
+
+<%- include('partials/footer') %>

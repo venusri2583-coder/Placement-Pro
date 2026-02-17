@@ -92,6 +92,62 @@ app.post('/coding/practice', requireLogin, (req, res) => res.redirect(`/practice
 app.get('/forgot-password', (req, res) => {
     res.render('forgot', { msg: null, error: null });
 });
+// 🟢 1. ఈమెయిల్ తీసుకుని, సెక్యూరిటీ క్వశ్చన్ చూపించే రూట్
+app.post('/get-question', async (req, res) => {
+    const { email } = req.body;
+    try {
+        const [user] = await db.execute("SELECT * FROM users WHERE email = ?", [email]);
+        
+        if (user.length > 0 && user[0].security_question) {
+            // యూజర్ ఉన్నాడు + క్వశ్చన్ ఉంది -> వెరిఫై పేజీకి పంపు
+            res.render('verify-answer', { 
+                email: email, 
+                question: user[0].security_question,
+                error: null
+            });
+        } else {
+            // యూజర్ లేడు లేదా క్వశ్చన్ సెట్ చేసుకోలేదు
+            res.render('forgot', { error: "Email not found or Security Question not set!", msg: null });
+        }
+    } catch (err) {
+        console.error(err);
+        res.render('forgot', { error: "Server Error", msg: null });
+    }
+});
+
+// 🟢 2. ఆన్సర్ చెక్ చేసి, పాస్‌వర్డ్ రీసెట్ పేజీకి పంపే రూట్
+app.post('/verify-answer', async (req, res) => {
+    const { email, answer } = req.body;
+    try {
+        // ఆన్సర్ కరెక్టా కాదా అని చెక్ చేస్తున్నాం
+        const [user] = await db.execute("SELECT * FROM users WHERE email = ? AND security_answer = ?", [email, answer]);
+        
+        if (user.length > 0) {
+            // కరెక్ట్ ఆన్సర్ -> కొత్త పాస్‌వర్డ్ పేజీకి పంపు
+            res.render('reset-password', { email: email, error: null });
+        } else {
+            // తప్పు ఆన్సర్
+            res.render('verify-answer', { 
+                email: email, 
+                question: req.body.question, // పాత క్వశ్చన్ మళ్ళీ చూపించు
+                error: "Wrong Answer! Try again." 
+            });
+        }
+    } catch (err) {
+        res.redirect('/login');
+    }
+});
+
+// 🟢 3. కొత్త పాస్‌వర్డ్ అప్‌డేట్ చేసే రూట్
+app.post('/update-password', async (req, res) => {
+    const { email, newPassword } = req.body;
+    try {
+        await db.execute("UPDATE users SET password = ? WHERE email = ?", [newPassword, email]);
+        res.render('login', { msg: "Password Reset Successful! Login Now.", error: null });
+    } catch (err) {
+        res.render('forgot', { error: "Update Failed", msg: null });
+    }
+});
 // --- PRACTICE ENGINE ---
 app.get('/practice/:topic', requireLogin, async (req, res) => {
     const topic = decodeURIComponent(req.params.topic);
