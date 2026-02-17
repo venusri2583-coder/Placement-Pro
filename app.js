@@ -39,12 +39,24 @@ const requireLogin = (req, res, next) => {
 
 // --- ROUTES ---
 app.get('/login', (req, res) => res.render('login', { error: null, msg: null }));
-app.get('/register', (req, res) => res.render('register', { error: null }));
 app.post('/register', async (req, res) => {
+    // 1. ఫ్రంటెండ్ నుండి వచ్చే ఐదు వివరాలను తీసుకుంటున్నాం
+    const { username, email, password, security_question, security_answer } = req.body;
+
     try {
-        await db.execute('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', [req.body.username, req.body.email, req.body.password]);
-        res.render('login', { msg: 'Account Created!', error: null });
-    } catch (err) { res.render('register', { error: 'Email exists.' }); }
+        // 2. డేటాబేస్ INSERT క్వెరీలో ఈ కొత్త కాలమ్స్ ని కూడా యాడ్ చేస్తున్నాం
+        await db.execute(
+            'INSERT INTO users (username, email, password, security_question, security_answer) VALUES (?, ?, ?, ?, ?)', 
+            [username, email, password, security_question, security_answer]
+        );
+        
+        // 3. రిజిస్ట్రేషన్ అయిపోయాక లాగిన్ పేజీకి పంపిస్తున్నాం
+        res.render('login', { msg: 'Account Created with Security Backup!', error: null });
+        
+    } catch (err) { 
+        console.error(err);
+        res.render('register', { error: 'Email already exists or Database error.' }); 
+    }
 });
 app.post('/login', async (req, res) => {
     try {
@@ -76,7 +88,10 @@ app.get('/reasoning/:topic', (req, res) => res.redirect(`/practice/${encodeURICo
 app.get('/english/:topic', (req, res) => res.redirect(`/practice/${encodeURIComponent(req.params.topic)}`));
 app.get('/coding/:topic', (req, res) => res.redirect(`/practice/${encodeURIComponent(req.params.topic)}`));
 app.post('/coding/practice', requireLogin, (req, res) => res.redirect(`/practice/${encodeURIComponent(req.body.topic)}`));
-
+// --- FORGOT PASSWORD ROUTE ---
+app.get('/forgot-password', (req, res) => {
+    res.render('forgot', { msg: null, error: null });
+});
 // --- PRACTICE ENGINE ---
 app.get('/practice/:topic', requireLogin, async (req, res) => {
     const topic = decodeURIComponent(req.params.topic);
@@ -1260,6 +1275,34 @@ app.get('/fix-technical-final-20', async (req, res) => {
         res.send(`<h1>✅ FINAL PACK LOADED (20 Qs/Topic)</h1><p>20 Unique Questions per Topic.<br>Includes PDF + Hard Qs.<br><b>Shuffle & Logic Perfect.</b></p><a href="/">Go to Dashboard</a>`);
 
     } catch(err) { res.send("Error: " + err.message); }
+});
+// ---------------------------------------------------
+// 🛠️ DATABASE UPDATER ROUTE (One-Time Use)
+// ---------------------------------------------------
+app.get('/update-db-now', async (req, res) => {
+    try {
+        // 1. Users Table ని అప్‌డేట్ చేయడానికి (Forgot Password కోసం)
+        await db.execute(`
+            ALTER TABLE users 
+            ADD COLUMN security_question VARCHAR(255) DEFAULT NULL, 
+            ADD COLUMN security_answer VARCHAR(255) DEFAULT NULL
+        `);
+
+        res.send(`
+            <h1 style="color:green; text-align:center; margin-top:20%;">
+                ✅ Database Updated Successfully!
+            </h1>
+            <p style="text-align:center;">User table now has security columns.</p>
+        `);
+    } catch (err) {
+        // ఒకవేళ ఆల్రెడీ కాలమ్స్ ఉంటే ఎర్రర్ వస్తుంది, కంగారు పడకు
+        res.send(`
+            <h1 style="color:red; text-align:center; margin-top:20%;">
+                ⚠️ Update Failed or Already Done!
+            </h1>
+            <p style="text-align:center;">Error: ${err.message}</p>
+        `);
+    }
 });
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));

@@ -1,0 +1,26 @@
+<%- include('partials/header') %>
+<div class="elite-wrapper">
+    <div class="cinematic-bg" style="background-image: linear-gradient(rgba(10, 15, 30, 0.9), rgba(10, 15, 30, 0.98)), url('https://images.unsplash.com/photo-1497294815431-9365093b7331?q=80&w=2070');"></div>
+    <div class="portal-container animate__animated animate__zoomIn">
+        <div class="split-glass-box" style="max-width: 500px; min-height: auto; padding: 40px;">
+            <div class="auth-box w-100 p-4 bg-white rounded-4 shadow">
+                <h2 class="fw-bold text-dark mb-1">Reset Password</h2>
+                <p class="text-muted small mb-4">Enter your email to receive an OTP</p>
+
+                <form action="/send-otp" method="POST">
+                    <div class="modern-field mb-4">
+                        <label><i class="fas fa-envelope me-2"></i>Registered Email</label>
+                        <input type="email" name="email" placeholder="name@college.edu" required style="width:100%; padding:12px; border-radius:10px; border:1px solid #ddd;">
+                    </div>
+                    <button type="submit" class="btn-elite-action" style="background: #2563eb; width:100%; padding:15px; border-radius:15px; color:white; border:none; font-weight:bold;">
+                        Send OTP <i class="fas fa-paper-plane ms-2"></i>
+                    </button>
+                </form>
+                <div class="text-center mt-3">
+                    <a href="/login" class="small text-muted" style="text-decoration:none;"><i class="fas fa-arrow-left"></i> Back to Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<%- include('partials/footer') %>
