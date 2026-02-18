@@ -92,21 +92,21 @@ app.post('/coding/practice', requireLogin, (req, res) => res.redirect(`/practice
 app.get('/forgot-password', (req, res) => {
     res.render('forgot', { msg: null, error: null });
 });
-// 🟢 1. ఈమెయిల్ తీసుకుని, సెక్యూరిటీ క్వశ్చన్ చూపించే రూట్
+
 app.post('/get-question', async (req, res) => {
     const { email } = req.body;
     try {
         const [user] = await db.execute("SELECT * FROM users WHERE email = ?", [email]);
         
         if (user.length > 0 && user[0].security_question) {
-            // యూజర్ ఉన్నాడు + క్వశ్చన్ ఉంది -> వెరిఫై పేజీకి పంపు
+            
             res.render('verify-answer', { 
                 email: email, 
                 question: user[0].security_question,
                 error: null
             });
         } else {
-            // యూజర్ లేడు లేదా క్వశ్చన్ సెట్ చేసుకోలేదు
+            
             res.render('forgot', { error: "Email not found or Security Question not set!", msg: null });
         }
     } catch (err) {
@@ -115,18 +115,18 @@ app.post('/get-question', async (req, res) => {
     }
 });
 
-// 🟢 2. ఆన్సర్ చెక్ చేసి, పాస్‌వర్డ్ రీసెట్ పేజీకి పంపే రూట్
+
 app.post('/verify-answer', async (req, res) => {
     const { email, answer } = req.body;
     try {
-        // ఆన్సర్ కరెక్టా కాదా అని చెక్ చేస్తున్నాం
+        
         const [user] = await db.execute("SELECT * FROM users WHERE email = ? AND security_answer = ?", [email, answer]);
         
         if (user.length > 0) {
-            // కరెక్ట్ ఆన్సర్ -> కొత్త పాస్‌వర్డ్ పేజీకి పంపు
+            
             res.render('reset-password', { email: email, error: null });
         } else {
-            // తప్పు ఆన్సర్
+            
             res.render('verify-answer', { 
                 email: email, 
                 question: req.body.question, // పాత క్వశ్చన్ మళ్ళీ చూపించు
@@ -138,7 +138,6 @@ app.post('/verify-answer', async (req, res) => {
     }
 });
 
-// 🟢 3. కొత్త పాస్‌వర్డ్ అప్‌డేట్ చేసే రూట్
 app.post('/update-password', async (req, res) => {
     const { email, newPassword } = req.body;
     try {
@@ -795,10 +794,10 @@ app.get('/fix-only-reasoning', async (req, res) => {
     } catch(err) { res.send("Error: " + err.message); }
 });
 // =============================================================
-// 📘 ENGLISH PAGE ROUTE (ఇది లేకపోతే పేజీ రాదు)
+// 📘 ENGLISH PAGE ROUTE 
 // =============================================================
 app.get('/english-topics', requireLogin, (req, res) => {
-    // ఈ 15 టాపిక్స్ లిస్ట్ ఉంటేనే నీకు ఐకాన్స్ కనిపిస్తాయి
+    
     const englishTopics = [
         { topic: 'Parts of Speech' },
         { topic: 'Tenses' },
@@ -1337,7 +1336,7 @@ app.get('/fix-technical-final-20', async (req, res) => {
 // ---------------------------------------------------
 app.get('/update-db-now', async (req, res) => {
     try {
-        // 1. Users Table ని అప్‌డేట్ చేయడానికి (Forgot Password కోసం)
+        // 1. Users Table 
         await db.execute(`
             ALTER TABLE users 
             ADD COLUMN security_question VARCHAR(255) DEFAULT NULL, 
@@ -1351,7 +1350,7 @@ app.get('/update-db-now', async (req, res) => {
             <p style="text-align:center;">User table now has security columns.</p>
         `);
     } catch (err) {
-        // ఒకవేళ ఆల్రెడీ కాలమ్స్ ఉంటే ఎర్రర్ వస్తుంది, కంగారు పడకు
+        
         res.send(`
             <h1 style="color:red; text-align:center; margin-top:20%;">
                 ⚠️ Update Failed or Already Done!
@@ -1390,6 +1389,71 @@ app.get('/fix-db', async (req, res) => {
 
     } catch (err) {
         res.send(`<h3 style='color:red'>❌ Error: ${err.message}</h3>`);
+    }
+});
+// 🛠️ ONE-TIME FIX: Add Difficulty Levels to Questions
+app.get('/add-difficulty-levels', async (req, res) => {
+    try {
+        // 1. Check if column exists, if not add it
+        const [columns] = await db.execute("SHOW COLUMNS FROM aptitude_questions");
+        const hasLevel = columns.some(c => c.Field === 'difficulty');
+        
+        if (!hasLevel) {
+            await db.execute("ALTER TABLE aptitude_questions ADD COLUMN difficulty VARCHAR(50) DEFAULT 'Medium'");
+        }
+
+        // 2. Randomly assign Basic, Medium, Advanced to all questions
+        // (This makes your existing database ready for the new feature)
+        await db.execute(`
+            UPDATE aptitude_questions 
+            SET difficulty = ELT(FLOOR(1 + RAND() * 3), 'Basic', 'Medium', 'Advanced')
+        `);
+
+        res.send("<h1>✅ Difficulty Levels Added Successfully!</h1><p>Questions are now labeled as Basic, Medium, or Advanced.</p>");
+    } catch (err) {
+        res.send("Error: " + err.message);
+    }
+});
+// =============================================================
+// 🏆 GRAND MOCK TEST (MNC PATTERN - 60 Qs / 60 Mins)
+// =============================================================
+
+// 1. Grand Test Instructions Page
+app.get('/grand-test-intro', requireLogin, (req, res) => {
+    res.render('grand_test_start', { user: req.session.user });
+});
+
+// 2. Start Grand Test (Fetches 60 Mixed Questions)
+app.get('/start-grand-exam', requireLogin, async (req, res) => {
+    try {
+        // 🔥 MAGIC QUERY: 20 Maths + 20 Logical + 20 Verbal
+        // UNION ALL వాడి మూడింటినీ కలిపేస్తున్నాం
+        const query = `
+            (SELECT * FROM aptitude_questions WHERE category='Quantitative' ORDER BY RAND() LIMIT 20)
+            UNION ALL
+            (SELECT * FROM aptitude_questions WHERE category='Logical' ORDER BY RAND() LIMIT 20)
+            UNION ALL
+            (SELECT * FROM aptitude_questions WHERE category='Verbal' ORDER BY RAND() LIMIT 20)
+        `;
+
+        const [questions] = await db.execute(query);
+
+        if (questions.length === 0) {
+            return res.send("<h1>Database Empty! Please click 'Fix Data' links first.</h1>");
+        }
+
+        // ఇక్కడ టైమర్ 60 నిమిషాలు సెట్ చేస్తున్నాం (Frontend కోసం)
+        res.render('exam_interface', { 
+            questions, 
+            user: req.session.user, 
+            topic: "Grand Mock Test (MNC Pattern)", 
+            difficulty: "Mixed (Standard)",
+            duration: 60 // 60 Minutes Duration pass chesthunnam
+        });
+
+    } catch (err) {
+        console.log(err);
+        res.redirect('/');
     }
 });
 const PORT = process.env.PORT || 5000;
