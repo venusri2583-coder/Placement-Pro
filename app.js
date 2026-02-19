@@ -1427,7 +1427,7 @@ app.get('/grand-test-intro', requireLogin, (req, res) => {
 app.get('/start-grand-exam', requireLogin, async (req, res) => {
     try {
         // 🔥 MAGIC QUERY: 20 Maths + 20 Logical + 20 Verbal
-        // UNION ALL వాడి మూడింటినీ కలిపేస్తున్నాం
+        // UNION ALL
         const query = `
             (SELECT * FROM aptitude_questions WHERE category='Quantitative' ORDER BY RAND() LIMIT 20)
             UNION ALL

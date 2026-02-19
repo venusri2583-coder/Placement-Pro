@@ -2,236 +2,190 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PlacementPro Assessment</title>
+    <title>MNC Exam Interface</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: #f0f2f5; height: 100vh; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
+        body { background: #eef2f3; height: 100vh; overflow: hidden; user-select: none; }
+        .exam-header { background: white; padding: 15px 30px; border-bottom: 2px solid #ddd; display: flex; justify-content: space-between; align-items: center; }
+        .timer-box { background: #dc3545; color: white; padding: 8px 20px; border-radius: 8px; font-weight: bold; font-size: 1.2rem; }
         
-        /* HEADER */
-        .exam-header { height: 60px; background: #fff; border-bottom: 1px solid #ddd; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .timer-box { background: #2c3e50; color: #fff; padding: 5px 15px; border-radius: 5px; font-weight: bold; font-size: 1.2rem; }
+        .main-area { display: flex; height: calc(100vh - 130px); padding: 15px; gap: 15px; }
         
-        /* MAIN LAYOUT */
-        .exam-container { display: flex; height: calc(100vh - 120px); }
+        /* Left Side: Question */
+        .q-box { flex: 3; background: white; border-radius: 10px; padding: 30px; overflow-y: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .q-num { color: #0d6efd; font-weight: bold; font-size: 1.1rem; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .q-text { font-size: 1.2rem; margin-bottom: 30px; font-weight: 500; }
         
-        /* QUESTION AREA (Left) */
-        .question-area { flex: 3; padding: 30px; overflow-y: auto; background: #fff; margin: 15px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .q-number { font-size: 1.1rem; font-weight: bold; color: #3498db; margin-bottom: 15px; }
-        .q-text { font-size: 1.2rem; margin-bottom: 25px; line-height: 1.6; }
-        .option-box { display: block; padding: 12px 15px; margin-bottom: 12px; border: 2px solid #e9ecef; border-radius: 8px; cursor: pointer; transition: 0.2s; }
-        .option-box:hover { background: #f8f9fa; border-color: #adb5bd; }
-        .option-box.selected { border-color: #3498db; background: #ebf5fb; font-weight: 600; }
-        
-        /* PALETTE AREA (Right) */
-        .palette-area { flex: 1; background: #fff; margin: 15px 15px 15px 0; border-radius: 10px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
-        .student-info { display: flex; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
-        .grid-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; overflow-y: auto; }
-        .grid-item { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; border: 1px solid #ddd; background: #fff; color: #333; }
-        
-        /* Palette Colors */
-        .grid-item.answered { background: #2ecc71; color: white; border: none; }
-        .grid-item.not-answered { background: #e74c3c; color: white; border: none; }
-        .grid-item.review { background: #9b59b6; color: white; border: none; }
-        .grid-item.current { border: 2px solid #3498db; }
+        .opt-btn { display: block; width: 100%; text-align: left; padding: 15px; margin-bottom: 15px; background: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px; font-size: 1.1rem; cursor: pointer; transition: 0.2s; }
+        .opt-btn:hover { background: #e9ecef; }
+        .opt-btn.active { background: #e7f1ff; border-color: #0d6efd; font-weight: bold; }
 
-        /* FOOTER */
-        .exam-footer { height: 60px; background: #fff; border-top: 1px solid #ddd; padding: 0 30px; display: flex; align-items: center; justify-content: space-between; position: fixed; bottom: 0; width: 100%; }
+        /* Right Side: Palette */
+        .palette-box { flex: 1; background: white; border-radius: 10px; padding: 20px; display: flex; flex-direction: column; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .grid-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; overflow-y: auto; padding-right: 5px; }
+        .grid-item { height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 5px; border: 1px solid #ccc; cursor: pointer; font-weight: bold; }
         
-        /* Full Screen Overlay */
-        #fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center; color: white; flex-direction: column; }
+        .ans { background: #198754; color: white; border: none; }
+        .not-ans { background: #dc3545; color: white; border: none; }
+        .review { background: #6f42c1; color: white; border: none; }
+        .current { border: 3px solid #000; box-shadow: inset 0 0 0 2px white; }
+
+        /* Footer */
+        .exam-footer { background: white; padding: 15px 30px; border-top: 2px solid #ddd; position: absolute; bottom: 0; width: 100%; display: flex; justify-content: space-between; }
+        
+        /* Overlay */
+        #start-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 1000; display: flex; align-items: center; justify-content: center; color: white; flex-direction: column; }
     </style>
 </head>
 <body>
 
-    <div id="fullscreen-overlay">
-        <h2><i class="fas fa-lock me-2"></i>Secure Exam Environment</h2>
-        <p>Please click the button below to enter Full Screen mode and start.</p>
-        <button class="btn btn-primary btn-lg" onclick="startExam()">Start Test Now</button>
+    <div id="start-overlay">
+        <i class="fas fa-shield-alt fa-4x text-success mb-3"></i>
+        <h2>Secure Testing Environment</h2>
+        <p>Your screen will be locked. Do not exit full screen.</p>
+        <button class="btn btn-success btn-lg mt-3" onclick="startTest()">Start Test Now</button>
     </div>
 
     <div class="exam-header">
-        <h4 class="m-0 fw-bold text-primary"><%= topic %> <span class="badge bg-secondary ms-2" style="font-size: 0.8rem;"><%= difficulty %></span></h4>
-        <div class="timer-box"><i class="fas fa-stopwatch me-2"></i><span id="timer">15:00</span></div>
+        <h4 class="m-0 fw-bold"><%= topic %></h4>
+        <div class="timer-box"><i class="fas fa-clock me-2"></i><span id="time-display">60:00</span></div>
     </div>
 
-    <div class="exam-container">
-        
-        <div class="question-area">
-            <div id="question-container">
-                </div>
+    <div class="main-area">
+        <div class="q-box">
+            <div class="q-num" id="q-num-display">Question 1</div>
+            <div class="q-text" id="q-text-display">Loading...</div>
+            <div id="options-container"></div>
         </div>
 
-        <div class="palette-area">
-            <div class="student-info">
-                <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px; font-size: 1.2rem;">
-                    <%= user.username.charAt(0).toUpperCase() %>
-                </div>
+        <div class="palette-box">
+            <div class="d-flex align-items-center mb-3 border-bottom pb-2">
+                <i class="fas fa-user-circle fa-2x text-secondary me-2"></i>
                 <div>
                     <h6 class="m-0 fw-bold"><%= user.username %></h6>
-                    <small class="text-muted"><%= user.email %></small>
+                    <small class="text-muted">Candidate</small>
                 </div>
             </div>
-            
-            <h6 class="text-muted text-uppercase small fw-bold mb-3">Question Palette</h6>
-            <div class="grid-container" id="palette-grid">
-                </div>
-            
-            <div class="mt-auto pt-3 border-top small text-muted">
-                <div class="d-flex align-items-center mb-1"><span class="badge bg-success me-2 rounded-circle p-1" style="width:10px; height:10px;"> </span> Answered</div>
-                <div class="d-flex align-items-center mb-1"><span class="badge bg-danger me-2 rounded-circle p-1" style="width:10px; height:10px;"> </span> Not Answered</div>
-                <div class="d-flex align-items-center"><span class="badge bg-secondary me-2 rounded-circle p-1" style="width:10px; height:10px;"> </span> Not Visited</div>
-            </div>
+            <h6 class="text-muted small fw-bold mb-3">QUESTION PALETTE</h6>
+            <div class="grid-container" id="palette"></div>
         </div>
     </div>
 
     <div class="exam-footer">
         <div>
-            <button class="btn btn-outline-secondary me-2" onclick="clearResponse()">Clear Response</button>
-            <button class="btn btn-warning text-white" onclick="markForReview()">Mark for Review</button>
+            <button class="btn btn-outline-danger me-2" onclick="clearAns()">Clear Response</button>
+            <button class="btn btn-warning text-white" onclick="markReview()">Mark for Review</button>
         </div>
         <div>
-            <button class="btn btn-secondary me-2" onclick="prevQuestion()" id="btn-prev">Previous</button>
-            <button class="btn btn-primary me-3" onclick="nextQuestion()" id="btn-next">Save & Next</button>
-            <button class="btn btn-success fw-bold" onclick="submitExam()">Submit Test</button>
+            <button class="btn btn-secondary me-2" onclick="goPrev()">Previous</button>
+            <button class="btn btn-primary me-4" onclick="goNext()">Save & Next</button>
+            <button class="btn btn-success fw-bold px-4" onclick="submitExam()">SUBMIT EXAM</button>
         </div>
     </div>
 
-    <form id="submit-form" action="/submit-exam" method="POST" style="display:none;">
+    <form id="submit-form" action="/submit-grand-exam" method="POST" style="display:none;">
         <input type="hidden" name="payload" id="payload">
     </form>
 
     <script>
-        // --- 1. DATA SETUP ---
         const questions = <%- JSON.stringify(questions) %>;
-        const topicName = "<%= topic %>";
-        let currentQIndex = 0;
-        let userAnswers = new Array(questions.length).fill(null); // Stores A, B, C, D
-        let questionStatus = new Array(questions.length).fill('not-visited'); // answered, review, not-answered
-        let timeLeft = 15 * 60; // 15 Minutes
-        let timerInterval;
+        const totalTime = <%= duration %> * 60; 
+        let timeLeft = totalTime;
+        let curr = 0;
+        let answers = new Array(questions.length).fill(null);
+        let status = new Array(questions.length).fill('not-visited'); // answered, not-answered, review
+        let timerId;
 
-        // --- 2. INITIALIZATION ---
-        function startExam() {
-            document.getElementById('fullscreen-overlay').style.display = 'none';
-            document.documentElement.requestFullscreen().catch((e) => console.log(e));
-            renderPalette();
-            loadQuestion(0);
-            startTimer();
+        function startTest() {
+            document.getElementById('start-overlay').style.display = 'none';
+            document.documentElement.requestFullscreen().catch(e=>console.log(e));
+            buildPalette();
+            showQ(0);
+            timerId = setInterval(updateTime, 1000);
         }
 
-        // --- 3. TIMER LOGIC ---
-        function startTimer() {
-            timerInterval = setInterval(() => {
-                let m = Math.floor(timeLeft / 60);
-                let s = timeLeft % 60;
-                document.getElementById('timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
-                timeLeft--;
-                if (timeLeft < 0) submitExam();
-            }, 1000);
+        function updateTime() {
+            timeLeft--;
+            let m = Math.floor(timeLeft/60);
+            let s = timeLeft%60;
+            document.getElementById('time-display').innerText = `${m}:${s<10?'0':''}${s}`;
+            if(timeLeft <= 0) submitExam();
         }
 
-        // --- 4. QUESTION RENDERING ---
-        function loadQuestion(index) {
-            currentQIndex = index;
-            const q = questions[index];
-            const savedAns = userAnswers[index];
-
-            let html = `
-                <div class="d-flex justify-content-between">
-                    <div class="q-number">Question ${index + 1} of ${questions.length}</div>
-                    <span class="badge bg-info text-dark mb-3">${q.difficulty || 'Medium'}</span>
-                </div>
-                <div class="q-text">${q.question}</div>
-                
-                <div class="option-box ${savedAns === 'A' ? 'selected' : ''}" onclick="selectOption('A')">A. ${q.option_a}</div>
-                <div class="option-box ${savedAns === 'B' ? 'selected' : ''}" onclick="selectOption('B')">B. ${q.option_b}</div>
-                <div class="option-box ${savedAns === 'C' ? 'selected' : ''}" onclick="selectOption('C')">C. ${q.option_c}</div>
-                <div class="option-box ${savedAns === 'D' ? 'selected' : ''}" onclick="selectOption('D')">D. ${q.option_d}</div>
-            `;
-            document.getElementById('question-container').innerHTML = html;
-            
-            // Button State
-            document.getElementById('btn-prev').disabled = (index === 0);
-            document.getElementById('btn-next').innerText = (index === questions.length - 1) ? "Save & Submit" : "Save & Next";
-            
-            updatePalette();
-        }
-
-        function selectOption(opt) {
-            userAnswers[currentQIndex] = opt;
-            questionStatus[currentQIndex] = 'answered';
-            loadQuestion(currentQIndex); // Re-render to show selection
-        }
-
-        function clearResponse() {
-            userAnswers[currentQIndex] = null;
-            questionStatus[currentQIndex] = 'not-answered';
-            loadQuestion(currentQIndex);
-        }
-
-        function markForReview() {
-            questionStatus[currentQIndex] = 'review';
-            nextQuestion();
-        }
-
-        // --- 5. NAVIGATION ---
-        function nextQuestion() {
-            if (currentQIndex < questions.length - 1) {
-                if(questionStatus[currentQIndex] === 'not-visited' && !userAnswers[currentQIndex]) {
-                    questionStatus[currentQIndex] = 'not-answered';
-                }
-                loadQuestion(currentQIndex + 1);
-            } else {
-                submitExam();
-            }
-        }
-
-        function prevQuestion() {
-            if (currentQIndex > 0) {
-                loadQuestion(currentQIndex - 1);
-            }
-        }
-
-        // --- 6. PALETTE LOGIC ---
-        function renderPalette() {
+        function buildPalette() {
             let html = '';
-            for(let i=0; i<questions.length; i++) {
-                html += `<div id="p-${i}" class="grid-item" onclick="loadQuestion(${i})">${i+1}</div>`;
+            for(let i=0; i<questions.length; i++){
+                html += `<div class="grid-item" id="box-${i}" onclick="showQ(${i})">${i+1}</div>`;
             }
-            document.getElementById('palette-grid').innerHTML = html;
+            document.getElementById('palette').innerHTML = html;
         }
 
-        function updatePalette() {
+        function showQ(idx) {
+            curr = idx;
+            let q = questions[idx];
+            document.getElementById('q-num-display').innerHTML = `Question ${idx+1} of ${questions.length} <span class="badge bg-secondary ms-2">${q.category}</span>`;
+            document.getElementById('q-text-display').innerText = q.question;
+            
+            let optsHtml = `
+                <button class="opt-btn ${answers[idx]==='A'?'active':''}" onclick="setAns('A')">A. ${q.option_a}</button>
+                <button class="opt-btn ${answers[idx]==='B'?'active':''}" onclick="setAns('B')">B. ${q.option_b}</button>
+                <button class="opt-btn ${answers[idx]==='C'?'active':''}" onclick="setAns('C')">C. ${q.option_c}</button>
+                <button class="opt-btn ${answers[idx]==='D'?'active':''}" onclick="setAns('D')">D. ${q.option_d}</button>
+            `;
+            document.getElementById('options-container').innerHTML = optsHtml;
+            updateColors();
+        }
+
+        function setAns(opt) {
+            answers[curr] = opt;
+            status[curr] = 'answered';
+            showQ(curr);
+        }
+
+        function clearAns() {
+            answers[curr] = null;
+            status[curr] = 'not-answered';
+            showQ(curr);
+        }
+
+        function markReview() {
+            status[curr] = 'review';
+            goNext();
+        }
+
+        function goNext() {
+            if(status[curr] === 'not-visited' && !answers[curr]) status[curr] = 'not-answered';
+            if(curr < questions.length-1) showQ(curr+1);
+            else updateColors();
+        }
+
+        function goPrev() {
+            if(curr > 0) showQ(curr-1);
+        }
+
+        function updateColors() {
             for(let i=0; i<questions.length; i++) {
-                let el = document.getElementById(`p-${i}`);
-                el.className = 'grid-item'; // Reset
-                if (i === currentQIndex) el.classList.add('current');
-                if (questionStatus[i] === 'answered') el.classList.add('answered');
-                if (questionStatus[i] === 'not-answered') el.classList.add('not-answered');
-                if (questionStatus[i] === 'review') el.classList.add('review');
+                let b = document.getElementById(`box-${i}`);
+                b.className = 'grid-item';
+                if(status[i] === 'answered') b.classList.add('ans');
+                if(status[i] === 'not-answered') b.classList.add('not-ans');
+                if(status[i] === 'review') b.classList.add('review');
+                if(i === curr) b.classList.add('current');
             }
         }
 
-        // --- 7. SUBMISSION ---
         function submitExam() {
-            clearInterval(timerInterval);
-            const payload = {
-                topic: topicName,
-                answers: userAnswers
-            };
+            clearInterval(timerId);
+            let payload = { questions: questions, answers: answers, topic: "Mega Test" };
             document.getElementById('payload').value = JSON.stringify(payload);
             document.getElementById('submit-form').submit();
         }
 
-        // --- 8. SECURITY (TAB SWITCH WARNING) ---
-        document.addEventListener("visibilitychange", function() {
-            if (document.hidden) {
-                alert("⚠️ WARNING: Tab switching is monitored! Please stay on the exam screen.");
-            }
+        // Anti-Cheat
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden) alert("WARNING: Do not switch tabs during the exam!");
         });
-
     </script>
 </body>
 </html>
