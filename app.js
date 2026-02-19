@@ -1423,32 +1423,39 @@ app.get('/grand-test-intro', requireLogin, (req, res) => {
     res.render('grand_test_start', { user: req.session.user });
 });
 
-// 2. Start Grand Test (Fetches 60 Mixed Questions)
+// 2. Start Grand Test (Fetches 60 Questions based on Difficulty)
 app.get('/start-grand-exam', requireLogin, async (req, res) => {
     try {
-        // 🔥 MAGIC QUERY: 20 Maths + 20 Logical + 20 Verbal
-        // UNION ALL
-        const query = `
-            (SELECT * FROM aptitude_questions WHERE category='Quantitative' ORDER BY RAND() LIMIT 20)
-            UNION ALL
-            (SELECT * FROM aptitude_questions WHERE category='Logical' ORDER BY RAND() LIMIT 20)
-            UNION ALL
-            (SELECT * FROM aptitude_questions WHERE category='Verbal' ORDER BY RAND() LIMIT 20)
-        `;
+        const difficulty = req.query.difficulty || 'All';
+        let diffQuery = "";
+        let params = [];
 
-        const [questions] = await db.execute(query);
-
-        if (questions.length === 0) {
-            return res.send("<h1>Database Empty! Please click 'Fix Data' links first.</h1>");
+        // యూజర్ ఏదైనా లెవెల్ సెలెక్ట్ చేసుకుంటే..
+        if (difficulty !== 'All') {
+            diffQuery = " AND difficulty = ? ";
+            params = [difficulty, difficulty, difficulty]; // 3 సబ్జెక్టులకి 3 సార్లు
         }
 
-        // ఇక్కడ టైమర్ 60 నిమిషాలు సెట్ చేస్తున్నాం (Frontend కోసం)
+        // 🔥 MAGIC QUERY: 20 Maths + 20 Logical + 20 Verbal
+        const query = `
+            (SELECT * FROM aptitude_questions WHERE category='Quantitative' ${diffQuery} ORDER BY RAND() LIMIT 20)
+            UNION ALL
+            (SELECT * FROM aptitude_questions WHERE category='Logical' ${diffQuery} ORDER BY RAND() LIMIT 20)
+            UNION ALL
+            (SELECT * FROM aptitude_questions WHERE category='Verbal' ${diffQuery} ORDER BY RAND() LIMIT 20)
+        `;
+
+        const [questions] = await db.execute(query, params);
+
+        if (questions.length === 0) {
+            return res.send("<h1>Not enough questions in this difficulty level. Try 'Mixed'.</h1>");
+        }
+
         res.render('exam_interface', { 
             questions, 
             user: req.session.user, 
-            topic: "Grand Mock Test (MNC Pattern)", 
-            difficulty: "Mixed (Standard)",
-            duration: 60 // 60 Minutes Duration pass chesthunnam
+            topic: `MNC Mega Test (${difficulty})`, 
+            duration: 60 
         });
 
     } catch (err) {

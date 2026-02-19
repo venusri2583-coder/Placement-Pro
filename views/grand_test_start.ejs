@@ -30,8 +30,25 @@
                             <i class="fas fa-exclamation-triangle me-1"></i> <strong>Warning:</strong> Tab switching or minimizing the window will result in automatic submission.
                         </div>
 
-                        <a href="/start-grand-exam" class="btn btn-dark w-100 py-3 fw-bold shadow">
-                            Start Mega Test Now <i class="fas fa-arrow-right ms-2"></i>
+                        <form action="/start-grand-exam" method="GET">
+    <h6 class="fw-bold mt-4 mb-3">Select Difficulty Level:</h6>
+    <div class="d-flex gap-2 mb-4">
+        <input type="radio" class="btn-check" name="difficulty" id="mixed" value="All" checked>
+        <label class="btn btn-outline-dark flex-fill fw-bold" for="mixed">Mixed</label>
+
+        <input type="radio" class="btn-check" name="difficulty" id="easy" value="Basic">
+        <label class="btn btn-outline-success flex-fill fw-bold" for="easy">Basic</label>
+
+        <input type="radio" class="btn-check" name="difficulty" id="medium" value="Medium">
+        <label class="btn btn-outline-warning flex-fill fw-bold" for="medium">Medium</label>
+
+        <input type="radio" class="btn-check" name="difficulty" id="hard" value="Advanced">
+        <label class="btn btn-outline-danger flex-fill fw-bold" for="hard">Hard</label>
+    </div>
+    <button type="submit" class="btn btn-dark w-100 py-3 fw-bold shadow">
+        Start Mega Test Now <i class="fas fa-arrow-right ms-2"></i>
+    </button>
+</form>
                         </a>
                     </div>
                 </div>
