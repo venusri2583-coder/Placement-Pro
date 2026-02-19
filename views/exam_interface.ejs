@@ -224,7 +224,7 @@
                 let newSec = Math.floor(index / 20);
                 if(newSec !== currentSec) {
                     currentSec = newSec;
-                    // 🔥 4 ట్యాబ్స్ కోసం లూప్ 🔥
+                    //4 tabs loop
                     for(let i=0; i<4; i++) {
                         let tab = document.getElementById('tab-'+i);
                         if(tab) {
@@ -245,12 +245,12 @@
                 <div class="q-text">
                     <span style="color:#007bff; font-weight:bold;">Q${displayNum}:</span> ${q.question}
                 </div>
-                <ul class="options-list">
+               <ul class="options-list">
                     ${['a', 'b', 'c', 'd'].map(opt => `
                         <li class="option-item">
-                            <label class="option-label ${userAnswers[index] === q['option_' + opt] ? 'selected' : ''}">
-                                <input type="radio" name="temp_q" value="${q['option_' + opt]}" 
-                                ${userAnswers[index] === q['option_' + opt] ? 'checked' : ''} onclick="updateSelectionUI()">
+                            <label class="option-label ${userAnswers[index] === opt.toUpperCase() ? 'selected' : ''}">
+                                <input type="radio" name="temp_q" value="${opt.toUpperCase()}" 
+                                ${userAnswers[index] === opt.toUpperCase() ? 'checked' : ''} onclick="updateSelectionUI()">
                                 <span style="margin-left:10px;">${opt.toUpperCase()}) ${q['option_' + opt]}</span>
                             </label>
                         </li>

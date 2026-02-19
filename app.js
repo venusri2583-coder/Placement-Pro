@@ -1469,35 +1469,63 @@ app.get('/mock-test', (req, res) => {
     res.redirect('/grand-test-intro');
 });
 // =============================================================
-// 🏆 GRAND EXAM SUBMIT ROUTE (క్యాలిక్యులేషన్ & రిజల్ట్)
+// 🏆 GRAND EXAM SUBMIT ROUTE (With Testbook-style Analysis)
 // =============================================================
 app.post('/submit-grand-exam', requireLogin, async (req, res) => {
     try {
-        // ఎగ్జామ్ పేజీ నుండి వచ్చిన డేటా (Payload) ని తీసుకుంటున్నాం
         const { questions, answers, topic } = JSON.parse(req.body.payload);
         
         let score = 0;
         let reviewData = [];
+        // సబ్జెక్ట్ వైజ్ అనాలసిస్ కోసం
+        let sectionScores = {
+            'Aptitude': { score: 0, total: 20 },
+            'Reasoning': { score: 0, total: 20 },
+            'English': { score: 0, total: 20 },
+            'Technical': { score: 0, total: 20 }
+        };
 
-        // ఎన్ని కరెక్ట్ అయ్యాయో లూప్ తిప్పి చెక్ చేస్తున్నాం
         questions.forEach((q, i) => {
-            const userAns = answers[i] || null;
-            const correctOpt = q.correct_option.trim();
+            const userAns = answers[i] || null; 
+            const correctOpt = q.correct_option.trim().toUpperCase(); 
             const isCorrect = (userAns === correctOpt);
             
-            if (isCorrect) score++;
+            // ఏ సెక్షన్ లో ఉన్నామో కనుక్కోవడం
+            let currentCategory = i < 20 ? 'Aptitude' : i < 40 ? 'Reasoning' : i < 60 ? 'English' : 'Technical';
 
-            // రిజల్ట్ పేజీలో చూపించడానికి డేటా రెడీ చేస్తున్నాం
+            if (isCorrect) {
+                score++;
+                sectionScores[currentCategory].score++; // సబ్జెక్ట్ కి ఒక మార్కు యాడ్
+            }
+
+            // రిజల్ట్ పేజీలో చూపించడానికి ఆప్షన్ల టెక్స్ట్ ని బయటికి తీస్తున్నాం
+            let userAnsText = "Not Attempted";
+            if (userAns) {
+                if (userAns === 'A') userAnsText = q.option_a;
+                if (userAns === 'B') userAnsText = q.option_b;
+                if (userAns === 'C') userAnsText = q.option_c;
+                if (userAns === 'D') userAnsText = q.option_d;
+            }
+            
+            let correctAnsText = "";
+            if (correctOpt === 'A') correctAnsText = q.option_a;
+            if (correctOpt === 'B') correctAnsText = q.option_b;
+            if (correctOpt === 'C') correctAnsText = q.option_c;
+            if (correctOpt === 'D') correctAnsText = q.option_d;
+
             reviewData.push({
-                q: q.question,
-                userAns: userAns,
-                correctAns: correctOpt,
-                explanation: q.explanation,
-                isCorrect: isCorrect
+                qNum: i + 1,
+                category: currentCategory,
+                qText: q.question,
+                userAnsText: userAnsText,
+                correctAnsText: correctAnsText,
+                explanation: q.explanation || "Direct formula or concept applied.",
+                isCorrect: isCorrect,
+                isAttempted: userAns !== null
             });
         });
 
-        // 💾 డేటాబేస్ లో స్కోర్ సేవ్ చేస్తున్నాం (Leaderboard/Dashboard కోసం)
+        // 💾 లీడర్‌బోర్డ్ లోకి స్కోర్ వెళ్ళడానికి డేటాబేస్ సేవ్
         await db.execute(
             'INSERT INTO mock_results (user_id, score, total, topic) VALUES (?, ?, ?, ?)', 
             [req.session.user.id, score, questions.length, topic]
@@ -1508,6 +1536,7 @@ app.post('/submit-grand-exam', requireLogin, async (req, res) => {
             score: score, 
             total: questions.length, 
             reviewData: reviewData, 
+            sectionScores: sectionScores, // కొత్త అనాలసిస్ డేటా
             topic: topic,
             user: req.session.user 
         });

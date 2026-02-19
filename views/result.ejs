@@ -33,43 +33,87 @@
                         Accuracy: <%= percentage.toFixed(1) %>%
                     </div>
 
-                    <div class="d-grid gap-2">
-                        <a href="/" class="btn btn-primary rounded-pill py-2 fw-bold shadow-sm transition-hover">Back to Dashboard</a>
+                    <div class="d-grid gap-3 d-md-flex justify-content-md-center">
+                        <a href="/leaderboard" class="btn btn-warning rounded-pill py-2 px-4 fw-bold shadow-sm transition-hover">
+                            <i class="fas fa-crown me-2"></i> Leaderboard
+                        </a>
+                        <a href="/" class="btn btn-dark rounded-pill py-2 px-4 fw-bold shadow-sm transition-hover">
+                            <i class="fas fa-home me-2"></i> Dashboard
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <% if (typeof sectionScores !== 'undefined') { %>
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-10">
+            <div class="card shadow-sm border-0 animate__animated animate__fadeInUp" style="border-radius: 20px; animation-delay: 0.2s;">
+                <div class="card-body p-4">
+                    <h4 class="fw-bold mb-4 text-dark"><i class="fas fa-chart-pie text-primary me-2"></i> Performance Analysis</h4>
+                    <div class="row g-4">
+                        <% for (let sec in sectionScores) { 
+                            let sScore = sectionScores[sec].score;
+                            let sTotal = sectionScores[sec].total;
+                            let secPercent = sTotal > 0 ? Math.round((sScore/sTotal)*100) : 0;
+                            let color = secPercent >= 70 ? 'success' : (secPercent >= 40 ? 'warning' : 'danger');
+                            let msg = secPercent >= 70 ? 'Strong' : (secPercent >= 40 ? 'Average' : 'Weak');
+                        %>
+                        <div class="col-md-6">
+                            <div class="p-3 border rounded-3 bg-light">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="fw-bold text-dark"><%= sec %></span>
+                                    <span class="badge bg-<%= color %>"><%= sScore %> / <%= sTotal %> (<%= msg %>)</span>
+                                </div>
+                                <div class="progress" style="height: 8px; border-radius: 5px;">
+                                    <div class="progress-bar bg-<%= color %>" style="width: <%= secPercent %>%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <% } %>
+
     <div class="row justify-content-center">
         <div class="col-md-10">
             <h4 class="fw-bold mb-4 text-dark"><i class="fas fa-search-location me-2 text-primary"></i> Detailed Solution Review</h4>
             
             <% if (typeof reviewData !== 'undefined' && reviewData.length > 0) { %>
-                <% reviewData.forEach((item, index) => { %>
+                <% reviewData.forEach((item, index) => { 
+                    let isAttempted = item.isAttempted !== undefined ? item.isAttempted : true;
+                    let borderColor = item.isCorrect ? '#28a745' : (isAttempted ? '#dc3545' : '#6c757d');
+                %>
                     <div class="card mb-3 border-0 shadow-sm animate__animated animate__fadeInUp" 
-                         style="border-radius: 20px; border-left: 8px solid <%= item.isCorrect ? '#28a745' : '#dc3545' %> !important; animation-delay: 0.1s;">
+                         style="border-radius: 20px; border-left: 8px solid <%= borderColor %> !important; animation-delay: 0.1s;">
                         <div class="card-body p-4">
                             <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h6 class="fw-bold text-dark m-0">Q<%= index + 1 %>: <%= item.q %></h6>
-                                <i class="fas <%= item.isCorrect ? 'fa-check-circle text-success' : 'fa-times-circle text-danger' %> fa-lg"></i>
+                                <h6 class="fw-bold text-dark m-0">
+                                    <span class="badge bg-secondary me-2"><%= item.category || 'Q' %></span> 
+                                    Q<%= item.qNum || index + 1 %>: <%= item.qText || item.q %>
+                                </h6>
+                                <i class="fas <%= item.isCorrect ? 'fa-check-circle text-success' : (isAttempted ? 'fa-times-circle text-danger' : 'fa-minus-circle text-secondary') %> fa-lg"></i>
                             </div>
 
                             <div class="mt-3">
-                                <div class="small mb-2 p-2 rounded-pill px-3 <%= item.isCorrect ? 'bg-light text-success fw-bold' : 'bg-light text-danger fw-bold' %>" style="display: inline-block;">
-                                    Your Choice: Option <%= item.userAns ? item.userAns : "Skipped" %>
+                                <div class="small mb-2 p-2 rounded-pill px-3 <%= item.isCorrect ? 'bg-success text-white' : (isAttempted ? 'bg-danger text-white' : 'bg-secondary text-white') %> fw-bold" style="display: inline-block;">
+                                    Your Choice: <%= item.userAnsText || item.userAns || "Skipped" %>
                                 </div>
                                 
                                 <% if (!item.isCorrect) { %>
                                     <br>
-                                    <div class="small mb-2 p-2 rounded-pill px-3 bg-light text-success fw-bold" style="display: inline-block;">
-                                        Correct Answer: Option <%= item.correctAns %>
+                                    <div class="small mb-2 p-2 rounded-pill px-3 bg-success text-white fw-bold" style="display: inline-block;">
+                                        Correct Answer: <%= item.correctAnsText || item.correctAns %>
                                     </div>
                                 <% } %>
                             </div>
 
                             <div class="bg-light p-3 rounded-3 mt-3 border-start border-3 border-primary" style="font-size: 0.9rem;">
-                                <strong class="text-primary"><i class="far fa-lightbulb me-1"></i> Explanation:</strong>
+                                <strong class="text-primary"><i class="far fa-lightbulb me-1"></i> Solution & Shortcut:</strong>
                                 <div class="mt-1 text-muted">
                                     <%= item.explanation ? item.explanation : "Standard calculation logic applied." %>
                                 </div>
