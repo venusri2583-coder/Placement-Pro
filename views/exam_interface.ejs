@@ -135,10 +135,10 @@
             </div>
 
             <div class="legend">
-                <div class="legend-item"><div class="dot answered">1</div> Answered</div>
-                <div class="legend-item"><div class="dot not-answered">2</div> Not Answered</div>
-                <div class="legend-item"><div class="dot not-visited">3</div> Not Visited</div>
-                <div class="legend-item"><div class="dot review">4</div> Review</div>
+                <div class="legend-item"><div class="dot answered" id="ansCount">0</div> Answered</div>
+                <div class="legend-item"><div class="dot not-answered" id="notAnsCount">0</div> Not Answered</div>
+                <div class="legend-item"><div class="dot not-visited" id="notVisitedCount">0</div> Not Visited</div>
+                <div class="legend-item"><div class="dot review" id="reviewCount">0</div> Review</div>
             </div>
 
             <div class="palette-grid-container">
@@ -164,9 +164,8 @@
             alert("No questions found! Please check your database connection.");
         }
 
-        // 80 ప్రశ్నలు ఉంటేనే 4 Section Tabs వస్తాయి
         const isMegaTest = questions.length > 20; 
-        let currentSec = 0; // 0: Aptitude, 1: Reasoning, 2: English, 3: Technical
+        let currentSec = 0; 
         
         let currentQIndex = 0;
         let qStatus = new Array(questions.length).fill(0); // 0=Not Visited, 1=Not Ans, 2=Ans, 3=Review
@@ -175,6 +174,19 @@
 
         let timeInSeconds = <%= typeof duration !== 'undefined' ? duration : 80 %> * 60; 
         const timerDisplay = document.getElementById('timer');
+
+        // 🔥 LIVE COUNTS UPDATE FUNCTION (Moved Globally) 🔥
+        function updateLiveCounts() {
+            const answered = qStatus.filter(s => s === 2).length;
+            const notAnswered = qStatus.filter(s => s === 1).length;
+            const review = qStatus.filter(s => s === 3).length;
+            const notVisited = qStatus.filter(s => s === 0).length;
+
+            document.getElementById('ansCount').innerText = answered;
+            document.getElementById('notAnsCount').innerText = notAnswered;
+            document.getElementById('notVisitedCount').innerText = notVisited;
+            document.getElementById('reviewCount').innerText = review;
+        }
 
         function startExam() {
             document.getElementById('start-overlay').style.display = 'none';
@@ -185,6 +197,7 @@
             }
 
             loadQuestion(0);
+            updateLiveCounts();
 
             timerInterval = setInterval(() => {
                 let m = Math.floor(timeInSeconds / 60);
@@ -199,11 +212,10 @@
                 timeInSeconds--;
             }, 1000);
         }
+       
 
         function switchSection(secIndex) {
             currentSec = secIndex;
-            
-            // 🔥 4 ట్యాబ్స్ కోసం లూప్ 🔥
             for(let i=0; i<4; i++) {
                 let tab = document.getElementById('tab-'+i);
                 if(tab) {
@@ -211,8 +223,6 @@
                     else tab.classList.remove('active');
                 }
             }
-            
-            // జంప్
             loadQuestion(secIndex * 20);
         }
 
@@ -224,7 +234,6 @@
                 let newSec = Math.floor(index / 20);
                 if(newSec !== currentSec) {
                     currentSec = newSec;
-                    //4 tabs loop
                     for(let i=0; i<4; i++) {
                         let tab = document.getElementById('tab-'+i);
                         if(tab) {
@@ -236,7 +245,7 @@
             }
 
             const q = questions[index];
-            if (qStatus[index] === 0) qStatus[index] = 1;
+            if (qStatus[index] === 0) qStatus[index] = 1; // Mark as Not Answered (Red) when visited
 
             let displayNum = isMegaTest ? (index % 20) + 1 : index + 1;
 
@@ -245,7 +254,7 @@
                 <div class="q-text">
                     <span style="color:#007bff; font-weight:bold;">Q${displayNum}:</span> ${q.question}
                 </div>
-               <ul class="options-list">
+                <ul class="options-list">
                     ${['a', 'b', 'c', 'd'].map(opt => `
                         <li class="option-item">
                             <label class="option-label ${userAnswers[index] === opt.toUpperCase() ? 'selected' : ''}">
@@ -258,6 +267,7 @@
                 </ul>
             `;
             updatePalette();
+            updateLiveCounts(); // 🔥 LIVE UPDATE 🔥
         }
 
         function updateSelectionUI() {
@@ -296,12 +306,12 @@
             const selected = document.querySelector('input[name="temp_q"]:checked');
             if (selected) {
                 userAnswers[currentQIndex] = selected.value;
-                qStatus[currentQIndex] = 2;
+                qStatus[currentQIndex] = 2; // Green
             } else {
-                if(qStatus[currentQIndex] === 0) qStatus[currentQIndex] = 1;
+                if(qStatus[currentQIndex] === 0 || qStatus[currentQIndex] === 3) qStatus[currentQIndex] = 1; 
             }
             if (currentQIndex < questions.length - 1) loadQuestion(currentQIndex + 1);
-            else updatePalette();
+            else { updatePalette(); updateLiveCounts(); }
         }
 
         function goPrev() {
@@ -313,17 +323,19 @@
             if (selected) selected.checked = false;
             updateSelectionUI();
             userAnswers[currentQIndex] = null;
-            qStatus[currentQIndex] = 1; 
+            qStatus[currentQIndex] = 1; // Mark back to Not Answered
             updatePalette();
+            updateLiveCounts(); // 🔥 LIVE UPDATE 🔥
         }
 
         function markForReview() {
-            qStatus[currentQIndex] = 3; 
+            qStatus[currentQIndex] = 3; // Purple/Blue
             if (currentQIndex < questions.length - 1) loadQuestion(currentQIndex + 1);
-            else updatePalette();
+            else { updatePalette(); updateLiveCounts(); }
         }
 
         function submitTest() {
+            if(!confirm("Are you sure you want to submit the test?")) return;
             clearInterval(timerInterval);
             const form = document.getElementById('quizForm');
             
