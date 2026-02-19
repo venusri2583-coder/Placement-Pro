@@ -180,42 +180,47 @@ app.post('/update-password', async (req, res) => {
 });
 app.get('/leaderboard', requireLogin, async (req, res) => {
     try {
+        // 1. టాప్ 10 మెగా టెస్ట్ ర్యాంకర్స్
         const [rankings] = await db.query(`
             SELECT u.username, MAX(m.score) as high_score, m.total 
             FROM mock_results m 
             JOIN users u ON m.user_id = u.id 
             WHERE m.test_type = 'Mega' 
             GROUP BY u.id, u.username, m.total 
-            ORDER BY high_score DESC 
-            LIMIT 10
+            ORDER BY high_score DESC LIMIT 10
         `);
 
+        // 2. యూజర్ పర్సనల్ హిస్టరీ
         const [myScores] = await db.query(`
             SELECT id, score, total, topic, created_at as test_date, test_type 
             FROM mock_results 
-            WHERE user_id = ? 
-            ORDER BY created_at DESC
+            WHERE user_id = ? ORDER BY created_at DESC
         `, [req.session.user.id]);
-        // 🏆 నీ గ్లోబల్ ర్యాంకును లెక్కించే క్వెరీ
-const [rankData] = await db.query(`
-    SELECT COUNT(DISTINCT user_id) + 1 AS current_rank 
-    FROM mock_results 
-    WHERE test_type = 'Mega' AND score > (
-        SELECT MAX(score) FROM mock_results WHERE user_id = ? AND test_type = 'Mega'
-    )
-`, [req.session.user.id]);
 
-let myRank = rankData[0].current_rank;
+        // 3. నీ గ్లోబల్ ర్యాంకు లెక్కించడం
+        let myRank = 'N/A';
+        const [megaCheck] = await db.query("SELECT MAX(score) as top FROM mock_results WHERE user_id = ? AND test_type = 'Mega'", [req.session.user.id]);
+        
+        if (megaCheck[0].top !== null) {
+            const [rankData] = await db.query(`
+                SELECT COUNT(DISTINCT user_id) + 1 AS current_rank 
+                FROM mock_results 
+                WHERE test_type = 'Mega' AND score > ?
+            `, [megaCheck[0].top]);
+            myRank = rankData[0].current_rank;
+        }
 
-// ఒకవేళ యూజర్ అసలు ఎగ్జామ్ రాయకపోతే ర్యాంక్ ఉండదు
-if (myScores.length === 0) myRank = 'N/A';
+        // 🔥 పక్కాగా అన్ని వేరియబుల్స్ పంపిస్తున్నాం
+        res.render('leaderboard', { 
+            user: req.session.user, 
+            rankings: rankings || [], 
+            myScores: myScores || [], 
+            myRank: myRank 
+        });
 
-res.render('leaderboard', { user: req.session.user, rankings, myScores, myRank });
-
-        res.render('leaderboard', { user: req.session.user, rankings, myScores });
     } catch(e) { 
-        console.error(e);
-        res.render('leaderboard', { user: req.session.user, rankings: [], myScores: [] }); 
+        console.error("Leaderboard Error:", e);
+        res.render('leaderboard', { user: req.session.user, rankings: [], myScores: [], myRank: 'N/A' }); 
     }
 });
 // --- PRACTICE ENGINE ---
@@ -283,52 +288,6 @@ app.post('/submit-exam', requireLogin, async (req, res) => {
         res.redirect('/'); 
     }
 });
-app.get('/leaderboard', requireLogin, async (req, res) => {
-    try {
-        // 1. టాప్ ర్యాంకర్స్
-        const [rankings] = await db.query(`
-            SELECT u.username, MAX(m.score) as high_score, m.total 
-            FROM mock_results m 
-            JOIN users u ON m.user_id = u.id 
-            WHERE m.test_type = 'Mega' 
-            GROUP BY u.id, u.username, m.total 
-            ORDER BY high_score DESC LIMIT 10
-        `);
-
-        // 2. యూజర్ హిస్టరీ
-        const [myScores] = await db.query(`
-            SELECT id, score, total, topic, created_at as test_date, test_type 
-            FROM mock_results 
-            WHERE user_id = ? ORDER BY created_at DESC
-        `, [req.session.user.id]);
-
-        // 3. పర్సనల్ ర్యాంక్ కాలిక్యులేషన్
-        let myRank = 'N/A';
-        if (myScores.length > 0) {
-            const [rankData] = await db.query(`
-                SELECT COUNT(DISTINCT user_id) + 1 AS current_rank 
-                FROM mock_results 
-                WHERE test_type = 'Mega' AND score > (
-                    SELECT MAX(score) FROM mock_results WHERE user_id = ? AND test_type = 'Mega' LIMIT 1
-                )
-            `, [req.session.user.id]);
-            myRank = rankData[0].current_rank;
-        }
-
-        // 🔥 అన్ని వేరియబుల్స్ పంపిస్తున్నాం - ఏదీ మిస్ అవ్వకూడదు!
-        res.render('leaderboard', { 
-            user: req.session.user, 
-            rankings: rankings || [], 
-            myScores: myScores || [], 
-            myRank: myRank 
-        });
-
-    } catch(e) { 
-        console.error("Leaderboard Error:", e);
-        res.render('leaderboard', { user: req.session.user, rankings: [], myScores: [], myRank: 'N/A' }); 
-    }
-});
-
 // =============================================================
 // 🔥 SHUFFLE DATA GENERATOR (Random A, B, C, D)
 // =============================================================
@@ -1653,13 +1612,17 @@ app.get('/view-analysis/:id', requireLogin, async (req, res) => {
         }
     } catch (err) { res.redirect('/leaderboard'); }
 });
-// 🔥 కేవలం ఒక్కసారి రన్ చేయడానికి 'test_type' ఫిక్సర్
 app.get('/add-test-type-column', async (req, res) => {
     try {
-        await db.execute("ALTER TABLE mock_results ADD COLUMN test_type VARCHAR(20) DEFAULT 'Topic'");
-        res.send("<h1>✅ Success! 'test_type' column added to mock_results.</h1>");
+        // 1. test_type కాలమ్ యాడ్ చేయడం
+        try { await db.execute("ALTER TABLE mock_results ADD COLUMN test_type VARCHAR(20) DEFAULT 'Topic'"); } catch(e){}
+        
+        // 2. answers_json కాలమ్ యాడ్ చేయడం (ఇది లేకపోతేనే హోమ్ కి వెళ్తుంది)
+        try { await db.execute("ALTER TABLE mock_results ADD COLUMN answers_json LONGTEXT"); } catch(e){}
+
+        res.send("<h1>✅ Database Fixed! Columns added successfully.</h1><p>Now try submitting the Mega Test.</p>");
     } catch (err) {
-        res.send("<h1>⚠️ Column might already exist or Error: " + err.message + "</h1>");
+        res.send("<h1>❌ Error: " + err.message + "</h1>");
     }
 });
 const PORT = process.env.PORT || 5000;
