@@ -196,6 +196,21 @@ app.get('/leaderboard', requireLogin, async (req, res) => {
             WHERE user_id = ? 
             ORDER BY created_at DESC
         `, [req.session.user.id]);
+        // 🏆 నీ గ్లోబల్ ర్యాంకును లెక్కించే క్వెరీ
+const [rankData] = await db.query(`
+    SELECT COUNT(DISTINCT user_id) + 1 AS current_rank 
+    FROM mock_results 
+    WHERE test_type = 'Mega' AND score > (
+        SELECT MAX(score) FROM mock_results WHERE user_id = ? AND test_type = 'Mega'
+    )
+`, [req.session.user.id]);
+
+let myRank = rankData[0].current_rank;
+
+// ఒకవేళ యూజర్ అసలు ఎగ్జామ్ రాయకపోతే ర్యాంక్ ఉండదు
+if (myScores.length === 0) myRank = 'N/A';
+
+res.render('leaderboard', { user: req.session.user, rankings, myScores, myRank });
 
         res.render('leaderboard', { user: req.session.user, rankings, myScores });
     } catch(e) { 
@@ -270,27 +285,47 @@ app.post('/submit-exam', requireLogin, async (req, res) => {
 });
 app.get('/leaderboard', requireLogin, async (req, res) => {
     try {
-        // 🔥 ఫిల్టర్: కేవలం 'Mega' టెస్ట్ రాసిన వారిని మాత్రమే తీసుకుంటున్నాం
+        // 1. టాప్ ర్యాంకర్స్
         const [rankings] = await db.query(`
             SELECT u.username, MAX(m.score) as high_score, m.total 
             FROM mock_results m 
             JOIN users u ON m.user_id = u.id 
             WHERE m.test_type = 'Mega' 
             GROUP BY u.id, u.username, m.total 
-            ORDER BY high_score DESC 
-            LIMIT 10
+            ORDER BY high_score DESC LIMIT 10
         `);
 
+        // 2. యూజర్ హిస్టరీ
         const [myScores] = await db.query(`
-            SELECT id, score, total, topic, created_at, test_type 
+            SELECT id, score, total, topic, created_at as test_date, test_type 
             FROM mock_results 
-            WHERE user_id = ? 
-            ORDER BY created_at DESC
+            WHERE user_id = ? ORDER BY created_at DESC
         `, [req.session.user.id]);
 
-        res.render('leaderboard', { user: req.session.user, rankings, myScores });
+        // 3. పర్సనల్ ర్యాంక్ కాలిక్యులేషన్
+        let myRank = 'N/A';
+        if (myScores.length > 0) {
+            const [rankData] = await db.query(`
+                SELECT COUNT(DISTINCT user_id) + 1 AS current_rank 
+                FROM mock_results 
+                WHERE test_type = 'Mega' AND score > (
+                    SELECT MAX(score) FROM mock_results WHERE user_id = ? AND test_type = 'Mega' LIMIT 1
+                )
+            `, [req.session.user.id]);
+            myRank = rankData[0].current_rank;
+        }
+
+        // 🔥 అన్ని వేరియబుల్స్ పంపిస్తున్నాం - ఏదీ మిస్ అవ్వకూడదు!
+        res.render('leaderboard', { 
+            user: req.session.user, 
+            rankings: rankings || [], 
+            myScores: myScores || [], 
+            myRank: myRank 
+        });
+
     } catch(e) { 
-        res.render('leaderboard', { user: req.session.user, rankings: [], myScores: [] }); 
+        console.error("Leaderboard Error:", e);
+        res.render('leaderboard', { user: req.session.user, rankings: [], myScores: [], myRank: 'N/A' }); 
     }
 });
 
