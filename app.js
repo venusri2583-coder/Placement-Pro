@@ -1456,5 +1456,9 @@ app.get('/start-grand-exam', requireLogin, async (req, res) => {
         res.redirect('/');
     }
 });
+// పాత లింక్ నొక్కినా, కొత్త గ్రాండ్ టెస్ట్ కి వెళ్ళేలా...
+app.get('/mock-test', (req, res) => {
+    res.redirect('/grand-test-intro');
+});
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
