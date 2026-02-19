@@ -1467,5 +1467,54 @@ app.get('/start-grand-exam', requireLogin, async (req, res) => {
 app.get('/mock-test', (req, res) => {
     res.redirect('/grand-test-intro');
 });
+// =============================================================
+// 🏆 GRAND EXAM SUBMIT ROUTE (క్యాలిక్యులేషన్ & రిజల్ట్)
+// =============================================================
+app.post('/submit-grand-exam', requireLogin, async (req, res) => {
+    try {
+        // ఎగ్జామ్ పేజీ నుండి వచ్చిన డేటా (Payload) ని తీసుకుంటున్నాం
+        const { questions, answers, topic } = JSON.parse(req.body.payload);
+        
+        let score = 0;
+        let reviewData = [];
+
+        // ఎన్ని కరెక్ట్ అయ్యాయో లూప్ తిప్పి చెక్ చేస్తున్నాం
+        questions.forEach((q, i) => {
+            const userAns = answers[i] || null;
+            const correctOpt = q.correct_option.trim();
+            const isCorrect = (userAns === correctOpt);
+            
+            if (isCorrect) score++;
+
+            // రిజల్ట్ పేజీలో చూపించడానికి డేటా రెడీ చేస్తున్నాం
+            reviewData.push({
+                q: q.question,
+                userAns: userAns,
+                correctAns: correctOpt,
+                explanation: q.explanation,
+                isCorrect: isCorrect
+            });
+        });
+
+        // 💾 డేటాబేస్ లో స్కోర్ సేవ్ చేస్తున్నాం (Leaderboard/Dashboard కోసం)
+        await db.execute(
+            'INSERT INTO mock_results (user_id, score, total, topic) VALUES (?, ?, ?, ?)', 
+            [req.session.user.id, score, questions.length, topic]
+        );
+
+        // 🎉 ఫైనల్ రిజల్ట్ పేజీ కి పంపిస్తున్నాం
+        res.render('result', { 
+            score: score, 
+            total: questions.length, 
+            reviewData: reviewData, 
+            topic: topic,
+            user: req.session.user 
+        });
+
+    } catch (err) { 
+        console.error("Grand Submit Error:", err);
+        res.redirect('/'); 
+    }
+});
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
