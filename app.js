@@ -1576,41 +1576,72 @@ app.post('/submit-grand-exam', requireLogin, async (req, res) => {
                 shortcut: q.shortcut || "Use basic elimination or direct formula." 
             });
         });
-
-await db.execute(
+// ✅ 1. డేటాని సేవ్ చేసి, ఆ రిజల్ట్ ని 'saveResult' అనే వేరియబుల్ లో దాచుకుంటున్నాం
+const [saveResult] = await db.execute(
     'INSERT INTO mock_results (user_id, score, total, topic, answers_json, test_type) VALUES (?, ?, ?, ?, ?, ?)', 
     [req.session.user.id, score, questions.length, topic, JSON.stringify(answers), 'Mega']
 );
-
         
-        res.render('result', { 
-            score, 
-            total: questions.length, 
-            reviewData, 
-            sectionScores, 
-            topic, 
-            user: req.session.user 
-        });
+        // ✅ 2. పేజీని చూపించేటప్పుడు ఆ బిల్ నంబర్ (resultId) ని కూడా పంపిస్తున్నాం
+res.render('result', { 
+    score, 
+    total: questions.length, 
+    reviewData, 
+    sectionScores, 
+    topic, 
+    user: req.session.user,
+    resultId: saveResult.insertId  // 🔥 ఇది యాడ్ చెయ్ మావా
+});
 
     } catch (err) { 
         console.error("Submission Error:", err); 
         res.redirect('/'); 
     }
 });
-// 🔍 పాత ఎగ్జామ్ అనాలసిస్ చూసే రూట్
+// 🔍 పక్కాగా పనిచేసే పేపర్ అనాలసిస్ రూట్
 app.get('/view-analysis/:id', requireLogin, async (req, res) => {
     try {
         const [result] = await db.execute('SELECT * FROM mock_results WHERE id = ? AND user_id = ?', [req.params.id, req.session.user.id]);
         
         if (result.length > 0) {
             const savedAnswers = JSON.parse(result[0].answers_json);
-            // ఇక్కడ నువ్వు మళ్ళీ క్వశ్చన్స్ ని ఫెచ్ చేసి, savedAnswers తో కంపేర్ చేసి 'result' పేజీని రెండర్ చేయాలి.
-            // ఇది నీ అనాలసిస్ ఫీచర్ కి ఫుల్ పవర్ ఇస్తుంది!
-            res.send("This feature is almost ready! We need to fetch questions for Topic: " + result[0].topic);
+            // మెగా టెస్ట్ అయితే 80 ప్రశ్నలు, టాపిక్ టెస్ట్ అయితే 15 ప్రశ్నలు తెచ్చుకోవాలి
+            const limitCount = result[0].test_type === 'Mega' ? 80 : 15;
+            
+            // ప్రశ్నలను డేటాబేస్ నుండి మళ్ళీ తెస్తున్నాం
+            const [dbQuestions] = await db.execute('SELECT * FROM aptitude_questions LIMIT ?', [limitCount]);
+
+            let reviewData = [];
+            dbQuestions.forEach((q, i) => {
+                const userAns = savedAnswers[i] || null;
+                const correctOpt = q.correct_option.trim().toUpperCase();
+                reviewData.push({
+                    qNo: i + 1,
+                    question: q.question,
+                    userAnsText: userAns ? `${userAns}) ${q['option_' + userAns.toLowerCase()]}` : "Skipped",
+                    correctAnsText: `${correctOpt}) ${q['option_' + correctOpt.toLowerCase()]}`,
+                    isCorrect: (userAns === correctOpt),
+                    briefSolution: q.explanation || "No explanation available.",
+                    shortcut: q.shortcut || "N/A"
+                });
+            });
+
+            // రిజల్ట్ పేజీనే అనాలసిస్ మూడ్ లో చూపిస్తున్నాం
+            res.render('result', { 
+                score: result[0].score, 
+                total: result[0].total, 
+                reviewData, 
+                sectionScores: null, // అనాలసిస్ లో సెక్షన్ స్కోర్లు అక్కర్లేదు
+                topic: result[0].topic, 
+                user: req.session.user 
+            });
         } else {
             res.redirect('/leaderboard');
         }
-    } catch (err) { res.redirect('/leaderboard'); }
+    } catch (err) { 
+        console.error(err);
+        res.redirect('/leaderboard'); 
+    }
 });
 app.get('/add-test-type-column', async (req, res) => {
     try {
