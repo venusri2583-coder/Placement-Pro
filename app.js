@@ -1546,5 +1546,39 @@ app.post('/submit-grand-exam', requireLogin, async (req, res) => {
         res.redirect('/'); 
     }
 });
+// =============================================================
+// 🏆 LEADERBOARD ROUTE
+// =============================================================
+app.get('/leaderboard', requireLogin, async (req, res) => {
+    try {
+        // 1. టాప్ 10 ర్యాంకర్స్ డేటా తీసుకురావడం
+        const [leaderboard] = await db.execute(`
+            SELECT u.username, m.score, m.total, m.topic, m.created_at 
+            FROM mock_results m 
+            JOIN users u ON m.user_id = u.id 
+            ORDER BY (m.score/m.total) DESC, m.score DESC 
+            LIMIT 10
+        `);
+
+        // 2. కరెంట్ యూజర్ (నీ) పాత స్కోర్స్ డేటా తీసుకురావడం (దీని వల్లే ఎర్రర్ వచ్చింది!)
+        const [myScores] = await db.execute(`
+            SELECT score, total, topic, created_at 
+            FROM mock_results 
+            WHERE user_id = ? 
+            ORDER BY created_at DESC
+        `, [req.session.user.id]);
+
+        // 3. పేజీకి డేటా పంపించడం
+        res.render('leaderboard', { 
+            user: req.session.user,
+            leaderboard: leaderboard,
+            myScores: myScores // ఇక్కడ డేటా పంపిస్తున్నాం!
+        });
+
+    } catch (err) {
+        console.error("Leaderboard Error:", err);
+        res.redirect('/');
+    }
+});
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
