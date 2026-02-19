@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Elite Mock Test | Professional Exam Mode</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         /* --- GLOBAL STYLES --- */
@@ -34,7 +36,7 @@
         .q-text { margin-bottom: 20px; font-weight: 500; color: #222; border-bottom: 1px solid #eee; padding-bottom: 15px; }
         
         /* Options */
-        .options-list { list-style: none; }
+        .options-list { list-style: none; padding-left: 0; }
         .option-item { margin-bottom: 12px; }
         .option-label { display: flex; align-items: center; cursor: pointer; padding: 10px; border: 1px solid #e0e0e0; border-radius: 5px; transition: 0.2s; }
         .option-label:hover { background: #f9f9f9; border-color: #007bff; }
@@ -82,8 +84,9 @@
 <body>
 
     <div id="start-overlay">
-        <h2 style="margin-bottom: 20px;">🛡️ Secure Testing Environment</h2>
-        <p style="margin-bottom: 30px; font-size: 18px;">Please click the button to enter Full Screen mode and start.</p>
+        <i class="fas fa-shield-alt fa-4x text-success mb-3"></i>
+        <h2 style="margin-bottom: 20px;">Secure Testing Environment</h2>
+        <p style="margin-bottom: 30px; font-size: 18px;">Your screen will be locked. Do not exit full screen.</p>
         <button class="btn btn-next" style="font-size: 20px; padding: 15px 40px;" onclick="startExam()">Start Test Now</button>
     </div>
 
@@ -106,7 +109,7 @@
                 <button class="sec-tab active" id="tab-0" onclick="switchSection(0)">Aptitude</button>
                 <button class="sec-tab" id="tab-1" onclick="switchSection(1)">Logical Reasoning</button>
                 <button class="sec-tab" id="tab-2" onclick="switchSection(2)">Verbal Ability</button>
-            </div>
+                <button class="sec-tab" id="tab-3" onclick="switchSection(3)">Technical MCQs</button> </div>
 
             <div class="q-content" id="questionContainer"></div>
             
@@ -115,7 +118,10 @@
                     <button class="btn btn-clear" onclick="clearResponse()">Clear Response</button>
                     <button class="btn btn-review" onclick="markForReview()">Mark for Review</button>
                 </div>
-                <button class="btn btn-next" onclick="saveAndNext()">Save & Next</button>
+                <div>
+                    <button class="btn btn-secondary me-2" onclick="goPrev()">Previous</button>
+                    <button class="btn btn-next" onclick="saveAndNext()">Save & Next</button>
+                </div>
             </div>
         </div>
 
@@ -151,7 +157,6 @@
     </form>
 
     <script>
-        // --- 1. SAFE DATA LOADING ---
         const questions = <%- (typeof questions !== 'undefined' && questions) ? JSON.stringify(questions) : '[]' %>;
         const topicName = "<%= (typeof topic !== 'undefined') ? topic : 'General Test' %>";
 
@@ -159,33 +164,28 @@
             alert("No questions found! Please check your database connection.");
         }
 
-        // 60 ప్రశ్నలు ఉంటేనే Section Tabs వస్తాయి
+        // 80 ప్రశ్నలు ఉంటేనే 4 Section Tabs వస్తాయి
         const isMegaTest = questions.length > 20; 
-        let currentSec = 0; // 0: Aptitude, 1: Reasoning, 2: English
+        let currentSec = 0; // 0: Aptitude, 1: Reasoning, 2: English, 3: Technical
         
         let currentQIndex = 0;
         let qStatus = new Array(questions.length).fill(0); // 0=Not Visited, 1=Not Ans, 2=Ans, 3=Review
         let userAnswers = new Array(questions.length).fill(null);
         let timerInterval;
 
-        // --- 2. TIMER (Dynamic from Backend) ---
-        // Duration నిమిషాల్లో వస్తుంది, సెకన్లకి మారుస్తున్నాం
-        let timeInSeconds = <%= typeof duration !== 'undefined' ? duration : 30 %> * 60; 
+        let timeInSeconds = <%= typeof duration !== 'undefined' ? duration : 80 %> * 60; 
         const timerDisplay = document.getElementById('timer');
 
-        // --- 3. START EXAM ---
         function startExam() {
             document.getElementById('start-overlay').style.display = 'none';
             document.documentElement.requestFullscreen().catch(e=>console.log(e));
             
-            // Show Section Tabs only for 60-question mega test
             if (isMegaTest) {
                 document.getElementById('sectionTabs').style.display = 'flex';
             }
 
             loadQuestion(0);
 
-            // Start Timer
             timerInterval = setInterval(() => {
                 let m = Math.floor(timeInSeconds / 60);
                 let s = timeInSeconds % 60;
@@ -200,11 +200,10 @@
             }, 1000);
         }
 
-        // --- 4. SECTION LOGIC ---
         function switchSection(secIndex) {
             currentSec = secIndex;
             
-            // Update Active Tab UI
+            // 🔥 4 ట్యాబ్స్ కోసం లూప్ 🔥
             for(let i=0; i<4; i++) {
                 let tab = document.getElementById('tab-'+i);
                 if(tab) {
@@ -213,20 +212,19 @@
                 }
             }
             
-            // Jump to the first question of selected section (0, 20, or 40)
+            // జంప్
             loadQuestion(secIndex * 20);
         }
 
-        // --- 5. RENDER QUESTION ---
         function loadQuestion(index) {
             if(questions.length === 0) return;
             currentQIndex = index;
             
-            // Auto-Switch Tab if navigating via Next/Prev crosses section boundary
             if (isMegaTest) {
                 let newSec = Math.floor(index / 20);
                 if(newSec !== currentSec) {
                     currentSec = newSec;
+                    // 🔥 4 ట్యాబ్స్ కోసం లూప్ 🔥
                     for(let i=0; i<4; i++) {
                         let tab = document.getElementById('tab-'+i);
                         if(tab) {
@@ -238,9 +236,8 @@
             }
 
             const q = questions[index];
-            if (qStatus[index] === 0) qStatus[index] = 1; // Mark as Not Answered (Red) when visited
+            if (qStatus[index] === 0) qStatus[index] = 1;
 
-            // Question numbering logic (1 to 20 for sections, or 1 to 15 for normal)
             let displayNum = isMegaTest ? (index % 20) + 1 : index + 1;
 
             const container = document.getElementById('questionContainer');
@@ -263,14 +260,12 @@
             updatePalette();
         }
 
-        // Highlight selected option slightly
         function updateSelectionUI() {
             document.querySelectorAll('.option-label').forEach(lbl => lbl.classList.remove('selected'));
             const selectedRadio = document.querySelector('input[name="temp_q"]:checked');
             if(selectedRadio) selectedRadio.closest('.option-label').classList.add('selected');
         }
 
-        // --- 6. RENDER PALETTE ---
         function updatePalette() {
             const grid = document.getElementById('paletteGrid');
             grid.innerHTML = '';
@@ -278,14 +273,13 @@
             let start = 0;
             let end = questions.length;
 
-            // If Mega test, show only 20 palette buttons based on current section
             if (isMegaTest) {
                 start = currentSec * 20;
                 end = start + 20;
             }
 
             for (let i = start; i < end; i++) {
-                if (i >= questions.length) break; // Safety check
+                if (i >= questions.length) break; 
                 
                 let btnClass = 'p-btn';
                 if (i === currentQIndex) btnClass += ' active-q';
@@ -298,17 +292,20 @@
             }
         }
 
-        // --- 7. ACTIONS ---
         function saveAndNext() {
             const selected = document.querySelector('input[name="temp_q"]:checked');
             if (selected) {
                 userAnswers[currentQIndex] = selected.value;
-                qStatus[currentQIndex] = 2; // Green
+                qStatus[currentQIndex] = 2;
             } else {
-                qStatus[currentQIndex] = 1; // Red
+                if(qStatus[currentQIndex] === 0) qStatus[currentQIndex] = 1;
             }
             if (currentQIndex < questions.length - 1) loadQuestion(currentQIndex + 1);
             else updatePalette();
+        }
+
+        function goPrev() {
+            if(currentQIndex > 0) loadQuestion(currentQIndex - 1);
         }
 
         function clearResponse() {
@@ -316,17 +313,16 @@
             if (selected) selected.checked = false;
             updateSelectionUI();
             userAnswers[currentQIndex] = null;
-            qStatus[currentQIndex] = 1; // Red
+            qStatus[currentQIndex] = 1; 
             updatePalette();
         }
 
         function markForReview() {
-            qStatus[currentQIndex] = 3; // Violet
+            qStatus[currentQIndex] = 3; 
             if (currentQIndex < questions.length - 1) loadQuestion(currentQIndex + 1);
             else updatePalette();
         }
 
-        // --- 8. SUBMISSION (JSON PAYLOAD) ---
         function submitTest() {
             clearInterval(timerInterval);
             const form = document.getElementById('quizForm');
@@ -341,12 +337,10 @@
             form.submit();
         }
 
-        // Anti-Cheat Mechanism
         document.addEventListener("visibilitychange", () => {
             if (document.hidden) alert("WARNING: Do not switch tabs during the exam! Your test is being monitored.");
         });
 
-        // Prevent Right Click
         document.addEventListener('contextmenu', event => event.preventDefault());
     </script>
 </body>
