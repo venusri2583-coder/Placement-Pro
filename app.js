@@ -48,9 +48,11 @@ app.get('/register', (req, res) => {
 app.post('/register', async (req, res) => {
     const { username, email, password, security_question, security_answer } = req.body;
     try {
+        const bcrypt = require('bcrypt');
+        const hashedPassword = await bcrypt.hash(password, 10); // పాస్‌వర్డ్‌ని హ్యాష్ చేస్తున్నాం
         await db.execute(
             'INSERT INTO users (username, email, password, security_question, security_answer) VALUES (?, ?, ?, ?, ?)', 
-            [username, email, password, security_question, security_answer]
+            [username, email, hashedPassword, security_question, security_answer]
         );
         res.render('login', { msg: 'Account Created with Security Backup!', error: null });
     } catch (err) { 
@@ -176,6 +178,31 @@ app.post('/update-password', async (req, res) => {
         res.render('forgot', { error: "Update Failed", msg: null });
     }
 });
+app.get('/leaderboard', requireLogin, async (req, res) => {
+    try {
+        const [rankings] = await db.query(`
+            SELECT u.username, MAX(m.score) as high_score, m.total 
+            FROM mock_results m 
+            JOIN users u ON m.user_id = u.id 
+            WHERE m.test_type = 'Mega' 
+            GROUP BY u.id, u.username, m.total 
+            ORDER BY high_score DESC 
+            LIMIT 10
+        `);
+
+        const [myScores] = await db.query(`
+            SELECT id, score, total, topic, created_at as test_date, test_type 
+            FROM mock_results 
+            WHERE user_id = ? 
+            ORDER BY created_at DESC
+        `, [req.session.user.id]);
+
+        res.render('leaderboard', { user: req.session.user, rankings, myScores });
+    } catch(e) { 
+        console.error(e);
+        res.render('leaderboard', { user: req.session.user, rankings: [], myScores: [] }); 
+    }
+});
 // --- PRACTICE ENGINE ---
 app.get('/practice/:topic', requireLogin, async (req, res) => {
     const topic = decodeURIComponent(req.params.topic);
@@ -241,43 +268,29 @@ app.post('/submit-exam', requireLogin, async (req, res) => {
         res.redirect('/'); 
     }
 });
-
-// 🏆 LEADERBOARD & MY SCORES ROUTE
 app.get('/leaderboard', requireLogin, async (req, res) => {
     try {
-        // 1. అందరిలో టాప్ 10 ర్యాంకర్స్ ని తీసుకురావడం
+        // 🔥 ఫిల్టర్: కేవలం 'Mega' టెస్ట్ రాసిన వారిని మాత్రమే తీసుకుంటున్నాం
         const [rankings] = await db.query(`
             SELECT u.username, MAX(m.score) as high_score, m.total 
             FROM mock_results m 
             JOIN users u ON m.user_id = u.id 
+            WHERE m.test_type = 'Mega' 
             GROUP BY u.id, u.username, m.total 
             ORDER BY high_score DESC 
             LIMIT 10
         `);
 
-        // 2. లాగిన్ అయిన యూజర్ (నీ) పాత ఎగ్జామ్ హిస్టరీని తీసుకురావడం
-        // ఇది లేకపోతేనే నీకు ఇందాక ఎర్రర్ వచ్చింది!
         const [myScores] = await db.query(`
-            SELECT id, score, total, topic, created_at 
+            SELECT id, score, total, topic, created_at, test_type 
             FROM mock_results 
             WHERE user_id = ? 
             ORDER BY created_at DESC
         `, [req.session.user.id]);
 
-        // 3. పేజీకి రెండింటినీ పంపించడం
-        res.render('leaderboard', { 
-            user: req.session.user, 
-            rankings: rankings, 
-            myScores: myScores // <--- ఇది చాలా ముఖ్యం!
-        });
-
+        res.render('leaderboard', { user: req.session.user, rankings, myScores });
     } catch(e) { 
-        console.log("Leaderboard Error:", e);
-        res.render('leaderboard', { 
-            user: req.session.user, 
-            rankings: [], 
-            myScores: [] 
-        }); 
+        res.render('leaderboard', { user: req.session.user, rankings: [], myScores: [] }); 
     }
 });
 
@@ -1570,10 +1583,10 @@ app.post('/submit-grand-exam', requireLogin, async (req, res) => {
             });
         });
 
-        await db.execute(
-            'INSERT INTO mock_results (user_id, score, total, topic, answers_json) VALUES (?, ?, ?, ?, ?)', 
-            [req.session.user.id, score, questions.length, topic, JSON.stringify(answers)]
-        );
+await db.execute(
+    'INSERT INTO mock_results (user_id, score, total, topic, answers_json, test_type) VALUES (?, ?, ?, ?, ?, ?)', 
+    [req.session.user.id, score, questions.length, topic, JSON.stringify(answers), 'Mega']
+);
 
         
         res.render('result', { 
@@ -1604,6 +1617,15 @@ app.get('/view-analysis/:id', requireLogin, async (req, res) => {
             res.redirect('/leaderboard');
         }
     } catch (err) { res.redirect('/leaderboard'); }
+});
+// 🔥 కేవలం ఒక్కసారి రన్ చేయడానికి 'test_type' ఫిక్సర్
+app.get('/add-test-type-column', async (req, res) => {
+    try {
+        await db.execute("ALTER TABLE mock_results ADD COLUMN test_type VARCHAR(20) DEFAULT 'Topic'");
+        res.send("<h1>✅ Success! 'test_type' column added to mock_results.</h1>");
+    } catch (err) {
+        res.send("<h1>⚠️ Column might already exist or Error: " + err.message + "</h1>");
+    }
 });
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
