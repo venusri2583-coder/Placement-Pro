@@ -58,17 +58,39 @@ app.post('/register', async (req, res) => {
         res.render('register', { error: 'Email already exists or Database error.' }); 
     }
 });
+// 🔐 LOGIN ROUTE
 app.post('/login', async (req, res) => {
+    const { email, password } = req.body;
     try {
-        const [users] = await db.execute('SELECT * FROM users WHERE email = ?', [req.body.email]);
-        if (users.length > 0 && users[0].password === req.body.password) {
-            req.session.user = users[0];
-            res.redirect('/');
-        } else { res.render('login', { error: 'Invalid Details', msg: null }); }
-    } catch (err) { res.render('login', { error: 'Server Error', msg: null }); }
-});
-app.get('/logout', (req, res) => { req.session.destroy(); res.redirect('/login'); });
+        // 1. ఈమెయిల్ ఉందో లేదో చెక్ చేయడం
+        const [users] = await db.execute('SELECT * FROM users WHERE email = ?', [email]);
+        
+        if (users.length === 0) {
+            // యూజర్ దొరకకపోతే
+            return res.render('login', { msg: 'Invalid Details', user: null });
+        }
 
+        const user = users[0];
+
+        // 2. పాస్‌వర్డ్ చెక్ చేయడం (Bcrypt వాడుతుంటే ఇలా చేయాలి)
+        // ఒకవేళ నువ్వు bcrypt వాడకపోతే: if (password === user.password) అని పెట్టు
+        const bcrypt = require('bcrypt');
+        const isMatch = await bcrypt.compare(password, user.password);
+
+        if (isMatch) {
+            // సక్సెస్! సెషన్‌లో యూజర్ డేటా సేవ్ చేయడం
+            req.session.user = { id: user.id, username: user.username, email: user.email };
+            return res.redirect('/'); // డాష్‌బోర్డ్‌కి పంపడం
+        } else {
+            // పాస్‌వర్డ్ తప్పైతే
+            return res.render('login', { msg: 'Invalid Details', user: null });
+        }
+
+    } catch (err) {
+        console.error("Login Error:", err);
+        res.render('login', { msg: 'Server Error. Try again.', user: null });
+    }
+});
 // --- DASHBOARD ---
 app.get('/', requireLogin, async (req, res) => {
     try {
@@ -81,6 +103,13 @@ app.get('/aptitude-topics', requireLogin, (req, res) => res.render('aptitude_top
 app.get('/reasoning-topics', requireLogin, (req, res) => res.render('reasoning_topics', { user: req.session.user }));
 
 app.get('/coding', requireLogin, (req, res) => res.render('coding_topics', { user: req.session.user }));
+// 🎤 INTERVIEW PREP ROUTE
+app.get('/interview-prep', requireLogin, (req, res) => {
+    // ఇక్కడ 'interview' అనేది నీ views ఫోల్డర్ లో ఉన్న ఫైల్ పేరు (interview.ejs)
+    res.render('interview', { 
+        user: req.session.user 
+    });
+});
 
 // REDIRECTS
 app.get('/aptitude/:topic', (req, res) => res.redirect(`/practice/${encodeURIComponent(req.params.topic)}`));
