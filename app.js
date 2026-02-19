@@ -1435,14 +1435,15 @@ app.get('/start-grand-exam', requireLogin, async (req, res) => {
             diffQuery = " AND difficulty = ? ";
             params = [difficulty, difficulty, difficulty]; // 3 సబ్జెక్టులకి 3 సార్లు
         }
-
-        // 🔥 MAGIC QUERY: 20 Maths + 20 Logical + 20 Verbal
+// 🔥 MAGIC QUERY: 20 Maths + 20 Logical + 20 Verbal + 20 Technical = 80 Qs
         const query = `
             (SELECT * FROM aptitude_questions WHERE category='Quantitative' ${diffQuery} ORDER BY RAND() LIMIT 20)
             UNION ALL
             (SELECT * FROM aptitude_questions WHERE category='Logical' ${diffQuery} ORDER BY RAND() LIMIT 20)
             UNION ALL
             (SELECT * FROM aptitude_questions WHERE category='Verbal' ${diffQuery} ORDER BY RAND() LIMIT 20)
+            UNION ALL
+            (SELECT * FROM aptitude_questions WHERE category='Technical' ${diffQuery} ORDER BY RAND() LIMIT 20)
         `;
 
         const [questions] = await db.execute(query, params);
@@ -1455,7 +1456,7 @@ app.get('/start-grand-exam', requireLogin, async (req, res) => {
             questions, 
             user: req.session.user, 
             topic: `MNC Mega Test (${difficulty})`, 
-            duration: 60 
+            duration: 80 // ⏳ 80 Minutes ki pencham
         });
 
     } catch (err) {
