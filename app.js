@@ -213,18 +213,43 @@ app.post('/submit-exam', requireLogin, async (req, res) => {
     }
 });
 
+// 🏆 LEADERBOARD & MY SCORES ROUTE
 app.get('/leaderboard', requireLogin, async (req, res) => {
     try {
-        const [rankings] = await db.query("SELECT u.username, MAX(m.score) as high_score FROM mock_results m JOIN users u ON m.user_id = u.id GROUP BY u.id, u.username ORDER BY high_score DESC LIMIT 10");
-        res.render('leaderboard', { user: req.session.user, rankings });
-    } catch(e) { res.render('leaderboard', { user: req.session.user, rankings: [] }); }
-});
-app.get('/interview-prep', requireLogin, (req, res) => res.render('interview', { user: req.session.user }));
-app.get('/resume-upload', requireLogin, async (req, res) => { res.render('resume', { msg: null, user: req.session.user, history: [] }); });
-const upload = multer({ dest: 'public/uploads/' });
-app.post('/upload-resume', requireLogin, upload.single('resume'), async (req, res) => {
-    if(req.file) await db.execute('INSERT INTO user_resumes (full_name, email, file_path, ats_score) VALUES (?, ?, ?, ?)', ['User', req.session.user.email, req.file.path, 80]);
-    res.redirect('/resume-upload');
+        // 1. అందరిలో టాప్ 10 ర్యాంకర్స్ ని తీసుకురావడం
+        const [rankings] = await db.query(`
+            SELECT u.username, MAX(m.score) as high_score, m.total 
+            FROM mock_results m 
+            JOIN users u ON m.user_id = u.id 
+            GROUP BY u.id, u.username, m.total 
+            ORDER BY high_score DESC 
+            LIMIT 10
+        `);
+
+        // 2. లాగిన్ అయిన యూజర్ (నీ) పాత ఎగ్జామ్ హిస్టరీని తీసుకురావడం
+        // ఇది లేకపోతేనే నీకు ఇందాక ఎర్రర్ వచ్చింది!
+        const [myScores] = await db.query(`
+            SELECT id, score, total, topic, created_at 
+            FROM mock_results 
+            WHERE user_id = ? 
+            ORDER BY created_at DESC
+        `, [req.session.user.id]);
+
+        // 3. పేజీకి రెండింటినీ పంపించడం
+        res.render('leaderboard', { 
+            user: req.session.user, 
+            rankings: rankings, 
+            myScores: myScores // <--- ఇది చాలా ముఖ్యం!
+        });
+
+    } catch(e) { 
+        console.log("Leaderboard Error:", e);
+        res.render('leaderboard', { 
+            user: req.session.user, 
+            rankings: [], 
+            myScores: [] 
+        }); 
+    }
 });
 
 // =============================================================
@@ -1430,7 +1455,7 @@ app.get('/start-grand-exam', requireLogin, async (req, res) => {
         let diffQuery = "";
         let params = [];
 
-        // యూజర్ ఏదైనా లెవెల్ సెలెక్ట్ చేసుకుంటే..
+        
         if (difficulty !== 'All') {
             diffQuery = " AND difficulty = ? ";
             params = [difficulty, difficulty,difficulty, difficulty]; 
@@ -1464,20 +1489,17 @@ app.get('/start-grand-exam', requireLogin, async (req, res) => {
         res.redirect('/');
     }
 });
-// పాత లింక్ నొక్కినా, కొత్త గ్రాండ్ టెస్ట్ కి వెళ్ళేలా...
+
 app.get('/mock-test', (req, res) => {
     res.redirect('/grand-test-intro');
 });
-// =============================================================
-// 🏆 GRAND EXAM SUBMIT ROUTE (With Testbook-style Analysis)
-// =============================================================
 app.post('/submit-grand-exam', requireLogin, async (req, res) => {
     try {
         const { questions, answers, topic } = JSON.parse(req.body.payload);
-        
         let score = 0;
         let reviewData = [];
-        // సబ్జెక్ట్ వైజ్ అనాలసిస్ కోసం
+        
+    
         let sectionScores = {
             'Aptitude': { score: 0, total: 20 },
             'Reasoning': { score: 0, total: 20 },
@@ -1486,99 +1508,73 @@ app.post('/submit-grand-exam', requireLogin, async (req, res) => {
         };
 
         questions.forEach((q, i) => {
-            const userAns = answers[i] || null; 
-            const correctOpt = q.correct_option.trim().toUpperCase(); 
+            const userAns = answers[i] || null;
+            const correctOpt = q.correct_option.trim().toUpperCase();
             const isCorrect = (userAns === correctOpt);
             
-            // ఏ సెక్షన్ లో ఉన్నామో కనుక్కోవడం
-            let currentCategory = i < 20 ? 'Aptitude' : i < 40 ? 'Reasoning' : i < 60 ? 'English' : 'Technical';
+            
+            let category = i < 20 ? 'Aptitude' : i < 40 ? 'Reasoning' : i < 60 ? 'English' : 'Technical';
 
             if (isCorrect) {
                 score++;
-                sectionScores[currentCategory].score++; // సబ్జెక్ట్ కి ఒక మార్కు యాడ్
+                sectionScores[category].score++; 
             }
 
-            // రిజల్ట్ పేజీలో చూపించడానికి ఆప్షన్ల టెక్స్ట్ ని బయటికి తీస్తున్నాం
-            let userAnsText = "Not Attempted";
-            if (userAns) {
-                if (userAns === 'A') userAnsText = q.option_a;
-                if (userAns === 'B') userAnsText = q.option_b;
-                if (userAns === 'C') userAnsText = q.option_c;
-                if (userAns === 'D') userAnsText = q.option_d;
-            }
-            
-            let correctAnsText = "";
-            if (correctOpt === 'A') correctAnsText = q.option_a;
-            if (correctOpt === 'B') correctAnsText = q.option_b;
-            if (correctOpt === 'C') correctAnsText = q.option_c;
-            if (correctOpt === 'D') correctAnsText = q.option_d;
+            const getOptText = (optKey) => {
+                if (optKey === 'A') return q.option_a;
+                if (optKey === 'B') return q.option_b;
+                if (optKey === 'C') return q.option_c;
+                if (optKey === 'D') return q.option_d;
+                return "Not Selected";
+            };
 
             reviewData.push({
-                qNum: i + 1,
-                category: currentCategory,
-                qText: q.question,
-                userAnsText: userAnsText,
-                correctAnsText: correctAnsText,
-                explanation: q.explanation || "Direct formula or concept applied.",
+                qNo: i + 1,
+                category: category, 
+                question: q.question,
+                userAnsText: userAns ? `${userAns}) ${getOptText(userAns)}` : "Skipped",
+                correctAnsText: `${correctOpt}) ${getOptText(correctOpt)}`,
                 isCorrect: isCorrect,
-                isAttempted: userAns !== null
+                isAttempted: userAns !== null,
+                briefSolution: q.explanation || "Direct formula or concept applied.",
+                shortcut: q.shortcut || "Use basic elimination or direct formula." 
             });
         });
 
-        // 💾 లీడర్‌బోర్డ్ లోకి స్కోర్ వెళ్ళడానికి డేటాబేస్ సేవ్
         await db.execute(
-            'INSERT INTO mock_results (user_id, score, total, topic) VALUES (?, ?, ?, ?)', 
-            [req.session.user.id, score, questions.length, topic]
+            'INSERT INTO mock_results (user_id, score, total, topic, answers_json) VALUES (?, ?, ?, ?, ?)', 
+            [req.session.user.id, score, questions.length, topic, JSON.stringify(answers)]
         );
 
-        // 🎉 ఫైనల్ రిజల్ట్ పేజీ కి పంపిస్తున్నాం
+        
         res.render('result', { 
-            score: score, 
+            score, 
             total: questions.length, 
-            reviewData: reviewData, 
-            sectionScores: sectionScores, // కొత్త అనాలసిస్ డేటా
-            topic: topic,
+            reviewData, 
+            sectionScores, 
+            topic, 
             user: req.session.user 
         });
 
     } catch (err) { 
-        console.error("Grand Submit Error:", err);
+        console.error("Submission Error:", err); 
         res.redirect('/'); 
     }
 });
-// =============================================================
-// 🏆 LEADERBOARD ROUTE
-// =============================================================
-app.get('/leaderboard', requireLogin, async (req, res) => {
+// 🔍 పాత ఎగ్జామ్ అనాలసిస్ చూసే రూట్
+app.get('/view-analysis/:id', requireLogin, async (req, res) => {
     try {
-        // 1. టాప్ 10 ర్యాంకర్స్ డేటా తీసుకురావడం
-        const [leaderboard] = await db.execute(`
-            SELECT u.username, m.score, m.total, m.topic, m.created_at 
-            FROM mock_results m 
-            JOIN users u ON m.user_id = u.id 
-            ORDER BY (m.score/m.total) DESC, m.score DESC 
-            LIMIT 10
-        `);
-
-        // 2. కరెంట్ యూజర్ (నీ) పాత స్కోర్స్ డేటా తీసుకురావడం (దీని వల్లే ఎర్రర్ వచ్చింది!)
-        const [myScores] = await db.execute(`
-            SELECT score, total, topic, created_at 
-            FROM mock_results 
-            WHERE user_id = ? 
-            ORDER BY created_at DESC
-        `, [req.session.user.id]);
-
-        // 3. పేజీకి డేటా పంపించడం
-        res.render('leaderboard', { 
-            user: req.session.user,
-            leaderboard: leaderboard,
-            myScores: myScores // ఇక్కడ డేటా పంపిస్తున్నాం!
-        });
-
-    } catch (err) {
-        console.error("Leaderboard Error:", err);
-        res.redirect('/');
-    }
+        const [result] = await db.execute('SELECT * FROM mock_results WHERE id = ? AND user_id = ?', [req.params.id, req.session.user.id]);
+        
+        if (result.length > 0) {
+            const savedAnswers = JSON.parse(result[0].answers_json);
+            // ఇక్కడ నువ్వు మళ్ళీ క్వశ్చన్స్ ని ఫెచ్ చేసి, savedAnswers తో కంపేర్ చేసి 'result' పేజీని రెండర్ చేయాలి.
+            // ఇది నీ అనాలసిస్ ఫీచర్ కి ఫుల్ పవర్ ఇస్తుంది!
+            res.send("This feature is almost ready! We need to fetch questions for Topic: " + result[0].topic);
+        } else {
+            res.redirect('/leaderboard');
+        }
+    } catch (err) { res.redirect('/leaderboard'); }
 });
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));

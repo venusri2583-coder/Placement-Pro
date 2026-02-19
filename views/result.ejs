@@ -33,7 +33,7 @@
                         Accuracy: <%= percentage.toFixed(1) %>%
                     </div>
 
-                    <div class="d-grid gap-3 d-md-flex justify-content-md-center">
+                    <div class="d-grid gap-3 d-md-flex justify-content-md-center mb-4">
                         <a href="/leaderboard" class="btn btn-warning rounded-pill py-2 px-4 fw-bold shadow-sm transition-hover">
                             <i class="fas fa-crown me-2"></i> Leaderboard
                         </a>
@@ -41,6 +41,13 @@
                             <i class="fas fa-home me-2"></i> Dashboard
                         </a>
                     </div>
+
+                    <div class="d-grid">
+                        <button class="btn btn-outline-primary rounded-pill py-3 fw-bold shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#detailedAnalysis">
+                            <i class="fas fa-microscope me-2"></i> View Detailed Paper Analysis
+                        </button>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -79,17 +86,19 @@
     </div>
     <% } %>
 
-    <div class="row justify-content-center">
+    <div class="row justify-content-center collapse mt-5" id="detailedAnalysis">
         <div class="col-md-10">
-            <h4 class="fw-bold mb-4 text-dark"><i class="fas fa-search-location me-2 text-primary"></i> Detailed Solution Review</h4>
+            <h4 class="fw-bold mb-4 text-dark text-center">
+                <i class="fas fa-file-alt me-2 text-primary"></i> Detailed Solutions & Review
+            </h4>
             
             <% if (typeof reviewData !== 'undefined' && reviewData.length > 0) { %>
                 <% reviewData.forEach((item, index) => { 
                     let isAttempted = item.isAttempted !== undefined ? item.isAttempted : true;
                     let borderColor = item.isCorrect ? '#28a745' : (isAttempted ? '#dc3545' : '#6c757d');
                 %>
-                    <div class="card mb-3 border-0 shadow-sm animate__animated animate__fadeInUp" 
-                         style="border-radius: 20px; border-left: 8px solid <%= borderColor %> !important; animation-delay: 0.1s;">
+                    <div class="card mb-4 border-0 shadow-sm" 
+                         style="border-radius: 20px; border-left: 8px solid <%= borderColor %> !important;">
                         <div class="card-body p-4">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <h6 class="fw-bold text-dark m-0">
@@ -112,10 +121,22 @@
                                 <% } %>
                             </div>
 
-                            <div class="bg-light p-3 rounded-3 mt-3 border-start border-3 border-primary" style="font-size: 0.9rem;">
-                                <strong class="text-primary"><i class="far fa-lightbulb me-1"></i> Solution & Shortcut:</strong>
-                                <div class="mt-1 text-muted">
-                                    <%= item.explanation ? item.explanation : "Standard calculation logic applied." %>
+                            <div class="row g-3 mt-2">
+                                <div class="col-md-7">
+                                    <div class="bg-light p-3 rounded-3 h-100 border-start border-3 border-primary">
+                                        <strong class="text-primary small"><i class="fas fa-pen-nib me-1"></i> Brief Solution:</strong>
+                                        <div class="mt-1 text-muted" style="font-size: 0.85rem;">
+                                            <%= item.explanation || item.briefSolution || "Standard calculation logic applied." %>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-5">
+                                    <div class="bg-warning bg-opacity-10 p-3 rounded-3 h-100 border-start border-3 border-warning">
+                                        <strong class="text-warning-emphasis small"><i class="fas fa-bolt me-1"></i> Pro Shortcut:</strong>
+                                        <div class="mt-1 text-muted fst-italic" style="font-size: 0.85rem;">
+                                            <%= item.shortcut || "Look for direct formulas or option elimination." %>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -130,6 +151,7 @@
 
 <style>
     .transition-hover:hover { transform: translateY(-3px); transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
+    #detailedAnalysis.show { animation: fadeInUp 0.5s ease; }
 </style>
 
 <%- include('partials/footer') %>
