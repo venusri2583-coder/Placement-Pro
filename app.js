@@ -1433,7 +1433,7 @@ app.get('/start-grand-exam', requireLogin, async (req, res) => {
         // యూజర్ ఏదైనా లెవెల్ సెలెక్ట్ చేసుకుంటే..
         if (difficulty !== 'All') {
             diffQuery = " AND difficulty = ? ";
-            params = [difficulty, difficulty, difficulty]; // 3 సబ్జెక్టులకి 3 సార్లు
+            params = [difficulty, difficulty,difficulty, difficulty]; 
         }
 // 🔥 MAGIC QUERY: 20 Maths + 20 Logical + 20 Verbal + 20 Technical = 80 Qs
         const query = `

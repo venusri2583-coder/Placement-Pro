@@ -27,30 +27,26 @@
                             <li class="mb-2 pt-2 border-top text-danger fw-bold"><i class="fas fa-stopwatch me-2"></i> <strong>Time Limit:</strong> 80 Minutes</li>
                         </ul>
 
-                        <div class="alert alert-warning border-0 small">
+                        <div class="alert alert-warning border-0 small mb-4">
                             <i class="fas fa-exclamation-triangle me-1"></i> <strong>Warning:</strong> Tab switching or minimizing the window will result in automatic submission.
                         </div>
 
                         <form action="/start-grand-exam" method="GET">
-    <h6 class="fw-bold mt-4 mb-3">Select Difficulty Level:</h6>
-    <div class="d-flex gap-2 mb-4">
-        <input type="radio" class="btn-check" name="difficulty" id="mixed" value="All" checked>
-        <label class="btn btn-outline-dark flex-fill fw-bold" for="mixed">Mixed</label>
+                            <div class="mb-4 text-start">
+                                <label for="difficulty" class="form-label fw-bold text-dark">Select Difficulty Level:</label>
+                                <select class="form-select form-control form-control-lg border-2" name="difficulty" id="difficulty" style="cursor: pointer; font-weight: 500;">
+                                    <option value="All">🔄 Mixed (Standard MNC Pattern)</option>
+                                    <option value="Basic">🟢 Basic (Easy Level)</option>
+                                    <option value="Medium">🟡 Medium (Moderate Level)</option>
+                                    <option value="Advanced">🔴 Hard (Advanced Level)</option>
+                                </select>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-dark w-100 py-3 fw-bold shadow">
+                                Start Mega Test Now <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                        </form>
 
-        <input type="radio" class="btn-check" name="difficulty" id="easy" value="Basic">
-        <label class="btn btn-outline-success flex-fill fw-bold" for="easy">Basic</label>
-
-        <input type="radio" class="btn-check" name="difficulty" id="medium" value="Medium">
-        <label class="btn btn-outline-warning flex-fill fw-bold" for="medium">Medium</label>
-
-        <input type="radio" class="btn-check" name="difficulty" id="hard" value="Advanced">
-        <label class="btn btn-outline-danger flex-fill fw-bold" for="hard">Hard</label>
-    </div>
-    <button type="submit" class="btn btn-dark w-100 py-3 fw-bold shadow">
-        Start Mega Test Now <i class="fas fa-arrow-right ms-2"></i>
-    </button>
-</form>
-                        </a>
                     </div>
                 </div>
             </div>
