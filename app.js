@@ -178,51 +178,6 @@ app.post('/update-password', async (req, res) => {
         res.render('forgot', { error: "Update Failed", msg: null });
     }
 });
-app.get('/leaderboard', requireLogin, async (req, res) => {
-    try {
-        // 1. టాప్ 10 మెగా టెస్ట్ ర్యాంకర్స్
-        const [rankings] = await db.query(`
-            SELECT u.username, MAX(m.score) as high_score, m.total 
-            FROM mock_results m 
-            JOIN users u ON m.user_id = u.id 
-            WHERE m.test_type = 'Mega' 
-            GROUP BY u.id, u.username, m.total 
-            ORDER BY high_score DESC LIMIT 10
-        `);
-
-        // 2. యూజర్ పర్సనల్ హిస్టరీ
-        const [myScores] = await db.query(`
-            SELECT id, score, total, topic, created_at as test_date, test_type 
-            FROM mock_results 
-            WHERE user_id = ? ORDER BY created_at DESC
-        `, [req.session.user.id]);
-
-        // 3. నీ గ్లోబల్ ర్యాంకు లెక్కించడం
-        let myRank = 'N/A';
-        const [megaCheck] = await db.query("SELECT MAX(score) as top FROM mock_results WHERE user_id = ? AND test_type = 'Mega'", [req.session.user.id]);
-        
-        if (megaCheck[0].top !== null) {
-            const [rankData] = await db.query(`
-                SELECT COUNT(DISTINCT user_id) + 1 AS current_rank 
-                FROM mock_results 
-                WHERE test_type = 'Mega' AND score > ?
-            `, [megaCheck[0].top]);
-            myRank = rankData[0].current_rank;
-        }
-
-        // 🔥 పక్కాగా అన్ని వేరియబుల్స్ పంపిస్తున్నాం
-        res.render('leaderboard', { 
-            user: req.session.user, 
-            rankings: rankings || [], 
-            myScores: myScores || [], 
-            myRank: myRank 
-        });
-
-    } catch(e) { 
-        console.error("Leaderboard Error:", e);
-        res.render('leaderboard', { user: req.session.user, rankings: [], myScores: [], myRank: 'N/A' }); 
-    }
-});
 // --- PRACTICE ENGINE ---
 app.get('/practice/:topic', requireLogin, async (req, res) => {
     const topic = decodeURIComponent(req.params.topic);
