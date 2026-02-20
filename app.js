@@ -1439,46 +1439,26 @@ app.get('/grand-test-intro', requireLogin, (req, res) => {
     res.render('grand_test_start', { user: req.session.user });
 });
 
-// 2. Start Grand Test (Fetches 60 Questions based on Difficulty)
 app.get('/start-grand-exam', requireLogin, async (req, res) => {
     try {
         const difficulty = req.query.difficulty || 'All';
-        let diffQuery = "";
-        let params = [];
+        let diffQuery = (difficulty !== 'All') ? " AND difficulty = ?" : "";
+        let params = (difficulty !== 'All') ? [difficulty, difficulty, difficulty, difficulty] : [];
 
-        
-        if (difficulty !== 'All') {
-            diffQuery = " AND difficulty = ? ";
-            params = [difficulty, difficulty,difficulty, difficulty]; 
-        }
-// 🔥 MAGIC QUERY: 20 Maths + 20 Logical + 20 Verbal + 20 Technical = 80 Qs
+        // 🔥 Repetition thagginchadaniki DISTINCT mariyu Category-wise limit vaduthunnam
         const query = `
-            (SELECT * FROM aptitude_questions WHERE category='Quantitative' ${diffQuery} ORDER BY RAND() LIMIT 20)
+            (SELECT DISTINCT * FROM aptitude_questions WHERE category='Quantitative' ${diffQuery} ORDER BY RAND() LIMIT 20)
             UNION ALL
-            (SELECT * FROM aptitude_questions WHERE category='Logical' ${diffQuery} ORDER BY RAND() LIMIT 20)
+            (SELECT DISTINCT * FROM aptitude_questions WHERE category='Logical' ${diffQuery} ORDER BY RAND() LIMIT 20)
             UNION ALL
-            (SELECT * FROM aptitude_questions WHERE category='Verbal' ${diffQuery} ORDER BY RAND() LIMIT 20)
+            (SELECT DISTINCT * FROM aptitude_questions WHERE category='Verbal' ${diffQuery} ORDER BY RAND() LIMIT 20)
             UNION ALL
-            (SELECT * FROM aptitude_questions WHERE category='Technical' ${diffQuery} ORDER BY RAND() LIMIT 20)
+            (SELECT DISTINCT * FROM aptitude_questions WHERE category='Technical' ${diffQuery} ORDER BY RAND() LIMIT 20)
         `;
 
         const [questions] = await db.execute(query, params);
-
-        if (questions.length === 0) {
-            return res.send("<h1>Not enough questions in this difficulty level. Try 'Mixed'.</h1>");
-        }
-
-        res.render('exam_interface', { 
-            questions, 
-            user: req.session.user, 
-            topic: `MNC Mega Test (${difficulty})`, 
-            duration: 80 // ⏳ 80 Minutes ki pencham
-        });
-
-    } catch (err) {
-        console.log(err);
-        res.redirect('/');
-    }
+        res.render('exam_interface', { questions, user: req.session.user, topic: `Mega Test (${difficulty})`, duration: 80 });
+    } catch (err) { res.redirect('/'); }
 });
 
 app.get('/mock-test', (req, res) => {
@@ -1489,48 +1469,33 @@ app.post('/submit-grand-exam', requireLogin, async (req, res) => {
         const { questions, answers, topic } = JSON.parse(req.body.payload);
         let score = 0;
         let reviewData = [];
-        
-    
-        let sectionScores = {
-            'Aptitude': { score: 0, total: 20 },
-            'Reasoning': { score: 0, total: 20 },
-            'English': { score: 0, total: 20 },
-            'Technical': { score: 0, total: 20 }
-        };
 
         questions.forEach((q, i) => {
             const userAns = answers[i] || null;
             const correctOpt = q.correct_option.trim().toUpperCase();
             const isCorrect = (userAns === correctOpt);
-            
-            
-            let category = i < 20 ? 'Aptitude' : i < 40 ? 'Reasoning' : i < 60 ? 'English' : 'Technical';
+            if (isCorrect) score++;
 
-            if (isCorrect) {
-                score++;
-                sectionScores[category].score++; 
-            }
-
-            const getOptText = (optKey) => {
-                if (optKey === 'A') return q.option_a;
-                if (optKey === 'B') return q.option_b;
-                if (optKey === 'C') return q.option_c;
-                if (optKey === 'D') return q.option_d;
-                return "Not Selected";
-            };
-
+            // 🔥 Ekkada question text mariyu explanation add chesthunnam
             reviewData.push({
                 qNo: i + 1,
-                category: category, 
-                question: q.question,
-                userAnsText: userAns ? `${userAns}) ${getOptText(userAns)}` : "Skipped",
-                correctAnsText: `${correctOpt}) ${getOptText(correctOpt)}`,
+                question: q.question, // Question Text
+                userAns: userAns,
+                correctAns: correctOpt,
                 isCorrect: isCorrect,
-                isAttempted: userAns !== null,
-                briefSolution: q.explanation || "Direct formula or concept applied.",
-                shortcut: q.shortcut || "Use basic elimination or direct formula." 
+                explanation: q.explanation || "Detailed solution based on TCS/Wipro pattern.", // Explanation
+                shortcut: q.shortcut || "N/A"
             });
         });
+
+        const [saveResult] = await db.execute(
+            'INSERT INTO mock_results (user_id, score, total, topic, answers_json, test_type) VALUES (?, ?, ?, ?, ?, ?)', 
+            [req.session.user.id, score, questions.length, topic, JSON.stringify(answers), 'Mega']
+        );
+
+        res.render('result', { score, total: questions.length, reviewData, topic, user: req.session.user, resultId: saveResult.insertId });
+    } catch (err) { res.redirect('/'); }
+});
 // ✅ 1. డేటాని సేవ్ చేసి, ఆ రిజల్ట్ ని 'saveResult' అనే వేరియబుల్ లో దాచుకుంటున్నాం
 const [saveResult] = await db.execute(
     'INSERT INTO mock_results (user_id, score, total, topic, answers_json, test_type) VALUES (?, ?, ?, ?, ?, ?)', 
@@ -1656,6 +1621,36 @@ app.get('/leaderboard', requireLogin, async (req, res) => {
         console.error("Leaderboard Error:", e);
         res.render('leaderboard', { user: req.session.user, rankings: [], myScores: [], myRank: 'N/A' }); 
     }
+});
+// 📥 DATA LOADER: TCS & Wipro మోడల్ ప్రశ్నలను లోడ్ చేయడానికి
+app.get('/load-mega-data', async (req, res) => {
+    try {
+        const questions = [
+            // 1. QUANTITATIVE (TCS Model - Time & Work) [cite: 12, 71]
+            {cat:'Quantitative', topic:'Time and Work', diff:'Medium', q:'A can do a piece of work in 12 days and B can do it in 18 days. They work together for 4 days and then A leaves. How long will B take to finish the remaining work?', a:'8 days', w1:'6 days', w2:'10 days', w3:'12 days', corr:'A', exp:'A+B 1 day work = 1/12 + 1/18 = 5/36. In 4 days = 20/36. Left = 16/36. B takes (16/36)/(1/18) = 8 days.'},
+
+            // 2. LOGICAL (Wipro Model - Blood Relations) [cite: 66, 69]
+            {cat:'Logical', topic:'Blood Relations', diff:'Basic', q:'Pointing to a lady, a man said, "The son of her only brother is the brother of my wife." How is the lady related to the man?', a:'Sister of Father-in-law', w1:'Mother-in-law', w2:'Sister', w3:'Aunt', corr:'A', exp:'Wife\'s brother is her brother-in-law. Her brother is his father-in-law. So lady is sister of father-in-law.'},
+
+            // 3. VERBAL (TCS Model - Spotting Errors) [cite: 12, 97]
+            {cat:'Verbal', topic:'Spotting Errors', diff:'Medium', q:'Find the error: "He (A) / described about (B) / the incident (C) / in detail (D)."', a:'B', w1:'A', w2:'C', w3:'D', corr:'A', exp:'"Describe" is a transitive verb, it does not take the preposition "about" after it.'},
+
+            // 4. TECHNICAL (Wipro Model - Data Structures) [cite: 66, 124]
+            {cat:'Technical', topic:'Data Structures', diff:'Advanced', q:'In a circular linked list, what is the value of the next pointer of the last node?', a:'Address of the first node', w1:'NULL', w2:'Garbage value', w3:'Address of the second node', corr:'A', exp:'A circular linked list forms a loop where the last node points back to the first node.'},
+
+            // 5. QUANTITATIVE (HCF & LCM - Basic) [cite: 73]
+            {cat:'Quantitative', topic:'HCF and LCM', diff:'Basic', q:'Find the HCF of 24, 36, and 40.', a:'4', w1:'2', w2:'6', w3:'8', corr:'A', exp:'Factors: 24(2x2x2x3), 36(2x2x3x3), 40(2x2x2x5). Common factors: 2x2 = 4.'}
+        ];
+
+        // 🔥 పాత డేటా డ్యామేజ్ అవ్వకుండా లూప్ ద్వారా యాడ్ చేస్తున్నాం
+        for(let q of questions) {
+            await db.execute(`INSERT INTO aptitude_questions 
+            (category, topic, difficulty, question, option_a, option_b, option_c, option_d, correct_option, explanation) 
+            VALUES (?,?,?,?,?,?,?,?,?,?)`, 
+            [q.cat, q.topic, q.diff, q.q, q.a, q.w1, q.w2, q.w3, q.corr, q.exp]);
+        }
+        res.send("<h1>✅ TCS/Wipro Questions Loaded into DB!</h1><p>ఇప్పుడు నువ్వు గ్రాండ్ టెస్ట్ రాస్తే ఈ ప్రశ్నలు కనిపిస్తాయి.</p>");
+    } catch (err) { res.send("Error: " + err.message); }
 });
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
