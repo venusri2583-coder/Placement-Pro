@@ -1464,59 +1464,48 @@ app.get('/start-grand-exam', requireLogin, async (req, res) => {
 app.get('/mock-test', (req, res) => {
     res.redirect('/grand-test-intro');
 });
+// 🏆 GRAND MOCK TEST SUBMISSION ROUTE (CLEANED UP)
 app.post('/submit-grand-exam', requireLogin, async (req, res) => {
     try {
         const { questions, answers, topic } = JSON.parse(req.body.payload);
         let score = 0;
         let reviewData = [];
+        let sectionScores = { 'Aptitude': { score: 0, total: 20 }, 'Reasoning': { score: 0, total: 20 }, 'English': { score: 0, total: 20 }, 'Technical': { score: 0, total: 20 } };
 
         questions.forEach((q, i) => {
             const userAns = answers[i] || null;
-            const correctOpt = q.correct_option.trim().toUpperCase();
+            const correctOpt = q.correct_option ? q.correct_option.trim().toUpperCase() : 'A';
             const isCorrect = (userAns === correctOpt);
-            if (isCorrect) score++;
+            let category = i < 20 ? 'Aptitude' : i < 40 ? 'Reasoning' : i < 60 ? 'English' : 'Technical';
 
-            // 🔥 Ekkada question text mariyu explanation add chesthunnam
+            if (isCorrect) { score++; sectionScores[category].score++; }
+
+            const getOptText = (optKey) => {
+                if (optKey === 'A') return q.option_a;
+                if (optKey === 'B') return q.option_b;
+                if (optKey === 'C') return q.option_c;
+                if (optKey === 'D') return q.option_d;
+                return "Not Selected";
+            };
+
             reviewData.push({
-                qNo: i + 1,
-                question: q.question, // Question Text
-                userAns: userAns,
-                correctAns: correctOpt,
-                isCorrect: isCorrect,
-                explanation: q.explanation || "Detailed solution based on TCS/Wipro pattern.", // Explanation
-                shortcut: q.shortcut || "N/A"
+                qNo: i + 1, category: category, question: q.question,
+                userAnsText: userAns ? `${userAns}) ${getOptText(userAns)}` : "Skipped",
+                correctAnsText: `${correctOpt}) ${getOptText(correctOpt)}`,
+                isCorrect: isCorrect, isAttempted: userAns !== null,
+                explanation: q.explanation || "Detailed solution based on TCS/Wipro pattern.", shortcut: q.shortcut || "N/A" 
             });
         });
 
+        // Data save chesthunnam
         const [saveResult] = await db.execute(
             'INSERT INTO mock_results (user_id, score, total, topic, answers_json, test_type) VALUES (?, ?, ?, ?, ?, ?)', 
             [req.session.user.id, score, questions.length, topic, JSON.stringify(answers), 'Mega']
         );
 
-        res.render('result', { score, total: questions.length, reviewData, topic, user: req.session.user, resultId: saveResult.insertId });
-    } catch (err) { res.redirect('/'); }
-});
-// ✅ 1. డేటాని సేవ్ చేసి, ఆ రిజల్ట్ ని 'saveResult' అనే వేరియబుల్ లో దాచుకుంటున్నాం
-const [saveResult] = await db.execute(
-    'INSERT INTO mock_results (user_id, score, total, topic, answers_json, test_type) VALUES (?, ?, ?, ?, ?, ?)', 
-    [req.session.user.id, score, questions.length, topic, JSON.stringify(answers), 'Mega']
-);
-        
-        // ✅ 2. పేజీని చూపించేటప్పుడు ఆ బిల్ నంబర్ (resultId) ని కూడా పంపిస్తున్నాం
-res.render('result', { 
-    score, 
-    total: questions.length, 
-    reviewData, 
-    sectionScores, 
-    topic, 
-    user: req.session.user,
-    resultId: saveResult.insertId  // 🔥 ఇది యాడ్ చెయ్ మావా
-});
-
-    } catch (err) { 
-        console.error("Submission Error:", err); 
-        res.redirect('/'); 
-    }
+        // Result page ki redirect chesthunnam with section scores
+        res.render('result', { score, total: questions.length, reviewData, sectionScores, topic, user: req.session.user, resultId: saveResult.insertId });
+    } catch (err) { console.error("Submission Error:", err); res.redirect('/'); }
 });
 // 🔍 పక్కాగా పనిచేసే పేపర్ అనాలసిస్ రూట్
 app.get('/view-analysis/:id', requireLogin, async (req, res) => {
