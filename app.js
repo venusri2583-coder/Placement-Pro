@@ -36,7 +36,6 @@ const db = mysql.createPool({
 const requireLogin = (req, res, next) => {
     if (req.session.user) { next(); } else { res.redirect('/login'); }
 };
-const multer = require('multer');
 const pdfParse = require('pdf-parse');
 
 // PDF ఫైల్ ని టెంపరరీగా మెమరీలో సేవ్ చేసుకోవడానికి
