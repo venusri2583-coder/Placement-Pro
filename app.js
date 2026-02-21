@@ -178,64 +178,99 @@ app.post('/update-password', async (req, res) => {
         res.render('forgot', { error: "Update Failed", msg: null });
     }
 });
-// --- PRACTICE ENGINE ---
+// =============================================================
+// --- PRACTICE ENGINE (FIXED DUPLICATES) ---
+// =============================================================
 app.get('/practice/:topic', requireLogin, async (req, res) => {
     const topic = decodeURIComponent(req.params.topic);
     try {
-        // Fetch exactly 15 questions to match the 15-minute timer
-        let [questions] = await db.execute('SELECT * FROM aptitude_questions WHERE topic = ? ORDER BY RAND() LIMIT 15', [topic]);
+        // ముందు ఆ టాపిక్ క్వశ్చన్స్ అన్నీ తెస్తున్నాం
+        let [allQuestions] = await db.execute('SELECT * FROM aptitude_questions WHERE topic = ? ORDER BY RAND()', [topic]);
         
-        if (questions.length === 0) {
+        // 🔥 డూప్లికేట్స్ (ఒకే ప్రశ్న మళ్లీ మళ్లీ) రాకుండా ఫిల్టర్ చేస్తున్నాం
+        let uniqueQuestions = [];
+        let seen = new Set();
+        
+        for (let q of allQuestions) {
+            if (!seen.has(q.question)) {
+                seen.add(q.question);
+                uniqueQuestions.push(q);
+            }
+            if (uniqueQuestions.length === 15) break; // 15 ప్రశ్నలు రాగానే ఆపేస్తాం
+        }
+
+        if (uniqueQuestions.length === 0) {
             return res.send(`<div style="text-align:center; padding:50px;"><h2 style="color:red;">Topic '${topic}' is empty!</h2><a href="/dashboard">Go Back</a></div>`);
         }
 
-        // IMPORTANT: rendering 'practice' file instead of 'mocktest'
-        res.render('practice', { questions, user: req.session.user, topic });
-    } catch (err) { res.redirect('/'); }
+        res.render('practice', { questions: uniqueQuestions, user: req.session.user, topic });
+    } catch (err) { 
+        console.error("Practice Route Error:", err);
+        res.redirect('/'); 
+    }
 });
 
-// --- FINAL SUBMIT EXAM ROUTE (Synced with your result.ejs) ---
+// =============================================================
+// --- FINAL SUBMIT EXAM ROUTE (FIXED 0 MARKS & ANALYSIS ID) ---
+// =============================================================
 app.post('/submit-exam', requireLogin, async (req, res) => {
     try {
-        const { topic, answers } = JSON.parse(req.body.payload);
-        const [questions] = await db.execute(
-            "SELECT * FROM aptitude_questions WHERE topic = ? LIMIT 15", 
-            [topic]
-        );
+        const payload = JSON.parse(req.body.payload);
+        const topic = payload.topic;
+        const answers = payload.answers || [];
+        
+        // 🔥 MARKS FIX: ఫ్రంట్ ఎండ్ నుండి ప్రశ్నలను తెచ్చుకుంటేనే కరెక్ట్ గా చెక్ అవుతుంది
+        let questions = payload.questions; 
+        
+        // ఒకవేళ ఫ్రంట్ ఎండ్ నుండి రాకపోతేనే డేటాబేస్ వాడతాం
+        if (!questions || questions.length === 0) {
+            const [dbQuestions] = await db.execute("SELECT * FROM aptitude_questions WHERE topic = ? LIMIT 15", [topic]);
+            questions = dbQuestions;
+        }
         
         let score = 0;
         let reviewData = [];
 
         questions.forEach((q, i) => {
-            const userAns = answers[i] || null; // User selection (A, B, C, or D)
-            const correctOpt = q.correct_option.trim(); // Correct option (A, B, C, or D)
+            // 🔥 CASE SENSITIVITY FIX: 'a' పెట్టినా, 'A' పెట్టినా కరెక్ట్ అయ్యేలా చూస్తున్నాం
+            const userAns = answers[i] ? answers[i].toUpperCase() : null; 
+            const correctOpt = q.correct_option ? q.correct_option.trim().toUpperCase() : 'A';
             const isCorrect = (userAns === correctOpt);
             
             if (isCorrect) score++;
 
-            // Mapping database values to match your result.ejs variables
+            // ఆప్షన్ లో ఉన్న టెక్స్ట్ ని బయటికి తీయడానికి లాజిక్
+            const getOptText = (optKey) => {
+                if (!optKey) return "Not Selected";
+                return q['option_' + optKey.toLowerCase()] || "Not Selected";
+            };
+
             reviewData.push({
-                q: q.question, // Matches item.q in your EJS
-                userAns: userAns, // Matches item.userAns
-                correctAns: correctOpt, // Matches item.correctAns
-                explanation: q.explanation, // Matches item.explanation
-                isCorrect: isCorrect // Matches item.isCorrect
+                qNo: i + 1,
+                question: q.question, 
+                userAnsText: userAns ? `${userAns}) ${getOptText(userAns)}` : "Skipped",
+                correctAnsText: `${correctOpt}) ${getOptText(correctOpt)}`,
+                isCorrect: isCorrect,
+                explanation: q.explanation || "No explanation available.",
+                shortcut: q.shortcut || "N/A"
             });
         });
 
-        // Optional: Save to database for history
-        await db.execute(
-            'INSERT INTO mock_results (user_id, score, total, topic) VALUES (?, ?, ?, ?)', 
-            [req.session.user.id, score, questions.length, topic]
+        // 🔥 ANALYSIS FIX: answers_json, test_type 'Topic' గా సేవ్ చేస్తున్నాం
+        const [saveResult] = await db.execute(
+            'INSERT INTO mock_results (user_id, score, total, topic, answers_json, test_type) VALUES (?, ?, ?, ?, ?, ?)', 
+            [req.session.user.id, score, questions.length, topic, JSON.stringify(answers), 'Topic']
         );
 
-        // Rendering your beautiful result.ejs
+        // రిజల్ట్ పేజీకి resultId పంపిస్తున్నాం, అప్పుడే అనాలసిస్ బటన్ పనిచేస్తుంది!
         res.render('result', { 
             score: score, 
             total: questions.length, 
             reviewData: reviewData, 
+            sectionScores: null,
             topic: topic,
-            user: req.session.user 
+            user: req.session.user,
+            resultId: saveResult.insertId
         });
 
     } catch (err) { 
