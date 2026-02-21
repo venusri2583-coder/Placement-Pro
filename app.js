@@ -211,7 +211,7 @@ app.get('/practice/:topic', requireLogin, async (req, res) => {
 });
 
 // =============================================================
-// --- FINAL SUBMIT EXAM ROUTE (FIXED 0 MARKS & ANALYSIS ID) ---
+// --- FINAL SUBMIT EXAM ROUTE (TOPIC TEST) ---
 // =============================================================
 app.post('/submit-exam', requireLogin, async (req, res) => {
     try {
@@ -219,10 +219,7 @@ app.post('/submit-exam', requireLogin, async (req, res) => {
         const topic = payload.topic;
         const answers = payload.answers || [];
         
-        // 🔥 MARKS FIX: ఫ్రంట్ ఎండ్ నుండి ప్రశ్నలను తెచ్చుకుంటేనే కరెక్ట్ గా చెక్ అవుతుంది
         let questions = payload.questions; 
-        
-        // ఒకవేళ ఫ్రంట్ ఎండ్ నుండి రాకపోతేనే డేటాబేస్ వాడతాం
         if (!questions || questions.length === 0) {
             const [dbQuestions] = await db.execute("SELECT * FROM aptitude_questions WHERE topic = ? LIMIT 15", [topic]);
             questions = dbQuestions;
@@ -232,14 +229,12 @@ app.post('/submit-exam', requireLogin, async (req, res) => {
         let reviewData = [];
 
         questions.forEach((q, i) => {
-            // 🔥 CASE SENSITIVITY FIX: 'a' పెట్టినా, 'A' పెట్టినా కరెక్ట్ అయ్యేలా చూస్తున్నాం
             const userAns = answers[i] ? answers[i].toUpperCase() : null; 
             const correctOpt = q.correct_option ? q.correct_option.trim().toUpperCase() : 'A';
             const isCorrect = (userAns === correctOpt);
             
             if (isCorrect) score++;
 
-            // ఆప్షన్ లో ఉన్న టెక్స్ట్ ని బయటికి తీయడానికి లాజిక్
             const getOptText = (optKey) => {
                 if (!optKey) return "Not Selected";
                 return q['option_' + optKey.toLowerCase()] || "Not Selected";
@@ -256,13 +251,12 @@ app.post('/submit-exam', requireLogin, async (req, res) => {
             });
         });
 
-        // 🔥 ANALYSIS FIX: answers_json, test_type 'Topic' గా సేవ్ చేస్తున్నాం
+        // 🔥 FIX 1: ఇక్కడ మనం 'answers' బదులు మొత్తం 'reviewData' ని సేవ్ చేస్తున్నాం 
         const [saveResult] = await db.execute(
             'INSERT INTO mock_results (user_id, score, total, topic, answers_json, test_type) VALUES (?, ?, ?, ?, ?, ?)', 
-            [req.session.user.id, score, questions.length, topic, JSON.stringify(answers), 'Topic']
+            [req.session.user.id, score, questions.length, topic, JSON.stringify(reviewData), 'Topic']
         );
 
-        // రిజల్ట్ పేజీకి resultId పంపిస్తున్నాం, అప్పుడే అనాలసిస్ బటన్ పనిచేస్తుంది!
         res.render('result', { 
             score: score, 
             total: questions.length, 
@@ -276,6 +270,79 @@ app.post('/submit-exam', requireLogin, async (req, res) => {
     } catch (err) { 
         console.error("Submit Error:", err);
         res.redirect('/'); 
+    }
+});
+
+// =============================================================
+// 🏆 GRAND MOCK TEST SUBMISSION ROUTE
+// =============================================================
+app.post('/submit-grand-exam', requireLogin, async (req, res) => {
+    try {
+        const { questions, answers, topic } = JSON.parse(req.body.payload);
+        let score = 0;
+        let reviewData = [];
+        let sectionScores = { 'Aptitude': { score: 0, total: 20 }, 'Reasoning': { score: 0, total: 20 }, 'English': { score: 0, total: 20 }, 'Technical': { score: 0, total: 20 } };
+
+        questions.forEach((q, i) => {
+            const userAns = answers[i] || null;
+            const correctOpt = q.correct_option ? q.correct_option.trim().toUpperCase() : 'A';
+            const isCorrect = (userAns === correctOpt);
+            let category = i < 20 ? 'Aptitude' : i < 40 ? 'Reasoning' : i < 60 ? 'English' : 'Technical';
+
+            if (isCorrect) { score++; sectionScores[category].score++; }
+
+            const getOptText = (optKey) => {
+                if (optKey === 'A') return q.option_a;
+                if (optKey === 'B') return q.option_b;
+                if (optKey === 'C') return q.option_c;
+                if (optKey === 'D') return q.option_d;
+                return "Not Selected";
+            };
+
+            reviewData.push({
+                qNo: i + 1, category: category, question: q.question,
+                userAnsText: userAns ? `${userAns}) ${getOptText(userAns)}` : "Skipped",
+                correctAnsText: `${correctOpt}) ${getOptText(correctOpt)}`,
+                isCorrect: isCorrect, isAttempted: userAns !== null,
+                explanation: q.explanation || "Detailed solution based on TCS/Wipro pattern.", shortcut: q.shortcut || "N/A" 
+            });
+        });
+
+        // 🔥 FIX 2: గ్రాండ్ టెస్ట్ కి కూడా మొత్తం 'reviewData' నే సేవ్ చేస్తున్నాం
+        const [saveResult] = await db.execute(
+            'INSERT INTO mock_results (user_id, score, total, topic, answers_json, test_type) VALUES (?, ?, ?, ?, ?, ?)', 
+            [req.session.user.id, score, questions.length, topic, JSON.stringify(reviewData), 'Mega']
+        );
+
+        res.render('result', { score, total: questions.length, reviewData, sectionScores, topic, user: req.session.user, resultId: saveResult.insertId });
+    } catch (err) { console.error("Submission Error:", err); res.redirect('/'); }
+});
+
+// =============================================================
+// 🔍 VIEW ANALYSIS ROUTE (100% FIXED)
+// =============================================================
+app.get('/view-analysis/:id', requireLogin, async (req, res) => {
+    try {
+        const [result] = await db.execute('SELECT * FROM mock_results WHERE id = ? AND user_id = ?', [req.params.id, req.session.user.id]);
+        
+        if (result.length > 0) {
+            // 🔥 FIX 3: డేటాబేస్ నుండి పాత క్వశ్చన్స్ వెతక్కుండా, సేవ్ చేసిన ఒరిజినల్ డేటాని తీసుకుంటున్నాం
+            let reviewData = JSON.parse(result[0].answers_json);
+            
+            res.render('result', { 
+                score: result[0].score, 
+                total: result[0].total, 
+                reviewData: reviewData, 
+                sectionScores: null, 
+                topic: result[0].topic, 
+                user: req.session.user 
+            });
+        } else {
+            res.redirect('/leaderboard');
+        }
+    } catch (err) { 
+        console.error(err);
+        res.redirect('/leaderboard'); 
     }
 });
 // =============================================================
