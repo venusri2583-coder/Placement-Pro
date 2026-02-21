@@ -34,10 +34,15 @@
 
         <h3>EDUCATION</h3>
         <table>
-            <tr><th>Degree</th><th>Institution</th><th>Location</th><th>Score</th></tr>
-            <tr><td><%= data.education.btech.degree %></td><td><%= data.education.btech.college %></td><td><%= data.education.btech.city %></td><td><%= data.education.btech.cgpa %></td></tr>
-            <tr><td><%= data.education.inter.degree %></td><td><%= data.education.inter.college %></td><td><%= data.education.inter.city %></td><td><%= data.education.inter.marks %></td></tr>
-            <tr><td><%= data.education.ssc.degree %></td><td><%= data.education.ssc.school %></td><td><%= data.education.ssc.city %></td><td><%= data.education.ssc.cgpa %></td></tr>
+            <tr><th>Degree / Course</th><th>Institution</th><th>Location</th><th>Score</th></tr>
+            <% data.education.forEach(edu => { %>
+                <tr>
+                    <td><strong><%= edu.degree %></strong></td>
+                    <td><%= edu.institution %></td>
+                    <td><%= edu.location %></td>
+                    <td><%= edu.score %></td>
+                </tr>
+            <% }) %>
         </table>
 
         <h3>TECHNICAL SKILLS</h3>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= data.fullName %> - Premium Resume</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e9ecef; margin: 0; padding: 20px; }
+        .resume-wrapper { display: flex; max-width: 850px; margin: 0 auto; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        
+        /* 🔥 ఎడమ వైపు కాలమ్ డిజైన్ (Dark Blue) 🔥 */
+        .left-col { width: 35%; background: #2c3e50; color: white; padding: 30px; }
+        .profile-icon { width: 100px; height: 100px; background: #1abc9c; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 40px; color: white; font-weight: bold; }
+        h2.section-title-left { font-size: 18px; border-bottom: 2px solid #1abc9c; padding-bottom: 5px; margin-top: 30px; color: #1abc9c; letter-spacing: 1px;}
+        .contact-item { margin-bottom: 12px; font-size: 14px; word-wrap: break-word; }
+        .skill-item { background: rgba(255,255,255,0.1); padding: 5px 10px; margin-bottom: 8px; border-radius: 4px; display: inline-block; font-size: 13px; }
+        
+        /* 🔥 కుడి వైపు కాలమ్ డిజైన్ (White) 🔥 */
+        .right-col { width: 65%; padding: 40px; }
+        h1 { font-size: 32px; margin-bottom: 5px; color: #2c3e50; text-transform: uppercase; }
+        h2.section-title-right { font-size: 20px; border-bottom: 2px solid #2c3e50; padding-bottom: 5px; margin-top: 25px; color: #2c3e50; }
+        .proj-title { font-weight: bold; font-size: 16px; margin-bottom: 3px; color: #34495e; }
+        .proj-desc { font-size: 14px; color: #555; margin-bottom: 15px; line-height: 1.5; }
+        .edu-item { margin-bottom: 15px; font-size: 14.5px;}
+        ul { padding-left: 20px; font-size: 14px; line-height: 1.6; }
+
+        /* ప్రింట్ తీసుకునేటప్పుడు బ్యాక్ గ్రౌండ్ కలర్స్ పోకుండా ఉండటానికి */
+        @media print {
+            body { padding: 0; background: white; }
+            .resume-wrapper { box-shadow: none; max-width: 100%; }
+            .left-col { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="text-align: center; margin-bottom: 20px;">
+        <button onclick="window.print()" style="padding: 10px 20px; background: #2980b9; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold;">🖨️ Download Premium PDF</button>
+        <a href="/resume-builder" style="margin-left: 15px; color: #2980b9; text-decoration: none; font-weight: bold;">✏️ Back to Edit</a>
+    </div>
+    
+    <div class="resume-wrapper">
+        <div class="left-col">
+            <div style="text-align: center;">
+                <div class="profile-icon"><%= data.fullName.charAt(0).toUpperCase() %></div>
+            </div>
+            
+            <h2 class="section-title-left">CONTACT</h2>
+            <div class="contact-item">📞 <%= data.phone %></div>
+            <div class="contact-item">📧 <%= data.email %></div>
+            <% if(data.linkedin) { %><div class="contact-item">💼 <%= data.linkedin %></div><% } %>
+            <% if(data.github) { %><div class="contact-item">💻 <%= data.github %></div><% } %>
+
+            <h2 class="section-title-left">SKILLS</h2>
+            <% data.skills.forEach(skill => { %>
+                <div class="skill-item"><%= skill %></div>
+            <% }) %>
+
+            <% if(data.languages.length > 0) { %>
+            <h2 class="section-title-left">LANGUAGES</h2>
+            <ul style="padding-left: 15px;">
+                <% data.languages.forEach(lang => { %> <li><%= lang %></li> <% }) %>
+            </ul>
+            <% } %>
+        </div>
+
+        <div class="right-col">
+            <h1><%= data.fullName %></h1>
+            <div style="color: #1abc9c; font-size: 18px; margin-bottom: 20px; font-weight: bold;"><%= data.personaType %> Professional</div>
+
+            <h2 class="section-title-right">PROFILE</h2>
+            <p style="font-size: 14.5px; color: #444; line-height: 1.6;"><%= data.objective %></p>
+
+            <h2 class="section-title-right">EDUCATION</h2>
+            <% data.education.forEach(edu => { %>
+                <div class="edu-item">
+                    <strong><%= edu.degree %></strong> - <%= edu.institution %> (<%= edu.location %>) <br>
+                    <span style="color: #7f8c8d; font-size: 13px;">Score: <%= edu.score %></span>
+                </div>
+            <% }) %>
+            <div class="edu-item">
+                <strong><%= data.education.inter.degree %></strong> - <%= data.education.inter.college %> (<%= data.education.inter.city %>) <br>
+                <span style="color: #7f8c8d; font-size: 13px;">Score: <%= data.education.inter.marks %></span>
+            </div>
+
+            <h2 class="section-title-right">KEY PROJECTS</h2>
+            <% data.projects.forEach(proj => { %>
+                <div class="proj-title"><%= proj.title %></div>
+                <div class="proj-desc"><%= proj.description %></div>
+            <% }) %>
+
+            <% if(data.certifications.length > 0) { %>
+            <h2 class="section-title-right">CERTIFICATIONS</h2>
+            <ul>
+                <% data.certifications.forEach(cert => { %> <li style="margin-bottom: 5px;"><%= cert %></li> <% }) %>
+            </ul>
+            <% } %>
+        </div>
+    </div>
+</body>
+</html>
