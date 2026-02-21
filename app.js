@@ -60,7 +60,7 @@ app.post('/register', async (req, res) => {
         res.render('register', { error: 'Email already exists or Database error.' }); 
     }
 });
-// 🔐 LOGIN ROUTE
+// 🔐 LOGIN ROUTE (🔥 FIXED EJS CRASH & BCRYPT BUG 🔥)
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
     try {
@@ -68,29 +68,35 @@ app.post('/login', async (req, res) => {
         const [users] = await db.execute('SELECT * FROM users WHERE email = ?', [email]);
         
         if (users.length === 0) {
-            // యూజర్ దొరకకపోతే
-            return res.render('login', { msg: 'Invalid Details', user: null });
+            // 🔥 'error' వేరియబుల్ ని కచ్చితంగా పంపాలి, లేదంటే EJS క్రాష్ అవుతుంది!
+            return res.render('login', { error: 'Invalid Email or Password', msg: null });
         }
 
         const user = users[0];
-
-        // 2. పాస్‌వర్డ్ చెక్ చేయడం (Bcrypt వాడుతుంటే ఇలా చేయాలి)
-        // ఒకవేళ నువ్వు bcrypt వాడకపోతే: if (password === user.password) అని పెట్టు
         const bcrypt = require('bcrypt');
-        const isMatch = await bcrypt.compare(password, user.password);
+        let isMatch = false;
+
+        // 2. పాత అకౌంట్స్ (నార్మల్ పాస్‌వర్డ్) & కొత్త అకౌంట్స్ (Bcrypt) రెండూ పనిచేసేలా లాజిక్
+        if (user.password.startsWith('$2b$') || user.password.startsWith('$2a$')) {
+            // ఇది కొత్త సెక్యూరిటీ పాస్‌వర్డ్ అయితే
+            isMatch = await bcrypt.compare(password, user.password);
+        } else {
+            // ఇది పాత నార్మల్ పాస్‌వర్డ్ అయితే
+            isMatch = (password === user.password);
+        }
 
         if (isMatch) {
             // సక్సెస్! సెషన్‌లో యూజర్ డేటా సేవ్ చేయడం
             req.session.user = { id: user.id, username: user.username, email: user.email };
-            return res.redirect('/'); // డాష్‌బోర్డ్‌కి పంపడం
+            return res.redirect('/'); 
         } else {
             // పాస్‌వర్డ్ తప్పైతే
-            return res.render('login', { msg: 'Invalid Details', user: null });
+            return res.render('login', { error: 'Invalid Email or Password', msg: null });
         }
 
     } catch (err) {
         console.error("Login Error:", err);
-        res.render('login', { msg: 'Server Error. Try again.', user: null });
+        return res.render('login', { error: 'Server Error. Try again.', msg: null });
     }
 });
 // --- DASHBOARD ---
