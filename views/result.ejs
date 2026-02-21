@@ -53,7 +53,7 @@
         </div>
     </div>
 
-    <% if (typeof sectionScores !== 'undefined') { %>
+    <% if (typeof sectionScores !== 'undefined' && sectionScores !== null) { %>
     <div class="row justify-content-center mb-5">
         <div class="col-md-10">
             <div class="card shadow-sm border-0 animate__animated animate__fadeInUp" style="border-radius: 20px; animation-delay: 0.2s;">
@@ -101,11 +101,18 @@
                          style="border-radius: 20px; border-left: 8px solid <%= borderColor %> !important;">
                         <div class="card-body p-4">
                             <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h6 class="fw-bold text-dark m-0">
-                                    <span class="badge bg-secondary me-2"><%= item.category || 'Q' %></span> 
-                                    Q<%= item.qNum || index + 1 %>: <%= item.qText || item.q %>
-                                </h6>
-                                <i class="fas <%= item.isCorrect ? 'fa-check-circle text-success' : (isAttempted ? 'fa-times-circle text-danger' : 'fa-minus-circle text-secondary') %> fa-lg"></i>
+                                <div>
+                                    <h6 class="fw-bold text-dark m-0">
+                                        <span class="badge bg-secondary me-2"><%= item.category || 'Topic' %></span> 
+                                        Q<%= item.qNo || index + 1 %>: 
+                                    </h6>
+                                    
+                                    <p style="font-size: 16px; font-weight: bold; color: #333; margin-top: 8px; margin-bottom: 5px;">
+                                        <%= item.question || item.q %>
+                                    </p>
+                                </div>
+                                
+                                <i class="fas <%= item.isCorrect ? 'fa-check-circle text-success' : (isAttempted ? 'fa-times-circle text-danger' : 'fa-minus-circle text-secondary') %> fa-lg mt-1"></i>
                             </div>
 
                             <div class="mt-3">
