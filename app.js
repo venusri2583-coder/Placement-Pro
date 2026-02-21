@@ -1912,32 +1912,58 @@ app.get('/add-my-dummy-scores', requireLogin, async (req, res) => {
     }
 });
 // =============================================================
-// 📄 DYNAMIC RESUME BUILDER ROUTES
+// 📄 ADVANCED DYNAMIC RESUME BUILDER (MULTIPLE TEMPLATES)
 // =============================================================
 
-// 1. స్టూడెంట్ డీటెయిల్స్ అడగడానికి ఫామ్ ఓపెన్ చేసే రూట్
 app.get('/resume-builder', requireLogin, (req, res) => {
     res.render('resume_builder', { user: req.session.user });
 });
 
-// 2. ఫామ్ సబ్మిట్ చేశాక ఆటోమేటిక్ గా రెజ్యూమ్ జనరేట్ చేసే రూట్
 app.post('/generate-resume', requireLogin, (req, res) => {
-    // స్టూడెంట్ ఫామ్ లో ఇచ్చిన డేటాని పట్టుకుంటున్నాం
+    // బాడీ నుండి మొత్తం డేటా లాగుతున్నాం (Arrays తో సహా)
+    let { 
+        fullName, phone, personaType, linkedin, github, email, objective,
+        degree, btechCollege, btechCity, btechCgpa,
+        inter, interCollege, interCity, interMarks,
+        ssc, sscSchool, sscCity, sscCgpa,
+        skills, strengths, certifications, languages, hobbies,
+        templateType 
+    } = req.body;
+
+    // మల్టిపుల్ ప్రాజెక్ట్స్ వస్తే వాటిని ఒక Array లాగా మారుస్తున్నాం
+    let projects = [];
+    if (req.body.projectTitle) {
+        let titles = Array.isArray(req.body.projectTitle) ? req.body.projectTitle : [req.body.projectTitle];
+        let descs = Array.isArray(req.body.projectDesc) ? req.body.projectDesc : [req.body.projectDesc];
+        
+        for (let i = 0; i < titles.length; i++) {
+            if (titles[i].trim() !== '') {
+                projects.push({ title: titles[i], description: descs[i] });
+            }
+        }
+    }
+
     const resumeData = {
-        fullName: req.body.fullName,
-        email: req.body.email,
-        phone: req.body.phone,
-        linkedin: req.body.linkedin,
-        github: req.body.github,
-        education: req.body.education,
-        cgpa: req.body.cgpa,
-        skills: req.body.skills ? req.body.skills.split(',') : [], // కమా(,) తో ఇస్తే లిస్ట్ లా మారుతుంది
-        projects: req.body.projects,
-        experience: req.body.experience
+        fullName, phone, personaType, linkedin, github, email, objective,
+        education: {
+            btech: { degree, college: btechCollege, city: btechCity, cgpa: btechCgpa },
+            inter: { degree: inter, college: interCollege, city: interCity, marks: interMarks },
+            ssc: { degree: ssc, school: sscSchool, city: sscCity, cgpa: sscCgpa }
+        },
+        skills: skills ? skills.split(',').map(s => s.trim()) : [],
+        strengths: strengths ? strengths.split(',').map(s => s.trim()) : [],
+        certifications: certifications ? certifications.split(',').map(s => s.trim()) : [],
+        languages: languages ? languages.split(',').map(s => s.trim()) : [],
+        hobbies: hobbies ? hobbies.split(',').map(s => s.trim()) : [],
+        projects
     };
-    
-    // ఆ డేటాని మన రెజ్యూమ్ టెంప్లేట్ కి పంపిస్తున్నాం
-    res.render('resume_template', { user: req.session.user, data: resumeData });
+
+    // యూజర్ అడిగిన టెంప్లేట్ కి పంపిస్తున్నాం
+    if (templateType === 'template2') {
+        res.render('resume_template_2', { data: resumeData });
+    } else {
+        res.render('resume_template_1', { data: resumeData });
+    }
 });
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
