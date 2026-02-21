@@ -36,8 +36,7 @@ const db = mysql.createPool({
 const requireLogin = (req, res, next) => {
     if (req.session.user) { next(); } else { res.redirect('/login'); }
 };
-const pdfRaw = require('pdf-parse');
-const pdfScannerMaster = pdfRaw.default || pdfRaw;
+const readPdfContent = require('pdf-parse');
 
 // PDF ఫైల్ ని టెంపరరీగా మెమరీలో సేవ్ చేసుకోవడానికి
 const upload = multer({ storage: multer.memoryStorage() });
@@ -1976,8 +1975,8 @@ app.get('/resume-upload', requireLogin, (req, res) => {
     res.render('resume_upload', { user: req.session.user });
 });
 
- // =============================================================
-// 📄 ATS RESUME ANALYZER (PRESENTATION SAFE MODE 🔥)
+// =============================================================
+// 📄 ATS RESUME ANALYZER (100% REAL & WORKING 🔥)
 // =============================================================
 
 // 1. అప్‌లోడ్ పేజీ ఓపెన్ చేయడానికి
@@ -1985,52 +1984,64 @@ app.get('/resume-upload', requireLogin, (req, res) => {
     res.render('resume_upload', { user: req.session.user });
 });
 
-// 2. ప్రెజెంటేషన్ కోసం సేఫ్ గా స్కాన్ చేసే ఫీచర్
+// 2. రియల్ గా PDF ని స్కాన్ చేసే ఫీచర్
 app.post('/analyze-resume', requireLogin, upload.single('resumePdf'), async (req, res) => {
     try {
         if (!req.file) {
             return res.send("<h2 style='color:red; text-align:center;'>దయచేసి PDF ఫైల్ ని అప్‌లోడ్ చెయ్ మావా!</h2>");
         }
 
-        // 🔥 మ్యాజిక్: ప్యాకేజీలు క్రాష్ అవుతున్నాయి కాబట్టి వాటిని వాడకుండా... 
-        // డైరెక్ట్ గా సిస్టమ్ ని పాస్ అయ్యేలా డమ్మీ పాజిటివ్ టెక్స్ట్ ఇస్తున్నాం! 
-        // ప్రెజెంటేషన్ లో సార్ వాళ్ళకి ఇది పక్కాగా రిజల్ట్ ఇస్తుంది!
-        let text = "education b.tech skills java python project experience summary";
+        let text = "";
 
-        let score = 30; // అందరికీ ఇచ్చే బేస్ స్కోర్
+        // 🔥 అసలైన PDF రీడింగ్ ఇక్కడే జరుగుతుంది!
+        try {
+            const data = await readPdfContent(req.file.buffer);
+            text = data.text.toLowerCase(); 
+            
+            // ఒకవేళ PDF లోపల అస్సలు టెక్స్ట్ లేకపోతే (అంటే అది ఫొటో/స్కాన్ కాపీ అయితే)
+            if (!text || text.trim() === "") {
+                return res.send("<h2 style='color:red; text-align:center; margin-top:50px;'>అరె! నువ్వు అప్‌లోడ్ చేసిన PDF లో టెక్స్ట్ లేదు (బహుశా అది ఫొటో కాపీ అనుకుంటా). దయచేసి టెక్స్ట్ ఉన్న ఒరిజినల్ రెజ్యూమ్ PDF ని అప్‌లోడ్ చెయ్.</h2><div style='text-align:center; margin-top:20px;'><a href='/resume-upload' class='btn btn-primary'>వెనక్కి వెళ్ళు</a></div>");
+            }
+        } catch (parseError) {
+            console.error("PDF Parsing failed:", parseError);
+            return res.send(`<h2 style='color:red; text-align:center; margin-top:50px;'>ఈ PDF ఫార్మాట్ ని మన సిస్టమ్ చదవలేకపోతోంది. దయచేసి వేరే సింపుల్ PDF ట్రై చెయ్. (Error: ${parseError.message})</h2><div style='text-align:center; margin-top:20px;'><a href='/resume-upload' class='btn btn-primary'>వెనక్కి వెళ్ళు</a></div>`);
+        }
+
+        // 🔥 ఇక్కడి నుంచి రియల్ ATS లాజిక్ (నీ PDF లోని పదాలను వెతుకుతుంది)
+        let score = 30; // బేస్ స్కోర్
         let feedback = [];
 
-        if (text.includes('education') || text.includes('b.tech')) {
+        if (text.includes('education') || text.includes('b.tech') || text.includes('degree') || text.includes('university') || text.includes('college')) {
             score += 15;
         } else {
-            feedback.push('🎓 మీ రెజ్యూమ్‌లో "Education" డీటెయిల్స్ స్పష్టంగా లేవు.');
+            feedback.push('🎓 మీ రెజ్యూమ్‌లో "Education" లేదా కాలేజీ డీటెయిల్స్ కీవర్డ్స్ మిస్ అయ్యాయి.');
         }
 
-        if (text.includes('skills') || text.includes('java')) {
+        if (text.includes('skills') || text.includes('java') || text.includes('python') || text.includes('react') || text.includes('node') || text.includes('c++') || text.includes('sql')) {
             score += 25;
         } else {
-            feedback.push('💻 ముఖ్యమైన "Technical Skills" (Technical keywords) సరిగ్గా మెన్షన్ చేయలేదు.');
+            feedback.push('💻 ముఖ్యమైన "Technical Skills" (Java, Python లాంటి కీవర్డ్స్) సరిగ్గా మెన్షన్ చేయలేదు.');
         }
 
-        if (text.includes('project') || text.includes('experience')) {
+        if (text.includes('project') || text.includes('experience') || text.includes('internship') || text.includes('developed')) {
             score += 20;
         } else {
-            feedback.push('🚀 మీరు చేసిన "Projects" లేదా "Experience" గురించి ఇంకా బాగా వివరించాలి.');
+            feedback.push('🚀 మీరు చేసిన "Projects" లేదా "Experience" గురించి సరైన పదాలతో వివరించలేదు.');
         }
 
-        if (text.includes('objective') || text.includes('summary')) {
+        if (text.includes('objective') || text.includes('summary') || text.includes('profile')) {
             score += 10;
         } else {
-            feedback.push('🎯 పైన "Career Objective" (సమ్మరీ) యాడ్ చేస్తే మంచిది.');
+            feedback.push('🎯 పైన "Career Objective" లేదా "Summary" యాడ్ చేస్తే ATS కి బాగా అర్థం అవుతుంది.');
         }
 
         score = Math.min(score, 100);
 
-        // రిజల్ట్ పేజీకి సూపర్ గా వెళ్తుంది!
+        // రిజల్ట్ పేజీకి పంపడం
         res.render('resume_result', { user: req.session.user, score: score, feedback: feedback });
 
     } catch (err) {
-        console.error("Route Error: ", err);
+        console.error("Main Route Error: ", err);
         res.send("<h2 style='color:red; text-align:center;'>సర్వర్ ఎర్రర్.</h2>");
     }
 });
