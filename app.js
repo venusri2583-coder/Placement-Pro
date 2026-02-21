@@ -1877,5 +1877,39 @@ app.get('/add-dummy-leaderboard', async (req, res) => {
         res.send("<h1 style='color:red;'>Error: " + err.message + "</h1>");
     }
 });
+// =============================================================
+// 🔥 ADD DUMMY PERFORMANCE HISTORY FOR LOGGED-IN USER
+// =============================================================
+app.get('/add-my-dummy-scores', requireLogin, async (req, res) => {
+    try {
+        const userId = req.session.user.id; // నీ అకౌంట్ ID
+
+        // నీ అకౌంట్ కి యాడ్ చేయాల్సిన డమ్మీ టెస్ట్ డేటా
+        const myDummyData = [
+            { score: 14, total: 15, topic: 'Time and Work', type: 'Topic' },        // Strong (93%)
+            { score: 6, total: 15, topic: 'Blood Relations', type: 'Topic' },      // Weak (40%)
+            { score: 55, total: 80, topic: 'MNC Mega Test (Medium)', type: 'Mega'}, // Average (68%)
+            { score: 12, total: 15, topic: 'Coding-Decoding', type: 'Topic' },     // Strong (80%)
+            { score: 72, total: 80, topic: 'MNC Mega Test (Hard)', type: 'Mega' }   // Strong (90%)
+        ];
+
+        for (let d of myDummyData) {
+            await db.execute(
+                'INSERT INTO mock_results (user_id, score, total, topic, test_type) VALUES (?, ?, ?, ?, ?)', 
+                [userId, d.score, d.total, d.topic, d.type]
+            );
+        }
+
+        res.send(`
+            <h1 style="color:green; text-align:center; margin-top:50px;">✅ Your Dummy Performance Data Added!</h1>
+            <p style="text-align:center;">నీ ప్రొఫైల్ ఇప్పుడు నిండుగా కనిపిస్తుంది.</p>
+            <div style="text-align:center;">
+                <a href="/leaderboard" style="padding:10px 20px; background:blue; color:white; text-decoration:none; border-radius:5px;">Check My Performance</a>
+            </div>
+        `);
+    } catch (err) {
+        res.send("<h1 style='color:red;'>Error: " + err.message + "</h1>");
+    }
+});
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
