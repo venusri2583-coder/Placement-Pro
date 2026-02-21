@@ -1,0 +1,40 @@
+<%- include('partials/header') %>
+
+<div class="container py-5">
+    <div class="card shadow-lg border-0 mx-auto" style="max-width: 700px; border-radius: 15px;">
+        <div class="card-body p-5 text-center">
+            <h2 class="fw-bold mb-2"><i class="fas fa-chart-pie text-primary"></i> Your ATS Analysis Report</h2>
+            <p class="text-muted mb-4">Here is what our AI system found about your resume.</p>
+
+            <div class="mb-4">
+                <h1 class="display-1 fw-bold <%= score >= 70 ? 'text-success' : (score >= 40 ? 'text-warning' : 'text-danger') %>">
+                    <%= score %>%
+                </h1>
+                <h5 class="fw-bold">ATS Compatibility Score</h5>
+            </div>
+
+            <div class="text-start bg-light p-4 rounded border mb-4">
+                <h5 class="fw-bold text-dark mb-3"><i class="fas fa-exclamation-circle text-warning"></i> Areas to Improve:</h5>
+                <% if(feedback.length > 0) { %>
+                    <ul class="mb-0" style="line-height: 1.8;">
+                        <% feedback.forEach(tip => { %>
+                            <li class="text-danger fw-bold"><%= tip %></li>
+                        <% }) %>
+                    </ul>
+                <% } else { %>
+                    <p class="text-success fw-bold mb-0">Excellent! Your resume has all the required keywords. 🚀</p>
+                <% } %>
+            </div>
+
+            <div class="alert alert-info border-0 shadow-sm mb-4">
+                <strong>💡 Tip:</strong> Let's fix these issues! Use our dynamic Resume Builder to create a 100% ATS-friendly profile now.
+            </div>
+
+            <a href="/resume-builder" class="btn btn-primary btn-lg rounded-pill fw-bold shadow px-5">
+                <i class="fas fa-tools"></i> Fix Issues & Build New Resume
+            </a>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

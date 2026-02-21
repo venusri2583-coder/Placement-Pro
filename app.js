@@ -36,6 +36,11 @@ const db = mysql.createPool({
 const requireLogin = (req, res, next) => {
     if (req.session.user) { next(); } else { res.redirect('/login'); }
 };
+const multer = require('multer');
+const pdfParse = require('pdf-parse');
+
+// PDF ఫైల్ ని టెంపరరీగా మెమరీలో సేవ్ చేసుకోవడానికి
+const upload = multer({ storage: multer.memoryStorage() });
 
 // --- ROUTES ---
 app.get('/login', (req, res) => res.render('login', { error: null, msg: null }));
@@ -1974,6 +1979,69 @@ app.post('/generate-resume', requireLogin, (req, res) => {
     } catch (error) {
         console.error("Resume Generation Error: ", error);
         res.send("<h2 style='color:red; text-align:center; margin-top:50px;'>అరె! ఫామ్ జనరేట్ చేసేటప్పుడు చిన్న ఎర్రర్ వచ్చింది. దయచేసి వెనక్కి వెళ్లి మళ్లీ ట్రై చెయ్.</h2>");
+    }
+});
+// =============================================================
+// 📄 ATS RESUME ANALYZER & OPTIMIZER 
+// =============================================================
+
+// 1. అప్‌లోడ్ పేజీ ఓపెన్ చేయడానికి
+app.get('/resume-upload', requireLogin, (req, res) => {
+    res.render('resume_upload', { user: req.session.user });
+});
+
+// 2. PDF ని స్కాన్ చేసి, ATS స్కోర్ & ఫీడ్‌బ్యాక్ ఇవ్వడానికి
+app.post('/analyze-resume', requireLogin, upload.single('resumePdf'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.send("<h2 style='color:red; text-align:center;'>దయచేసి PDF ఫైల్ ని అప్‌లోడ్ చెయ్ మావా!</h2>");
+        }
+
+        // PDF లోపల ఉన్న టెక్స్ట్ చదవడం
+        const data = await pdfParse(req.file.buffer);
+        const text = data.text.toLowerCase(); // స్కాన్ చేయడానికి ఈజీగా చిన్న అక్షరాల్లోకి మారుస్తున్నాం
+
+        // 🔥 బేసిక్ ATS స్కోర్ & ఫీడ్‌బ్యాక్ లాజిక్
+        let score = 30; // అందరికీ ఇచ్చే మినిమమ్ స్కోర్
+        let feedback = [];
+
+        // ఎడ్యుకేషన్ చెక్
+        if (text.includes('education') || text.includes('b.tech') || text.includes('degree') || text.includes('university')) {
+            score += 15;
+        } else {
+            feedback.push('🎓 మీ రెజ్యూమ్‌లో "Education" డీటెయిల్స్ స్పష్టంగా లేవు.');
+        }
+
+        // స్కిల్స్ చెక్
+        if (text.includes('skills') || text.includes('java') || text.includes('python') || text.includes('react') || text.includes('node') || text.includes('sql')) {
+            score += 25;
+        } else {
+            feedback.push('💻 ముఖ్యమైన "Technical Skills" (Technical keywords) సరిగ్గా మెన్షన్ చేయలేదు.');
+        }
+
+        // ప్రాజెక్ట్స్ చెక్
+        if (text.includes('project') || text.includes('experience') || text.includes('internship') || text.includes('developed')) {
+            score += 20;
+        } else {
+            feedback.push('🚀 మీరు చేసిన "Projects" లేదా "Experience" గురించి ఇంకా బాగా వివరించాలి.');
+        }
+
+        // సమ్మరీ చెక్
+        if (text.includes('objective') || text.includes('summary') || text.includes('profile')) {
+            score += 10;
+        } else {
+            feedback.push('🎯 పైన "Career Objective" (సమ్మరీ) యాడ్ చేస్తే మంచిది.');
+        }
+
+        // ఫైనల్ స్కోర్ సెట్ చేయడం
+        score = Math.min(score, 100);
+
+        // రిజల్ట్ పేజీకి డేటా పంపడం
+        res.render('resume_result', { user: req.session.user, score: score, feedback: feedback });
+
+    } catch (err) {
+        console.error(err);
+        res.send("<h2 style='color:red; text-align:center;'>అరె! PDF చదవడంలో ఎర్రర్ వచ్చింది. దయచేసి వేరే ఫైల్ ట్రై చెయ్.</h2>");
     }
 });
 const PORT = process.env.PORT || 5000;

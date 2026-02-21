@@ -1,0 +1,26 @@
+<%- include('partials/header') %>
+
+<div class="container py-5 text-center">
+    <div class="card shadow-lg border-0 mx-auto" style="max-width: 600px; border-radius: 15px;">
+        <div class="card-body p-5">
+            <h2 class="fw-bold mb-3" style="color: #2c3e50;"><i class="fas fa-robot text-danger"></i> AI Resume Scanner</h2>
+            <p class="text-muted mb-4">Upload your existing resume to check its ATS Score and get improvement tips!</p>
+            
+            <form action="/analyze-resume" method="POST" enctype="multipart/form-data">
+                <div class="mb-4 text-start">
+                    <label class="form-label fw-bold">Select Resume (PDF only)</label>
+                    <input class="form-control form-control-lg border-primary" type="file" name="resumePdf" accept=".pdf" required>
+                </div>
+                <button type="submit" class="btn btn-danger btn-lg w-100 rounded-pill fw-bold shadow">
+                    <i class="fas fa-search"></i> Scan & Analyze My Resume
+                </button>
+            </form>
+
+            <hr class="my-4">
+            <p class="small text-muted">Don't have a resume? Create one from scratch.</p>
+            <a href="/resume-builder" class="btn btn-outline-dark rounded-pill"><i class="fas fa-magic"></i> Go to Resume Builder</a>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>
