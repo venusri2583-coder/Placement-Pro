@@ -1907,14 +1907,13 @@ app.get('/resume-builder', requireLogin, (req, res) => {
 
 app.post('/generate-resume', requireLogin, (req, res) => {
     try {
-        let { fullName, phone, personaType, linkedin, github, email, objective, skills, strengths, certifications, languages, hobbies, templateType } = req.body;
+        let { fullName, phone, personaType, linkedin, github, email, objective, skills, strengths, languages, hobbies, templateType } = req.body;
 
-        // 1. Projects ని డైనమిక్ గా లాగడం
+        // 1. Projects ని లాగడం
         let projects = [];
         if (req.body.projectTitle) {
             let titles = Array.isArray(req.body.projectTitle) ? req.body.projectTitle : [req.body.projectTitle];
             let descs = Array.isArray(req.body.projectDesc) ? req.body.projectDesc : [req.body.projectDesc];
-            
             for (let i = 0; i < titles.length; i++) {
                 if (titles[i] && titles[i].trim() !== '') {
                     projects.push({ title: titles[i], description: descs[i] || '' });
@@ -1922,7 +1921,7 @@ app.post('/generate-resume', requireLogin, (req, res) => {
             }
         }
 
-        // 🔥 2. Education ని డైనమిక్ గా లాగడం (ఇదే అసలైన మ్యాజిక్) 🔥
+        // 2. Education ని లాగడం
         let education = [];
         if (req.body.eduDegree) {
             let degrees = Array.isArray(req.body.eduDegree) ? req.body.eduDegree : [req.body.eduDegree];
@@ -1932,29 +1931,32 @@ app.post('/generate-resume', requireLogin, (req, res) => {
 
             for (let i = 0; i < degrees.length; i++) {
                 if (degrees[i] && degrees[i].trim() !== '') {
-                    education.push({ 
-                        degree: degrees[i], 
-                        institution: institutions[i] || '', 
-                        location: locations[i] || '', 
-                        score: scores[i] || '' 
-                    });
+                    education.push({ degree: degrees[i], institution: institutions[i] || '', location: locations[i] || '', score: scores[i] || '' });
                 }
             }
+        }
+
+        // 🔥 3. Certifications ని డైనమిక్ గా లాగడం
+        let certList = [];
+        let rawCerts = req.body.certifications || req.body['certifications[]'];
+        if (rawCerts) {
+            let certs = Array.isArray(rawCerts) ? rawCerts : [rawCerts];
+            certList = certs.filter(c => c && c.trim() !== ''); // ఖాళీగా ఉన్నవి తీసేస్తాం
         }
 
         // ప్యాకెట్ రెడీ చేయడం
         const resumeData = {
             fullName: fullName || 'Student Name', phone, personaType, linkedin, github, email, objective,
-            education: education, // ఇప్పుడు ఇది ఒక లిస్ట్ లా వెళ్తుంది!
+            education: education, 
             skills: skills ? skills.split(',').map(s => s.trim()) : [],
             strengths: strengths ? strengths.split(',').map(s => s.trim()) : [],
-            certifications: certifications ? certifications.split(',').map(s => s.trim()) : [],
+            certifications: certList, // 🔥 కొత్త సర్టిఫికెట్స్ లిస్ట్ వాడుతున్నాం!
             languages: languages ? languages.split(',').map(s => s.trim()) : [],
             hobbies: hobbies ? hobbies.split(',').map(s => s.trim()) : [],
             projects
         };
 
-        // యూజర్ అడిగిన టెంప్లేట్ కి పంపిస్తున్నాం
+        // యూజర్ అడిగిన టెంప్లేట్ కి పంపడం
         if (templateType === 'template2') {
             res.render('resume_template_2', { data: resumeData });
         } else {
