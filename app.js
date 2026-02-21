@@ -1831,5 +1831,51 @@ app.get('/fix-real-papers', async (req, res) => {
         res.send("<h1>✅ Dummy Questions Deleted!</h1><p>Real TCS/Wipro pattern questions added perfectly.</p>");
     } catch (err) { res.send("Error: " + err.message); }
 });
+// =============================================================
+// 🔥 ADD 10 DUMMY RANKERS TO LEADERBOARD
+// =============================================================
+app.get('/add-dummy-leaderboard', async (req, res) => {
+    try {
+        const dummyData = [
+            { user: 'Kiran Reddy', email: 'kiran@dummy.com', score: 76, total: 80 },
+            { user: 'Suresh Babu', email: 'suresh@dummy.com', score: 68, total: 80 },
+            { user: 'Priya Sharma', email: 'priya@dummy.com', score: 79, total: 80 },
+            { user: 'Arjun Allu', email: 'arjun@dummy.com', score: 55, total: 80 },
+            { user: 'Sneha Latha', email: 'sneha@dummy.com', score: 71, total: 80 },
+            { user: 'Rahul Dev', email: 'rahul@dummy.com', score: 62, total: 80 },
+            { user: 'Vijay Kumar', email: 'vijay@dummy.com', score: 80, total: 80 }, // టాపర్
+            { user: 'Anita Roy', email: 'anita@dummy.com', score: 45, total: 80 },
+            { user: 'Mahesh V', email: 'mahesh@dummy.com', score: 58, total: 80 },
+            { user: 'Ramesh Naidu', email: 'ramesh@dummy.com', score: 65, total: 80 }
+        ];
+
+        for (let d of dummyData) {
+            // 1. యూజర్ ఉన్నాడా లేడా చెక్ చేద్దాం
+            let [existing] = await db.execute('SELECT id FROM users WHERE email = ?', [d.email]);
+            let userId;
+            
+            if (existing.length === 0) {
+                // యూజర్ లేకపోతే క్రియేట్ చేద్దాం
+                const [userRes] = await db.execute('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', [d.user, d.email, 'dummy123']);
+                userId = userRes.insertId;
+            } else {
+                userId = existing[0].id;
+            }
+
+            // 2. వాళ్ళకి "Mega" టెస్ట్ స్కోర్ యాడ్ చేద్దాం (ఇది లీడర్‌బోర్డ్ లో కనిపిస్తుంది)
+            await db.execute('INSERT INTO mock_results (user_id, score, total, topic, test_type) VALUES (?, ?, ?, ?, ?)', 
+            [userId, d.score, d.total, 'MNC Mega Test (Mixed)', 'Mega']);
+        }
+
+        res.send(`
+            <h1 style="color:green; text-align:center; margin-top:50px;">✅ 10 Dummy Rankers Added Successfully!</h1>
+            <div style="text-align:center;">
+                <a href="/leaderboard" style="padding:10px 20px; background:blue; color:white; text-decoration:none; border-radius:5px;">Go to Leaderboard</a>
+            </div>
+        `);
+    } catch (err) {
+        res.send("<h1 style='color:red;'>Error: " + err.message + "</h1>");
+    }
+});
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
