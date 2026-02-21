@@ -36,7 +36,7 @@ const db = mysql.createPool({
 const requireLogin = (req, res, next) => {
     if (req.session.user) { next(); } else { res.redirect('/login'); }
 };
-const pdf = require('pdf-parse');
+const pdfScannerMaster = require('pdf-parse');
 
 // PDF ఫైల్ ని టెంపరరీగా మెమరీలో సేవ్ చేసుకోవడానికి
 const upload = multer({ storage: multer.memoryStorage() });
@@ -1983,7 +1983,7 @@ app.post('/analyze-resume', requireLogin, upload.single('resumePdf'), async (req
         }
 
         // PDF లోపల ఉన్న టెక్స్ట్ చదవడం
-        const data = await pdf(req.file.buffer);
+        const data = await pdfScannerMaster(req.file.buffer);
         const text = data.text.toLowerCase(); // స్కాన్ చేయడానికి ఈజీగా చిన్న అక్షరాల్లోకి మారుస్తున్నాం
 
         // 🔥 బేసిక్ ATS స్కోర్ & ఫీడ్‌బ్యాక్ లాజిక్
