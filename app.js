@@ -1785,5 +1785,45 @@ app.get('/load-mega-data', async (req, res) => {
         res.send("<h1>✅ TCS/Wipro Questions Loaded into DB!</h1><p>ఇప్పుడు నువ్వు గ్రాండ్ టెస్ట్ రాస్తే ఈ ప్రశ్నలు కనిపిస్తాయి.</p>");
     } catch (err) { res.send("Error: " + err.message); }
 });
+// =============================================================
+// 🔥 REMOVE DUMMY QUESTIONS & ADD REAL TCS/WIPRO QS
+// =============================================================
+app.get('/fix-real-papers', async (req, res) => {
+    try {
+        // 1. పాత డమ్మీ క్వశ్చన్స్ ని డేటాబేస్ నుండి పూర్తిగా డిలీట్ చేస్తున్నాం
+        await db.execute("DELETE FROM aptitude_questions WHERE option_a LIKE 'Logic%' OR question LIKE 'Logical Puzzle%'");
+
+        // 2. అసలైన TCS/Wipro మోడల్ ప్రశ్నలు (Syllabus ప్రకారం)
+        const realQs = [
+            {cat: 'Logical', topic: 'Logic Puzzles', q: 'In a certain code, "786" means "study very hard", "958" means "hard work pays" and "645" means "study and work". Which digit stands for "very"?', a: '7', w1: '8', w2: '6', w3: '9', exp: 'In 1st and 2nd, "hard" is common -> 8. In 1st and 3rd, "study" is common -> 6. So in 1st, "very" is 7.'},
+            {cat: 'Logical', topic: 'Logic Puzzles', q: 'A is taller than B. C is taller than A. D is taller than E but shorter than B. Who is the tallest?', a: 'C', w1: 'A', w2: 'B', w3: 'D', exp: 'Order: C > A > B > D > E. C is tallest.'},
+            {cat: 'Logical', topic: 'Data Sufficiency', q: 'What is the value of positive integer x? \nI. x^2 = 36\nII. x + 5 = 11', a: 'Either I or II alone is sufficient', w1: 'Only I is sufficient', w2: 'Only II is sufficient', w3: 'Both are needed', exp: 'From I: x=6 (since positive). From II: x=6. Both alone give the answer.'},
+            {cat: 'Logical', topic: 'Data Sufficiency', q: 'What is the speed of the train? \nI. It crosses a pole in 15 seconds.\nII. It crosses a 200m platform in 30 seconds.', a: 'Both I and II are necessary', w1: 'Only I is sufficient', w2: 'Only II is sufficient', w3: 'Neither is sufficient', exp: 'Two variables (Length and Speed) require two equations.'},
+            {cat: 'Logical', topic: 'Analogy', q: 'TCS : Software :: Tata Motors : ?', a: 'Automobiles', w1: 'Banking', w2: 'Retail', w3: 'Electronics', exp: 'Relationship based on company domain.'},
+            {cat: 'Logical', topic: 'Logic Puzzles', q: 'Five people P,Q,R,S,T are sitting in a line. P is at the extreme right. Q is immediately next to P. R is in the middle. Who is at the extreme left?', a: 'Cannot be determined', w1: 'S', w2: 'T', w3: 'R', exp: 'Arrangement: (S/T), (T/S), R, Q, P. Extreme left is either S or T.'}
+        ];
+
+        // ఆప్షన్స్ షఫుల్ చేయడానికి ఫంక్షన్
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // క్వశ్చన్స్ ఇన్సర్ట్ చేయడం (ఎగ్జామ్ కి సరిపోయేలా లూప్ చేసాము)
+        for (let i = 0; i < 20; i++) { 
+            let item = realQs[i % realQs.length]; 
+            let opts = shuffle([{v:item.a, c:true}, {v:item.w1, c:false}, {v:item.w2, c:false}, {v:item.w3, c:false}]);
+            let finalAns = 'A'; if(opts[1].c) finalAns='B'; if(opts[2].c) finalAns='C'; if(opts[3].c) finalAns='D';
+            
+            await db.execute(`INSERT INTO aptitude_questions (category, topic, question, option_a, option_b, option_c, option_d, correct_option, explanation) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
+            [item.cat, item.topic, item.q, opts[0].v, opts[1].v, opts[2].v, opts[3].v, finalAns, item.exp]);
+        }
+
+        res.send("<h1>✅ Dummy Questions Deleted!</h1><p>Real TCS/Wipro pattern questions added perfectly.</p>");
+    } catch (err) { res.send("Error: " + err.message); }
+});
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
