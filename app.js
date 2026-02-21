@@ -179,15 +179,13 @@ app.post('/update-password', async (req, res) => {
     }
 });
 // =============================================================
-// --- PRACTICE ENGINE (FIXED DUPLICATES) ---
+// --- PRACTICE ENGINE (FIXED QUESTIONS MISMATCH) ---
 // =============================================================
 app.get('/practice/:topic', requireLogin, async (req, res) => {
     const topic = decodeURIComponent(req.params.topic);
     try {
-        // ముందు ఆ టాపిక్ క్వశ్చన్స్ అన్నీ తెస్తున్నాం
         let [allQuestions] = await db.execute('SELECT * FROM aptitude_questions WHERE topic = ? ORDER BY RAND()', [topic]);
         
-        // 🔥 డూప్లికేట్స్ (ఒకే ప్రశ్న మళ్లీ మళ్లీ) రాకుండా ఫిల్టర్ చేస్తున్నాం
         let uniqueQuestions = [];
         let seen = new Set();
         
@@ -196,12 +194,15 @@ app.get('/practice/:topic', requireLogin, async (req, res) => {
                 seen.add(q.question);
                 uniqueQuestions.push(q);
             }
-            if (uniqueQuestions.length === 15) break; // 15 ప్రశ్నలు రాగానే ఆపేస్తాం
+            if (uniqueQuestions.length === 15) break; 
         }
 
         if (uniqueQuestions.length === 0) {
             return res.send(`<div style="text-align:center; padding:50px;"><h2 style="color:red;">Topic '${topic}' is empty!</h2><a href="/dashboard">Go Back</a></div>`);
         }
+
+        // 🔥 FIX 1: ఎగ్జామ్ స్టార్ట్ అవ్వగానే ఈ 15 రాండమ్ ప్రశ్నలని సెషన్ లో సేవ్ చేస్తున్నాం!
+        req.session.currentTopicQuestions = uniqueQuestions;
 
         res.render('practice', { questions: uniqueQuestions, user: req.session.user, topic });
     } catch (err) { 
@@ -210,19 +211,17 @@ app.get('/practice/:topic', requireLogin, async (req, res) => {
     }
 });
 
-// =============================================================
-// --- FINAL SUBMIT EXAM ROUTE (TOPIC TEST) ---
-// =============================================================
 app.post('/submit-exam', requireLogin, async (req, res) => {
     try {
         const payload = JSON.parse(req.body.payload);
         const topic = payload.topic;
         const answers = payload.answers || [];
         
-        let questions = payload.questions; 
+        // 🔥 FIX 2: డేటాబేస్ లో వెతకకుండా, సెషన్ లో దాచిన ఎగ్జాక్ట్ క్వశ్చన్స్ ని ఇక్కడ వాడుతున్నాం!
+        let questions = payload.questions || req.session.currentTopicQuestions; 
+        
         if (!questions || questions.length === 0) {
-            const [dbQuestions] = await db.execute("SELECT * FROM aptitude_questions WHERE topic = ? LIMIT 15", [topic]);
-            questions = dbQuestions;
+            return res.send("Error: Session expired or questions missing. Please retake the test.");
         }
         
         let score = 0;
@@ -251,7 +250,7 @@ app.post('/submit-exam', requireLogin, async (req, res) => {
             });
         });
 
-        // 🔥 FIX 1: ఇక్కడ మనం 'answers' బదులు మొత్తం 'reviewData' ని సేవ్ చేస్తున్నాం 
+        // 🔥 FIX 3: అనాలసిస్ కోసం డైరెక్ట్ గా reviewData ప్యాకెట్ ని డేటాబేస్ లో సేవ్ చేస్తున్నాం
         const [saveResult] = await db.execute(
             'INSERT INTO mock_results (user_id, score, total, topic, answers_json, test_type) VALUES (?, ?, ?, ?, ?, ?)', 
             [req.session.user.id, score, questions.length, topic, JSON.stringify(reviewData), 'Topic']
@@ -274,11 +273,54 @@ app.post('/submit-exam', requireLogin, async (req, res) => {
 });
 
 // =============================================================
-// 🏆 GRAND MOCK TEST SUBMISSION ROUTE
+// 🏆 GRAND MOCK TEST (MNC PATTERN - FIXED MISMATCH)
 // =============================================================
+app.get('/grand-test-intro', requireLogin, (req, res) => {
+    res.render('grand_test_start', { user: req.session.user });
+});
+
+app.get('/mock-test', (req, res) => {
+    res.redirect('/grand-test-intro');
+});
+
+app.get('/start-grand-exam', requireLogin, async (req, res) => {
+    try {
+        const difficulty = req.query.difficulty || 'All';
+        let diffQuery = (difficulty !== 'All') ? " AND difficulty = ?" : "";
+        let params = (difficulty !== 'All') ? [difficulty, difficulty, difficulty, difficulty] : [];
+
+        const query = `
+            (SELECT DISTINCT * FROM aptitude_questions WHERE category='Quantitative' ${diffQuery} ORDER BY RAND() LIMIT 20)
+            UNION ALL
+            (SELECT DISTINCT * FROM aptitude_questions WHERE category='Logical' ${diffQuery} ORDER BY RAND() LIMIT 20)
+            UNION ALL
+            (SELECT DISTINCT * FROM aptitude_questions WHERE category='Verbal' ${diffQuery} ORDER BY RAND() LIMIT 20)
+            UNION ALL
+            (SELECT DISTINCT * FROM aptitude_questions WHERE category='Technical' ${diffQuery} ORDER BY RAND() LIMIT 20)
+        `;
+
+        const [questions] = await db.execute(query, params);
+        
+        // 🔥 FIX 4: గ్రాండ్ టెస్ట్ రాండమ్ క్వశ్చన్స్ ని కూడా సెషన్ లో సేవ్ చేస్తున్నాం!
+        req.session.currentGrandQuestions = questions;
+        
+        res.render('exam_interface', { questions, user: req.session.user, topic: `Mega Test (${difficulty})`, duration: 80 });
+    } catch (err) { res.redirect('/'); }
+});
+
 app.post('/submit-grand-exam', requireLogin, async (req, res) => {
     try {
-        const { questions, answers, topic } = JSON.parse(req.body.payload);
+        const payload = JSON.parse(req.body.payload);
+        const answers = payload.answers || [];
+        const topic = payload.topic;
+        
+        // 🔥 FIX 5: సెషన్ లో ఉన్న ఎగ్జాక్ట్ గ్రాండ్ టెస్ట్ క్వశ్చన్స్ ని తీసుకుంటున్నాం
+        let questions = payload.questions || req.session.currentGrandQuestions;
+        
+        if (!questions || questions.length === 0) {
+             return res.send("Error: Exam session missing. Please retake.");
+        }
+
         let score = 0;
         let reviewData = [];
         let sectionScores = { 'Aptitude': { score: 0, total: 20 }, 'Reasoning': { score: 0, total: 20 }, 'English': { score: 0, total: 20 }, 'Technical': { score: 0, total: 20 } };
@@ -308,7 +350,7 @@ app.post('/submit-grand-exam', requireLogin, async (req, res) => {
             });
         });
 
-        // 🔥 FIX 2: గ్రాండ్ టెస్ట్ కి కూడా మొత్తం 'reviewData' నే సేవ్ చేస్తున్నాం
+        // 🔥 FIX 6: అనాలసిస్ కోసం reviewData ని డైరెక్ట్ గా సేవ్ చేస్తున్నాం
         const [saveResult] = await db.execute(
             'INSERT INTO mock_results (user_id, score, total, topic, answers_json, test_type) VALUES (?, ?, ?, ?, ?, ?)', 
             [req.session.user.id, score, questions.length, topic, JSON.stringify(reviewData), 'Mega']
@@ -319,14 +361,14 @@ app.post('/submit-grand-exam', requireLogin, async (req, res) => {
 });
 
 // =============================================================
-// 🔍 VIEW ANALYSIS ROUTE (100% FIXED)
+// 🔍 VIEW ANALYSIS ROUTE (100% PERFECTED)
 // =============================================================
 app.get('/view-analysis/:id', requireLogin, async (req, res) => {
     try {
         const [result] = await db.execute('SELECT * FROM mock_results WHERE id = ? AND user_id = ?', [req.params.id, req.session.user.id]);
         
         if (result.length > 0) {
-            // 🔥 FIX 3: డేటాబేస్ నుండి పాత క్వశ్చన్స్ వెతక్కుండా, సేవ్ చేసిన ఒరిజినల్ డేటాని తీసుకుంటున్నాం
+            // 🔥 FIX 7: మళ్ళీ డేటాబేస్ నుండి క్వశ్చన్స్ వెతక్కుండా, సేవ్ చేసిన ఒరిజినల్ పేపర్ డేటాని (reviewData) డైరెక్ట్ గా తీసుకుంటున్నాం
             let reviewData = JSON.parse(result[0].answers_json);
             
             res.render('result', { 
