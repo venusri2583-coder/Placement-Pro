@@ -36,7 +36,7 @@ const db = mysql.createPool({
 const requireLogin = (req, res, next) => {
     if (req.session.user) { next(); } else { res.redirect('/login'); }
 };
-const pdfParse = require('pdf-parse');
+const pdf = require('pdf-parse');
 
 // PDF ఫైల్ ని టెంపరరీగా మెమరీలో సేవ్ చేసుకోవడానికి
 const upload = multer({ storage: multer.memoryStorage() });
@@ -370,33 +370,6 @@ app.post('/submit-grand-exam', requireLogin, async (req, res) => {
     } catch (err) { console.error("Submission Error:", err); res.redirect('/'); }
 });
 
-// =============================================================
-// 🔍 VIEW ANALYSIS ROUTE (100% PERFECTED)
-// =============================================================
-app.get('/view-analysis/:id', requireLogin, async (req, res) => {
-    try {
-        const [result] = await db.execute('SELECT * FROM mock_results WHERE id = ? AND user_id = ?', [req.params.id, req.session.user.id]);
-        
-        if (result.length > 0) {
-            // 🔥 FIX 7: మళ్ళీ డేటాబేస్ నుండి క్వశ్చన్స్ వెతక్కుండా, సేవ్ చేసిన ఒరిజినల్ పేపర్ డేటాని (reviewData) డైరెక్ట్ గా తీసుకుంటున్నాం
-            let reviewData = JSON.parse(result[0].answers_json);
-            
-            res.render('result', { 
-                score: result[0].score, 
-                total: result[0].total, 
-                reviewData: reviewData, 
-                sectionScores: null, 
-                topic: result[0].topic, 
-                user: req.session.user 
-            });
-        } else {
-            res.redirect('/leaderboard');
-        }
-    } catch (err) { 
-        console.error(err);
-        res.redirect('/leaderboard'); 
-    }
-});
 // =============================================================
 // 🔥 SHUFFLE DATA GENERATOR (Random A, B, C, D)
 // =============================================================
@@ -1585,40 +1558,64 @@ app.get('/add-difficulty-levels', async (req, res) => {
     }
 });
 // =============================================================
-// 🏆 GRAND MOCK TEST (MNC PATTERN - 60 Qs / 60 Mins)
+// 🏆 1. TOPIC TEST SUBMIT & SCORE CALCULATION
 // =============================================================
-
-// 1. Grand Test Instructions Page
-app.get('/grand-test-intro', requireLogin, (req, res) => {
-    res.render('grand_test_start', { user: req.session.user });
-});
-
-app.get('/start-grand-exam', requireLogin, async (req, res) => {
+app.post('/submit-exam', requireLogin, async (req, res) => {
     try {
-        const difficulty = req.query.difficulty || 'All';
-        let diffQuery = (difficulty !== 'All') ? " AND difficulty = ?" : "";
-        let params = (difficulty !== 'All') ? [difficulty, difficulty, difficulty, difficulty] : [];
+        const payload = JSON.parse(req.body.payload);
+        const topic = payload.topic;
+        const answers = payload.answers || {}; 
+        
+        let questions = payload.questions || req.session.currentTopicQuestions; 
+        
+        if (!questions || questions.length === 0) {
+            return res.send("Error: Session expired or questions missing. Please retake the test.");
+        }
+        
+        let score = 0;
+        let reviewData = [];
 
-        // 🔥 Repetition thagginchadaniki DISTINCT mariyu Category-wise limit vaduthunnam
-        const query = `
-            (SELECT DISTINCT * FROM aptitude_questions WHERE category='Quantitative' ${diffQuery} ORDER BY RAND() LIMIT 20)
-            UNION ALL
-            (SELECT DISTINCT * FROM aptitude_questions WHERE category='Logical' ${diffQuery} ORDER BY RAND() LIMIT 20)
-            UNION ALL
-            (SELECT DISTINCT * FROM aptitude_questions WHERE category='Verbal' ${diffQuery} ORDER BY RAND() LIMIT 20)
-            UNION ALL
-            (SELECT DISTINCT * FROM aptitude_questions WHERE category='Technical' ${diffQuery} ORDER BY RAND() LIMIT 20)
-        `;
+        questions.forEach((q, i) => {
+            // 🔥 The Ultimate Fix: Index తో పాటు Question ID ని కూడా చెక్ చేస్తుంది!
+            let rawAns = answers[q.id] || answers[String(q.id)] || answers[i] || answers[String(i)];
+            const userAns = rawAns ? rawAns.toUpperCase() : null; 
+            
+            const correctOpt = q.correct_option ? q.correct_option.trim().toUpperCase() : 'A';
+            const isCorrect = (userAns === correctOpt);
+            
+            if (isCorrect) score++;
 
-        const [questions] = await db.execute(query, params);
-        res.render('exam_interface', { questions, user: req.session.user, topic: `Mega Test (${difficulty})`, duration: 80 });
-    } catch (err) { res.redirect('/'); }
+            const getOptText = (optKey) => {
+                if (!optKey) return "Not Selected";
+                return q['option_' + optKey.toLowerCase()] || "Not Selected";
+            };
+
+            reviewData.push({
+                qNo: i + 1,
+                question: q.question, 
+                userAnsText: userAns ? `${userAns}) ${getOptText(userAns)}` : "Skipped",
+                correctAnsText: `${correctOpt}) ${getOptText(correctOpt)}`,
+                isCorrect: isCorrect,
+                explanation: q.explanation || "No explanation available.",
+                shortcut: q.shortcut || "N/A"
+            });
+        });
+
+        const [saveResult] = await db.execute(
+            'INSERT INTO mock_results (user_id, score, total, topic, answers_json, test_type) VALUES (?, ?, ?, ?, ?, ?)', 
+            [req.session.user.id, score, questions.length, topic, JSON.stringify(reviewData), 'Topic']
+        );
+
+        res.render('result', { 
+            score, total: questions.length, reviewData, sectionScores: null, topic, user: req.session.user, resultId: saveResult.insertId
+        });
+
+    } catch (err) { console.error("Submit Error:", err); res.redirect('/'); }
 });
 
-app.get('/mock-test', (req, res) => {
-    res.redirect('/grand-test-intro');
-});
-// 🏆 GRAND MOCK TEST SUBMISSION ROUTE (CLEANED UP)
+// =============================================================
+// 🏆 2. MEGA TEST SUBMIT & SCORE CALCULATION
+// =============================================================
 app.post('/submit-grand-exam', requireLogin, async (req, res) => {
     try {
         const { questions, answers, topic } = JSON.parse(req.body.payload);
@@ -1627,7 +1624,10 @@ app.post('/submit-grand-exam', requireLogin, async (req, res) => {
         let sectionScores = { 'Aptitude': { score: 0, total: 20 }, 'Reasoning': { score: 0, total: 20 }, 'English': { score: 0, total: 20 }, 'Technical': { score: 0, total: 20 } };
 
         questions.forEach((q, i) => {
-            const userAns = answers[i] || null;
+            // 🔥 The Ultimate Fix
+            let rawAns = answers[q.id] || answers[String(q.id)] || answers[i] || answers[String(i)];
+            const userAns = rawAns ? rawAns.toUpperCase() : null;
+
             const correctOpt = q.correct_option ? q.correct_option.trim().toUpperCase() : 'A';
             const isCorrect = (userAns === correctOpt);
             let category = i < 20 ? 'Aptitude' : i < 40 ? 'Reasoning' : i < 60 ? 'English' : 'Technical';
@@ -1651,50 +1651,30 @@ app.post('/submit-grand-exam', requireLogin, async (req, res) => {
             });
         });
 
-        // Data save chesthunnam
         const [saveResult] = await db.execute(
             'INSERT INTO mock_results (user_id, score, total, topic, answers_json, test_type) VALUES (?, ?, ?, ?, ?, ?)', 
-            [req.session.user.id, score, questions.length, topic, JSON.stringify(answers), 'Mega']
+            [req.session.user.id, score, questions.length, topic, JSON.stringify(reviewData), 'Mega']
         );
 
-        // Result page ki redirect chesthunnam with section scores
         res.render('result', { score, total: questions.length, reviewData, sectionScores, topic, user: req.session.user, resultId: saveResult.insertId });
     } catch (err) { console.error("Submission Error:", err); res.redirect('/'); }
 });
-// 🔍 పక్కాగా పనిచేసే పేపర్ అనాలసిస్ రూట్
+
+// =============================================================
+// 🔍 3. VIEW ANALYSIS (DUPLICATES REMOVED)
+// =============================================================
 app.get('/view-analysis/:id', requireLogin, async (req, res) => {
     try {
         const [result] = await db.execute('SELECT * FROM mock_results WHERE id = ? AND user_id = ?', [req.params.id, req.session.user.id]);
         
         if (result.length > 0) {
-            const savedAnswers = JSON.parse(result[0].answers_json);
-            // మెగా టెస్ట్ అయితే 80 ప్రశ్నలు, టాపిక్ టెస్ట్ అయితే 15 ప్రశ్నలు తెచ్చుకోవాలి
-            const limitCount = result[0].test_type === 'Mega' ? 80 : 15;
+            let reviewData = JSON.parse(result[0].answers_json);
             
-            // ప్రశ్నలను డేటాబేస్ నుండి మళ్ళీ తెస్తున్నాం
-            const [dbQuestions] = await db.execute('SELECT * FROM aptitude_questions LIMIT ?', [limitCount]);
-
-            let reviewData = [];
-            dbQuestions.forEach((q, i) => {
-                const userAns = savedAnswers[i] || null;
-                const correctOpt = q.correct_option.trim().toUpperCase();
-                reviewData.push({
-                    qNo: i + 1,
-                    question: q.question,
-                    userAnsText: userAns ? `${userAns}) ${q['option_' + userAns.toLowerCase()]}` : "Skipped",
-                    correctAnsText: `${correctOpt}) ${q['option_' + correctOpt.toLowerCase()]}`,
-                    isCorrect: (userAns === correctOpt),
-                    briefSolution: q.explanation || "No explanation available.",
-                    shortcut: q.shortcut || "N/A"
-                });
-            });
-
-            // రిజల్ట్ పేజీనే అనాలసిస్ మూడ్ లో చూపిస్తున్నాం
             res.render('result', { 
                 score: result[0].score, 
                 total: result[0].total, 
-                reviewData, 
-                sectionScores: null, // అనాలసిస్ లో సెక్షన్ స్కోర్లు అక్కర్లేదు
+                reviewData: reviewData, 
+                sectionScores: null, 
                 topic: result[0].topic, 
                 user: req.session.user 
             });
@@ -2003,7 +1983,7 @@ app.post('/analyze-resume', requireLogin, upload.single('resumePdf'), async (req
         }
 
         // PDF లోపల ఉన్న టెక్స్ట్ చదవడం
-        const data = await pdfParse(req.file.buffer);
+        const data = await pdf(req.file.buffer);
         const text = data.text.toLowerCase(); // స్కాన్ చేయడానికి ఈజీగా చిన్న అక్షరాల్లోకి మారుస్తున్నాం
 
         // 🔥 బేసిక్ ATS స్కోర్ & ఫీడ్‌బ్యాక్ లాజిక్
