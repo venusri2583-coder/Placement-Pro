@@ -196,16 +196,8 @@ app.get('/practice/:topic', requireLogin, async (req, res) => {
     try {
         let [allQuestions] = await db.execute('SELECT * FROM aptitude_questions WHERE topic = ? ORDER BY RAND()', [topic]);
         
-        let uniqueQuestions = [];
-        let seen = new Set();
-        
-        for (let q of allQuestions) {
-            if (!seen.has(q.question)) {
-                seen.add(q.question);
-                uniqueQuestions.push(q);
-            }
-            if (uniqueQuestions.length === 15) break; 
-        }
+        // ✅ ఈ కొత్త లైన్ పెట్టు
+let uniqueQuestions = allQuestions.slice(0, 15);
 
         if (uniqueQuestions.length === 0) {
             return res.send(`<div style="text-align:center; padding:50px;"><h2 style="color:red;">Topic '${topic}' is empty!</h2><a href="/dashboard">Go Back</a></div>`);
@@ -2054,39 +2046,36 @@ app.post('/analyze-resume', requireLogin, upload.single('resumePdf'), async (req
     }
 });
 // =============================================================
-// 🪄 DATABASE FIXER (RUN THIS ONCE & DELETE LATER)
+// 🧹 THE PRO CLEANER (Removes [Q10] tags & Keeps 15 Qs)
 // =============================================================
-app.get('/fix-my-db-now', async (req, res) => {
+app.get('/clean-my-questions', async (req, res) => {
     try {
-        // 1. అన్ని టాపిక్స్ ని లాగుతున్నాం
-        const [topics] = await db.execute("SELECT DISTINCT topic FROM aptitude_questions");
+        // 1. డేటాబేస్ లోని ప్రశ్నలన్నింటినీ తీసుకుంటున్నాం
+        const [qs] = await db.execute("SELECT id, question FROM aptitude_questions");
         
-        for (let t of topics) {
-            const topicName = t.topic;
-            // 2. ఆ టాపిక్ లో ఉన్న ప్రశ్నలన్నింటినీ తెస్తున్నాం
-            const [qs] = await db.execute("SELECT id, question, explanation FROM aptitude_questions WHERE topic = ?", [topicName]);
+        for (let q of qs) {
+            // 🔥 మ్యాజిక్: క్వశ్చన్ చివర ఉన్న [Q1], [Q10] లాంటి ట్యాగ్స్ ని తీసేస్తుంది
+            let cleanQuestion = q.question.replace(/\s\[Q\d+\]$/, ''); 
             
-            let counter = 1;
-            for (let q of qs) {
-                // 3. పాత ప్రశ్నకి Q1, Q2 అని యాడ్ చేస్తున్నాం (అన్నింటినీ Unique చేయడానికి)
-                let newQText = q.question.replace(/ \[Q\d+\]$/, ''); 
-                newQText = `${newQText} [Q${counter}]`;
-                
-                // 4. అనాలసిస్ లో బ్రీఫ్ ఆన్సర్ (Explanation) కోసం
-                let newExp = q.explanation;
-                if (!newExp || newExp.trim() === '' || newExp === 'No explanation available.') {
-                    newExp = `Detailed logical solution for ${topicName} - Question ${counter}. This explains the step-by-step process to arrive at the correct option.`;
-                }
-
-                // 5. డేటాబేస్ ని అప్‌డేట్ చేస్తున్నాం
-                await db.execute("UPDATE aptitude_questions SET question = ?, explanation = ? WHERE id = ?", [newQText, newExp, q.id]);
-                counter++;
-            }
+            // 2. క్లీన్ చేసిన టెక్స్ట్ తో అప్‌డేట్ చేస్తుంది
+            await db.execute("UPDATE aptitude_questions SET question = ? WHERE id = ?", [cleanQuestion, q.id]);
         }
-        res.send("<h1 style='color:green; text-align:center; margin-top:50px;'>✅ మ్యాజిక్ సక్సెస్! 15 క్వశ్చన్స్ సెట్ అయిపోయాయి!</h1><p style='text-align:center; font-size:20px;'>ఇప్పుడు వెళ్లి డాష్‌బోర్డ్ లో ఏ టాపిక్ ఓపెన్ చేసినా పక్కాగా 15 వేరు వేరు క్వశ్చన్స్ వస్తాయి. అనాలసిస్ కూడా సూపర్ గా వస్తుంది!</p>");
+        
+        res.send("<h1 style='color:green; text-align:center; margin-top:50px;'>✅ క్లీనింగ్ కంప్లీట్ మావా!</h1><p style='text-align:center; font-size:20px;'>ఇకపై ప్రశ్నల పక్కన ఆ నంబర్లు [Q10] కనిపించవు. 15 ప్రశ్నలు నీట్ గా వస్తాయి!</p>");
     } catch (err) {
         res.send("Error: " + err.message);
     }
+});
+app.get('/final-clean', async (req, res) => {
+    try {
+        const [qs] = await db.execute("SELECT id, question FROM aptitude_questions");
+        for (let q of qs) {
+            // [Q1], [Q10] లాంటివి ఏమున్నా తీసేసి ప్యూర్ క్వశ్చన్ ని ఉంచుతుంది
+            let clean = q.question.replace(/\s\[Q\d+\]$/, ''); 
+            await db.execute("UPDATE aptitude_questions SET question = ? WHERE id = ?", [clean, q.id]);
+        }
+        res.send("<h1>✅ క్లీన్ అయిపోయింది మావా!</h1>");
+    } catch (err) { res.send(err.message); }
 });
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
