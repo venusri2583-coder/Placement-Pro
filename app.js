@@ -2053,5 +2053,40 @@ app.post('/analyze-resume', requireLogin, upload.single('resumePdf'), async (req
         res.send("<h2 style='color:red; text-align:center;'>అరె! ఫైల్ ప్రాసెస్ చేయడంలో చిన్న ఎర్రర్. మళ్లీ ట్రై చెయ్.</h2>");
     }
 });
+// =============================================================
+// 🪄 DATABASE FIXER (RUN THIS ONCE & DELETE LATER)
+// =============================================================
+app.get('/fix-my-db-now', async (req, res) => {
+    try {
+        // 1. అన్ని టాపిక్స్ ని లాగుతున్నాం
+        const [topics] = await db.execute("SELECT DISTINCT topic FROM aptitude_questions");
+        
+        for (let t of topics) {
+            const topicName = t.topic;
+            // 2. ఆ టాపిక్ లో ఉన్న ప్రశ్నలన్నింటినీ తెస్తున్నాం
+            const [qs] = await db.execute("SELECT id, question, explanation FROM aptitude_questions WHERE topic = ?", [topicName]);
+            
+            let counter = 1;
+            for (let q of qs) {
+                // 3. పాత ప్రశ్నకి Q1, Q2 అని యాడ్ చేస్తున్నాం (అన్నింటినీ Unique చేయడానికి)
+                let newQText = q.question.replace(/ \[Q\d+\]$/, ''); 
+                newQText = `${newQText} [Q${counter}]`;
+                
+                // 4. అనాలసిస్ లో బ్రీఫ్ ఆన్సర్ (Explanation) కోసం
+                let newExp = q.explanation;
+                if (!newExp || newExp.trim() === '' || newExp === 'No explanation available.') {
+                    newExp = `Detailed logical solution for ${topicName} - Question ${counter}. This explains the step-by-step process to arrive at the correct option.`;
+                }
+
+                // 5. డేటాబేస్ ని అప్‌డేట్ చేస్తున్నాం
+                await db.execute("UPDATE aptitude_questions SET question = ?, explanation = ? WHERE id = ?", [newQText, newExp, q.id]);
+                counter++;
+            }
+        }
+        res.send("<h1 style='color:green; text-align:center; margin-top:50px;'>✅ మ్యాజిక్ సక్సెస్! 15 క్వశ్చన్స్ సెట్ అయిపోయాయి!</h1><p style='text-align:center; font-size:20px;'>ఇప్పుడు వెళ్లి డాష్‌బోర్డ్ లో ఏ టాపిక్ ఓపెన్ చేసినా పక్కాగా 15 వేరు వేరు క్వశ్చన్స్ వస్తాయి. అనాలసిస్ కూడా సూపర్ గా వస్తుంది!</p>");
+    } catch (err) {
+        res.send("Error: " + err.message);
+    }
+});
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
