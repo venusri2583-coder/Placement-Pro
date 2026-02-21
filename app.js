@@ -1916,6 +1916,12 @@ app.get('/add-my-dummy-scores', requireLogin, async (req, res) => {
     }
 });
 // =============================================================
+// 📄 RESUME BUILDER PAGE ROUTE
+// =============================================================
+app.get('/resume-builder', requireLogin, (req, res) => {
+    res.render('resume_builder', { user: req.session.user });
+});
+// =============================================================
 // 📄 ADVANCED DYNAMIC RESUME BUILDER (MULTIPLE TEMPLATES)
 // =============================================================
 
@@ -2039,8 +2045,8 @@ app.post('/analyze-resume', requireLogin, upload.single('resumePdf'), async (req
         res.render('resume_result', { user: req.session.user, score: score, feedback: feedback });
 
     } catch (err) {
-        console.error(err);
-        res.send("<h2 style='color:red; text-align:center;'>అరె! PDF చదవడంలో ఎర్రర్ వచ్చింది. దయచేసి వేరే ఫైల్ ట్రై చెయ్.</h2>");
+        console.error("PDF Error: ", err);
+        res.send(`<h2 style='color:red; text-align:center; margin-top:50px;'>అరె! PDF చదవడంలో ఎర్రర్ వచ్చింది.<br><br> 🔍 అసలు ఎర్రర్ ఏంటంటే: <b>${err.message}</b></h2><div style='text-align:center; margin-top:20px;'><a href="/resume-upload" class="btn btn-primary">వెనక్కి వెళ్ళు</a></div>`);
     }
 });
 const PORT = process.env.PORT || 5000;
