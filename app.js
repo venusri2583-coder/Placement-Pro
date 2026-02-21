@@ -1912,16 +1912,32 @@ app.get('/add-my-dummy-scores', requireLogin, async (req, res) => {
     }
 });
 // =============================================================
-// 📄 RESUME UPLOAD / BUILDER ROUTE
+// 📄 DYNAMIC RESUME BUILDER ROUTES
 // =============================================================
-app.get('/resume-upload', requireLogin, (req, res) => {
-    // ఇక్కడ 'resume' అనేది నీ views ఫోల్డర్ లో ఉన్న EJS ఫైల్ పేరు అనుకుంటున్నాను.
-    // ఒకవేళ ఆ ఫైల్ పేరు 'resume-upload.ejs' అని ఉంటే.. కింద 'resume' బదులు 'resume-upload' అని పెట్టు.
-    res.render('resume', { 
-        user: req.session.user,
-        msg: null, 
-        error: null 
-    });
+
+// 1. స్టూడెంట్ డీటెయిల్స్ అడగడానికి ఫామ్ ఓపెన్ చేసే రూట్
+app.get('/resume-builder', requireLogin, (req, res) => {
+    res.render('resume_builder', { user: req.session.user });
+});
+
+// 2. ఫామ్ సబ్మిట్ చేశాక ఆటోమేటిక్ గా రెజ్యూమ్ జనరేట్ చేసే రూట్
+app.post('/generate-resume', requireLogin, (req, res) => {
+    // స్టూడెంట్ ఫామ్ లో ఇచ్చిన డేటాని పట్టుకుంటున్నాం
+    const resumeData = {
+        fullName: req.body.fullName,
+        email: req.body.email,
+        phone: req.body.phone,
+        linkedin: req.body.linkedin,
+        github: req.body.github,
+        education: req.body.education,
+        cgpa: req.body.cgpa,
+        skills: req.body.skills ? req.body.skills.split(',') : [], // కమా(,) తో ఇస్తే లిస్ట్ లా మారుతుంది
+        projects: req.body.projects,
+        experience: req.body.experience
+    };
+    
+    // ఆ డేటాని మన రెజ్యూమ్ టెంప్లేట్ కి పంపిస్తున్నాం
+    res.render('resume_template', { user: req.session.user, data: resumeData });
 });
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
